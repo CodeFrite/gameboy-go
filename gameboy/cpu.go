@@ -1,0 +1,115 @@
+// Computing Processing Unit (CPU) for the Gameboy
+package gameboy
+
+import (
+	"fmt"
+)
+
+type CPU struct {
+	IR uint8 // Instruction Register
+	IE uint8 // Interrupt Enable
+	SP uint16 // Stack Pointer
+	PC uint16 // Program Counter
+
+	// 8-bit registers
+	A uint8 // Accumulator
+	F uint8 // Flags
+
+	// 16-bit general purpose registers
+	BC, DE, HL uint16
+
+	// 127bytes of High-Speed RAM
+	HRAM [127]byte
+
+	// reference to the bus
+	bus *Bus
+}
+
+func NewCPU(bus *Bus) *CPU {
+	// initialize all registers to 0 except the program counter which starts at 0x100 (in cartridge ROM)
+	return &CPU{
+		PC:0x0100, // Start at 0x100 and ignore the boot ROM for now
+		bus: bus,
+	}
+}
+
+func (c *CPU) PrintRegisters() {
+	// Print the registers
+	fmt.Println("> CPU Registers:")
+	fmt.Printf("+ IR: 0x%X\n", c.IR)
+	fmt.Printf("+ IE: 0x%X\n", c.IE)
+	fmt.Printf("+ SP: 0x%X\n", c.SP)
+	fmt.Printf("+ PC: 0x%X\n", c.PC)
+	fmt.Printf("+ A: 0x%X\n", c.A)
+	fmt.Printf("+ F: 0x%X\n", c.F)
+	fmt.Printf("+ BC: 0x%X\n", c.BC)
+	fmt.Printf("+ DE: 0x%X\n", c.DE)
+	fmt.Printf("+ HL: 0x%X\n", c.HL)
+	fmt.Printf("+ HRAM: 0x%X\n", c.HRAM)
+}
+
+func (c *CPU) PrintIR() {
+	// Print the instruction register
+	fmt.Printf("IR: 0x%X\n", c.IR)
+}
+
+func (c *CPU) PrintPC() {
+	// Print the program counter
+	fmt.Printf("PC: 0x%X\n", c.PC)
+}
+
+// Fetch the opcode from bus at address PC and store it in the instruction register
+func (c *CPU) fetchOpcode() {
+	// Fetch the opcode from memory at the address in the program counter
+	opcode := c.bus.Read(uint16ToBytes(c.PC))
+	// Store the opcode in the instruction register
+	c.IR = opcode
+}
+
+func (c *CPU) getInstruction() Instruction {
+	if instruction, ok := Instructions[c.IR]; ok {
+		return instruction
+	}
+	// Return a default instruction for unimplemented opcodes
+	return NotYetImplementedInstruction
+}
+
+func (c *CPU) executeInstruction(instruction Instruction) {
+	// Fetch the operand from memory
+	var operand []byte
+	if instruction.Length == 2 {
+		operand = make([]byte, 1)
+		operand[0] = c.bus.Read(uint16ToBytes(c.PC+1))
+	} else if instruction.Length == 3 {
+		operand = make([]byte, 2)
+		operand[0] = c.bus.Read(uint16ToBytes(c.PC+1))
+		operand[1] = c.bus.Read(uint16ToBytes(c.PC+2))
+	}
+	// Execute the instruction
+	instruction.Handler(c, operand)
+
+	if operand != nil {
+		fmt.Printf("Operand:%X\n", operand)
+	}
+}
+
+func (c *CPU) incrementPC(offset uint16) {
+	c.PC += uint16(offset)
+}
+
+func (c *CPU) Step() {
+	// Fetch the opcode from memory
+	c.fetchOpcode()
+	// Get the instruction corresponding to the opcode
+	instruction := c.getInstruction()
+
+	// debug
+	c.PrintPC()
+	c.PrintIR()
+	
+	// Execute the instruction
+	c.executeInstruction(instruction)
+	
+	//debug
+	fmt.Println()
+}
