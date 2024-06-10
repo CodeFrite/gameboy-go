@@ -14,7 +14,7 @@ type CPU struct {
 
 	// 8-bit registers
 	A uint8 // Accumulator
-	F uint8 // Flags
+	F uint8 // Flags (Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4))
 
 	// 16-bit general purpose registers
 	BC, DE, HL uint16
@@ -57,6 +57,51 @@ func (c *CPU) PrintIR() {
 func (c *CPU) PrintPC() {
 	// Print the program counter
 	fmt.Printf("PC: 0x%X\n", c.PC)
+}
+
+// Get the Z flag from the F register
+func (c *CPU) getZFlag() bool {
+	return c.F & 0x80 == 0x80
+}
+
+// Set the Z flag in the F register
+func (c *CPU) setZFlag() {
+	c.F = c.F | 0x80
+}
+
+// Reset the Z flag in the F register
+func (c *CPU) resetZFlag() {
+	c.F = c.F & 0x7F
+}
+
+// Get the N flag from the F register
+func (c *CPU) getNFlag() bool {
+	return c.F & 0x40 == 0x40
+}
+
+// Set the N flag in the F register
+func (c *CPU) setNFlag() {
+	c.F = c.F | 0x40
+}
+
+// Reset the N flag in the F register
+func (c *CPU) resetNFlag() {
+	c.F = c.F & 0xBF
+}
+
+// Get the H flag from the F register
+func (c *CPU) getHFlag() bool {
+	return c.F & 0x20 == 0x20
+}
+
+// Set the H flag in the F register
+func (c *CPU) setHFlag() {
+	c.F = c.F | 0x20
+}
+
+// Reset the H flag in the F register
+func (c *CPU) resetHFlag() {
+	c.F = c.F & 0xDF
 }
 
 // Fetch the opcode from bus at address PC and store it in the instruction register
