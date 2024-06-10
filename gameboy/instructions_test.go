@@ -199,4 +199,3 @@ func TestLD_DE_n16(t *testing.T) {
 		t.Errorf("Expected BC to be 0x2B1A, got 0x%X", cpu.DE)
 	}
 }
-

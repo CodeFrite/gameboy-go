@@ -58,7 +58,7 @@ func LD_DE_n16(c *CPU, operand []byte) {
 	if debug {
 		fmt.Printf("LD DE, 0x%X (DE=0x%X => ", operand, c.DE)
 	}
-	c.DE = bytesToUint16([2]byte{operand[0], operand[1]})
+	c.DE = uint16(operand[1]) << 8 + uint16(operand[0])
 	if debug {
 		fmt.Printf("0x%X)\n", c.DE)
 	}
