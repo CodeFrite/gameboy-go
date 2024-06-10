@@ -199,3 +199,46 @@ func TestLD_DE_n16(t *testing.T) {
 		t.Errorf("Expected BC to be 0x2B1A, got 0x%X", cpu.DE)
 	}
 }
+
+
+// 0x2C: Increment the value of register L
+func TestINC_L(t *testing.T) {
+	cpu, bus, _ := createNewGameboy()
+
+	// set the program counter to VRAM 0x00 address (0xC000)
+	cpu.PC = 0xC000
+	
+	// write the instruction and operand to vram
+	writeWRAM(bus, uint16ToBytes(0x00), 0x2C) // instruction
+	
+	// save cpu state
+	cpuCopy := copyCPU(cpu)
+
+	// Execute the instruction
+	cpu.Step()
+
+	// get the differences
+	differences := compareCPU(cpu, cpuCopy)
+
+	// check that there are 2 differences
+	if len(differences) != 2 {
+		t.Errorf("Expected 2 differences, got %v", len(differences))
+	}
+
+	// ... the program counter was incremented by instruction.Length
+	instruction := Instructions[0x2C]
+	if _, ok := differences["PC"]; !ok {
+		t.Errorf("Expected PC to be modified")
+	}
+	if cpu.PC != cpuCopy.PC+instruction.Length {
+		t.Errorf("Expected PC to be %v, got %v", cpuCopy.PC+instruction.Length, cpu.PC)
+	}
+
+	// ... the HL register was incremented by 1
+	if _, ok := differences["HL"]; !ok {
+		t.Errorf("Expected HL to be modified")
+	}
+	if cpu.HL != cpuCopy.HL+1 {
+		t.Errorf("Expected HL to be 0x%X, got 0x%X", cpuCopy.HL+1, cpu.HL)
+	}
+}
