@@ -100,7 +100,7 @@ func INC_L(c *CPU, operand []byte) {
 	c.incrementPC(1);
 }
 
-// 0x4A: Load the value of register E into register D
+// 0x4A: Load the value of register D into register C
 func LD_C_D(c *CPU, operand []byte) {
 	if debug {
 		fmt.Printf("LD C, D (DE=0x%X) (BC=0x%X => ", c.DE, c.BC)

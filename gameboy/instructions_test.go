@@ -402,3 +402,36 @@ func TestINC_L_FLAGS_Z_H_SET(t *testing.T) {
 		t.Errorf("Expected H flag to be set")
 	}
 }
+
+// 0x4A: Load the value of register D into register C
+func TestLD_C_D(t *testing.T) {
+	// instantiate a new gameboy
+	cpu, _, _ := createNewGameboy()
+
+	// set the C register to 0xAB and the D register to 0xCD
+	cpu.BC = 0x00AB
+	cpu.DE = 0xCD00
+
+	// save cpu state
+	cpuCopy := copyCPU(cpu)
+
+	// Execute the instruction
+	cpu.executeInstruction(Instructions[0x4A])
+
+	// get the differences
+	differences := compareCPU(cpu, cpuCopy)
+
+	// check that there are 2 differences
+	if len(differences) != 2 {
+		t.Errorf("Expected 2 differences, got %v", len(differences))
+	}
+
+	// ... the C register was loaded with the value of the D register
+	if _, ok := differences["BC"]; !ok {
+		t.Errorf("Expected BC to be modified")
+	}
+
+	if byte(cpu.BC & 0x00FF) != byte((cpu.DE & 0xFF00)>>8) {
+		t.Errorf("Expected C register to be 0xCD, got 0x%X", byte(cpu.BC & 0x00FF))
+	}
+}
