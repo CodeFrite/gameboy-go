@@ -66,14 +66,37 @@ func LD_DE_n16(c *CPU, operand []byte) {
 }
 
 // 0x2C: Increment the value of register L
+// impacted flags:
+// Z: Set if result is zero
+// N: Reset
+// H: Set if carry from bit 3
 func INC_L(c *CPU, operand []byte) {
 	if debug {
 		fmt.Printf("INC L (HL=0x%X => ", c.HL)
 	}
 	c.HL = c.HL & 0xFF00 | (c.HL+1) & 0x00FF;
+
+	// Set the Z flag if the result is zero
+	if c.HL & 0x00FF == 0 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+
+	// Reset the N flag
+	c.resetNFlag()
+
+	// Set the H flag if there was a carry from bit 3
+	if c.HL & 0x0F == 0 {
+		c.setHFlag()
+	} else {
+		c.resetHFlag()
+	}
+
 	if debug {
 		fmt.Printf("0x%X)\n", c.HL)
 	}
+	
 	c.incrementPC(1);
 }
 

@@ -202,11 +202,16 @@ func TestLD_DE_n16(t *testing.T) {
 
 
 // 0x2C: Increment the value of register L
-func TestINC_L(t *testing.T) {
+func TestINC_L_NO_FLAG_SET(t *testing.T) {
 	cpu, bus, _ := createNewGameboy()
 
 	// set the program counter to VRAM 0x00 address (0xC000)
 	cpu.PC = 0xC000
+
+	// set the Z, N and H flags to 1 to see if they are reset
+	cpu.setZFlag()
+	cpu.setNFlag()
+	cpu.setHFlag()
 	
 	// write the instruction and operand to vram
 	writeWRAM(bus, uint16ToBytes(0x00), 0x2C) // instruction
@@ -220,9 +225,9 @@ func TestINC_L(t *testing.T) {
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
 
-	// check that there are 2 differences
-	if len(differences) != 2 {
-		t.Errorf("Expected 2 differences, got %v", len(differences))
+	// check that there are 3 differences
+	if len(differences) != 3 {
+		t.Errorf("Expected 3 differences, got %v", len(differences))
 	}
 
 	// ... the program counter was incremented by instruction.Length
@@ -240,5 +245,160 @@ func TestINC_L(t *testing.T) {
 	}
 	if cpu.HL != cpuCopy.HL+1 {
 		t.Errorf("Expected HL to be 0x%X, got 0x%X", cpuCopy.HL+1, cpu.HL)
+	}
+
+	// ... the Z, N and H flags were reset
+	if _, ok := differences["F"]; !ok {
+		t.Errorf("Expected F to be modified")
+	}
+
+	if cpu.getZFlag() != false {
+		t.Errorf("Expected Z flag to be reset")
+	}
+
+	if cpu.getNFlag() != false {
+		t.Errorf("Expected N flag to be reset")
+	}
+
+	if cpu.getHFlag() != false {
+		t.Errorf("Expected H flag to be reset")
+	}
+}
+
+func TestINC_L_FLAG_H_SET(t *testing.T) {
+	cpu, bus, _ := createNewGameboy()
+
+	// set the program counter to VRAM 0x00 address (0xC000)
+	cpu.PC = 0xC000
+
+	// set the Z, N flags and reset H flag to see if they are computed correctly
+	cpu.setZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+
+	// set the L register to 15 (0x0F)
+	cpu.HL = 0x000F
+	
+	// write the instruction and operand to vram
+	writeWRAM(bus, uint16ToBytes(0x00), 0x2C) // instruction
+	
+	// save cpu state
+	cpuCopy := copyCPU(cpu)
+
+	// Execute the instruction
+	cpu.Step()
+
+	// get the differences
+	differences := compareCPU(cpu, cpuCopy)
+
+	// check that there are 3 differences
+	if len(differences) != 3 {
+		t.Errorf("Expected 3 differences, got %v", len(differences))
+	}
+
+	// ... the program counter was incremented by instruction.Length
+	instruction := Instructions[0x2C]
+	if _, ok := differences["PC"]; !ok {
+		t.Errorf("Expected PC to be modified")
+	}
+	if cpu.PC != cpuCopy.PC+instruction.Length {
+		t.Errorf("Expected PC to be %v, got %v", cpuCopy.PC+instruction.Length, cpu.PC)
+	}
+
+	// ... the HL register was incremented by 1
+	if _, ok := differences["HL"]; !ok {
+		t.Errorf("Expected HL to be modified")
+	}
+	if cpu.HL != cpuCopy.HL+1 {
+		t.Errorf("Expected HL to be 0x%X, got 0x%X", cpuCopy.HL+1, cpu.HL)
+	}
+
+	// ... the H flag was set
+	if _, ok := differences["F"]; !ok {
+		t.Errorf("Expected F to be modified")
+	}
+
+	// check if the Z flag was reset
+	if cpu.getZFlag() != false {
+		t.Errorf("Expected Z flag to be reset")
+	}
+
+	// check if the N flag was reset
+	if cpu.getNFlag() != false {
+		t.Errorf("Expected N flag to be reset")
+	}
+
+	// check if the H flag was set
+	if cpu.getHFlag() != true {
+		t.Errorf("Expected H flag to be set")
+	}
+}
+
+func TestINC_L_FLAGS_Z_H_SET(t *testing.T) {
+	cpu, bus, _ := createNewGameboy()
+
+	// set the program counter to VRAM 0x00 address (0xC000)
+	cpu.PC = 0xC000
+
+	// set the N flags and reset Z & H flags to see if they are computed correctly
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+
+	// set the L register to 0xFF
+	cpu.HL = 0x00FF
+	
+	// write the instruction and operand to vram
+	writeWRAM(bus, uint16ToBytes(0x00), 0x2C) // instruction
+	
+	// save cpu state
+	cpuCopy := copyCPU(cpu)
+
+	// Execute the instruction
+	cpu.Step()
+
+	// get the differences
+	differences := compareCPU(cpu, cpuCopy)
+
+	// check that there are 3 differences
+	if len(differences) != 3 {
+		t.Errorf("Expected 3 differences, got %v", len(differences))
+	}
+
+	// ... the program counter was incremented by instruction.Length
+	instruction := Instructions[0x2C]
+	if _, ok := differences["PC"]; !ok {
+		t.Errorf("Expected PC to be modified")
+	}
+	if cpu.PC != cpuCopy.PC+instruction.Length {
+		t.Errorf("Expected PC to be %v, got %v", cpuCopy.PC+instruction.Length, cpu.PC)
+	}
+
+	// ... the HL register was incremented by 1
+	if _, ok := differences["HL"]; !ok {
+		t.Errorf("Expected HL to be modified")
+	}
+	if cpu.HL != 0x0000 {
+		t.Errorf("Expected HL to be 0x%X, got 0x%X", cpuCopy.HL+1, cpu.HL)
+	}
+
+	// ... the H flag was updated
+	if _, ok := differences["F"]; !ok {
+		t.Errorf("Expected F to be modified")
+	}
+
+	// check if the Z flag was set
+	if cpu.getZFlag() != true {
+		t.Errorf("Expected Z flag to be set")
+	}
+
+	// check if the N flag was reset
+	if cpu.getNFlag() != false {
+		t.Errorf("Expected N flag to be reset")
+	}
+
+	// check if the H flag was set
+	if cpu.getHFlag() != true {
+		t.Errorf("Expected H flag to be set")
 	}
 }
