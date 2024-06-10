@@ -2,6 +2,7 @@
 package gameboy
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -66,12 +67,13 @@ func (c *CPU) fetchOpcode() {
 	c.IR = opcode
 }
 
-func (c *CPU) getInstruction() Instruction {
+func (c *CPU) getInstruction() (Instruction, error) {
 	if instruction, ok := Instructions[c.IR]; ok {
-		return instruction
+		return instruction, nil
 	}
 	// Return a default instruction for unimplemented opcodes
-	return NotYetImplementedInstruction
+	err := fmt.Sprintf("Unimplemented opcode: 0x%X", c.IR)
+	return NotYetImplementedInstruction, errors.New(err)
 }
 
 func (c *CPU) executeInstruction(instruction Instruction) {
@@ -87,29 +89,26 @@ func (c *CPU) executeInstruction(instruction Instruction) {
 	}
 	// Execute the instruction
 	instruction.Handler(c, operand)
-
-	if operand != nil {
-		fmt.Printf("Operand:%X\n", operand)
-	}
 }
 
 func (c *CPU) incrementPC(offset uint16) {
 	c.PC += uint16(offset)
 }
 
-func (c *CPU) Step() {
+func (c *CPU) Step() error {
 	// Fetch the opcode from memory
 	c.fetchOpcode()
 	// Get the instruction corresponding to the opcode
-	instruction := c.getInstruction()
-
-	// debug
-	c.PrintPC()
-	c.PrintIR()
+	instruction, err := c.getInstruction()
+	if err != nil {
+		c.PrintPC()
+		c.PrintIR()
+		fmt.Println(err)
+		return err
+	}
 	
 	// Execute the instruction
 	c.executeInstruction(instruction)
 	
-	//debug
-	fmt.Println()
+	return nil
 }

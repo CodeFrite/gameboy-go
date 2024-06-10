@@ -40,13 +40,12 @@ func main() {
 	//cpu.PrintRegisters()
 
 	// main game loop
-	running := true
 	i := 0
-	for running {
+	for {
 		// cpu fetches the opcode located at the program counter
-		cpu.Step()
-		if i>2 {
-			running = false
+		err := cpu.Step()
+		if err != nil {
+			break
 		}
 		i++
 	}
