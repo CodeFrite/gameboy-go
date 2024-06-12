@@ -7,6 +7,7 @@ import (
 	"codefrite.dev/emulators/gameboy"
 )
 
+
 func initGameboy() *gameboy.CPU {
 	// 1. Init VRAM
 	vram := gameboy.NewVRAM()
@@ -39,14 +40,15 @@ func main() {
 	// print cpu info
 	//cpu.PrintRegisters()
 
+	// set CPU PC to 0x100
+	cpu.PC = 0x100
+	
 	// main game loop
-	i := 0
 	for {
 		// cpu fetches the opcode located at the program counter
 		err := cpu.Step()
 		if err != nil {
 			break
 		}
-		i++
 	}
 }
