@@ -1,145 +1,60 @@
 package gameboy
 
-import "fmt"
+import (
+	"encoding/json"
+	"io/ioutil"
+	"log"
+)
 
-const debug = false
-
+type GameboyInstructionsMap map[string]InstructionsMap // map of instructions "unprefixed" and "cbprefixed" (512 in total)
+type InstructionsMap map[Opcode]Instruction // map of instructions by opcode
+type Opcode string // instruction opcode in string format ["0x00"- "0xFF"]
 type Instruction struct {
-	Opcode byte;
-	Mnemonic string;
-	Length uint16;
-	Cycles uint16;
-	Handler func(*CPU, []byte);
+	Mnemonic string 		`json:"mnemonic"`		// instruction mnemonic
+	Bytes int 					`json:"bytes"`			// number of bytes the instruction takes
+	Cycles []int 				`json:"cycles"`			// number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
+	Operands []Operand 	`json:"operands"`		// instruction operands used as function arguments
+	Immediate bool 			`json:"immediate"`	// is the operand an immediate value or should it be fetched from memory
+	Flags Flags 				`json:"flags"`			// cpu flags affected by the instruction
+}
+type Operand struct {
+	Name string `json:"name"`						// operand name: register, n8/n16 (immediate unsigned value), e8 (immediate signed value), a8/a16 (memory location)
+	Bytes int `json:"bytes,omitempty"`	// number of bytes the operand takes (optional)
+	Immediate bool `json:"immediate"`		// is the operand an immediate value or should it be fetched from memory
+}
+type Flags struct {
+	Z string `json:"Z"`	// Zero flag: set if the result is zero (all bits are 0)
+	N string `json:"N"` // Subtract flag: set if the instruction is a subtraction
+	H string `json:"H"` // Half carry flag: set if there was a carry from bit 3 (result is 0x0F)
+	C string `json:"C"` // Carry flag: set if there was a carry from bit 7 (result is 0xFF)
 }
 
-var Instructions map[byte]Instruction = map[byte]Instruction{
-	0x00: {0x00, "NOP", 1, 4, NOP},
-	0x01: {0x01, "LD BC, %X", 3, 12, LD_BC_n16},
-	0x11: {0x11, "LD DE, %X", 3, 12, LD_DE_n16},
-	0x2C: {0x2C, "INC L", 1, 4, INC_L},
-	0x4A: {0x4A, "LD C, D", 1, 4, LD_C_D},
-	0x4B: {0x4B, "LD C, E", 1, 4, LD_C_E},
-	0x53: {0x53, "LD D, E", 1, 4, LD_D_E},
-	0xC3:	{0xC3, "JP a16", 3, 16, JP_a16},
-}
-
-var NotYetImplementedInstruction = Instruction{
-	Opcode:   0xFF,
-	Mnemonic: "UNIMPLEMENTED",
-	Length:   1,
-	Cycles:   0,
-	Handler: func(*CPU, []byte) {
-		fmt.Println("Unimplemented instruction")
-	},
-}
-
-// 0x00: No operation
-func NOP(c *CPU, operand []byte) {
-	// Do nothing
-	c.incrementPC(1)
-}
-
-// 0x01: Load the next two bytes into the BC register
-func LD_BC_n16(c *CPU, operand []byte) {
-	// Load the next two bytes into the BC register
-	if debug {
-		fmt.Printf("LD BC, 0x%X\n (BC=0x%X => ", operand, c.BC)
-	}
-	c.BC = uint16(operand[1]) << 8 + uint16(operand[0])
-	if debug {
-		fmt.Printf("0x%X)\n", c.BC)
-	}
-	c.incrementPC(3)
-}
-
-// 0x11: Load the next two bytes into the DE register
-func LD_DE_n16(c *CPU, operand []byte) {
-	// Load the next two bytes into the DE register
-	if debug {
-		fmt.Printf("LD DE, 0x%X (DE=0x%X => ", operand, c.DE)
-	}
-	c.DE = uint16(operand[1]) << 8 + uint16(operand[0])
-	if debug {
-		fmt.Printf("0x%X)\n", c.DE)
-	}
-	c.incrementPC(3)
-}
-
-// 0x2C: Increment the value of register L
-// impacted flags:
-// Z: Set if result is zero
-// N: Reset
-// H: Set if carry from bit 3
-func INC_L(c *CPU, operand []byte) {
-	if debug {
-		fmt.Printf("INC L (HL=0x%X => ", c.HL)
-	}
-	c.HL = c.HL & 0xFF00 | (c.HL+1) & 0x00FF;
-
-	// Set the Z flag if the result is zero
-	if c.HL & 0x00FF == 0 {
-		c.setZFlag()
-	} else {
-		c.resetZFlag()
-	}
-
-	// Reset the N flag
-	c.resetNFlag()
-
-	// Set the H flag if there was a carry from bit 3
-	if c.HL & 0x0F == 0 {
-		c.setHFlag()
-	} else {
-		c.resetHFlag()
-	}
-
-	if debug {
-		fmt.Printf("0x%X)\n", c.HL)
-	}
+// Load the gameboy instructions set from the JSON file
+func loadJSONOpcodeTable() GameboyInstructionsMap {
+	// CREDITS: Please note that I am using the https://gbdev.io/gb-opcodes/Opcodes.json file
+	// It is a reliable community accepted opcode table for the Gameboy CPU that has been used in many projects and was updated many times
 	
-	c.incrementPC(1);
+	// Open the json file containing the opcode table
+	content, err := ioutil.ReadFile("./gameboy/opcodes.json")
+	if err != nil {
+			log.Fatal("Error when opening opcodes.json file: ", err)
+	}
+
+	// format the json file content to gameboyInstructionsMap
+	var payload GameboyInstructionsMap
+	err = json.Unmarshal(content, &payload)
+	if err != nil {
+			log.Fatal("Error during Unmarshal(): ", err)
+	}
+	return payload
 }
 
-// 0x4A: Load the value of register D into register C
-func LD_C_D(c *CPU, operand []byte) {
-	if debug {
-		fmt.Printf("LD C, D (DE=0x%X) (BC=0x%X => ", c.DE, c.BC)
-	}
-	c.BC = (c.BC & 0xFF00) |  (c.DE & 0xFF00) >> 8;
-	if debug {
-		fmt.Printf("0x%X)\n", c.BC)
-	}
-	c.incrementPC(1);
-}
+// load the gameboy instructions set from the JSON file
+var instructions GameboyInstructionsMap = loadJSONOpcodeTable()
 
-// 0x4B: Load the value of register E into register D
-func LD_C_E(c *CPU, operand []byte) {
-	if debug {
-		fmt.Printf("LD C, E (DE=0x%X) (BC=0x%X => ", c.DE, c.BC)
+func GetInstruction(opcode Opcode, prefixed bool) Instruction {
+	if !prefixed {
+		return instructions["unprefixed"][opcode]
 	}
-	c.BC = c.BC | (c.DE & 0x00FF);
-	if debug {
-		fmt.Printf("0x%X)\n", c.BC)
-	}
-	c.incrementPC(1);
-}
-
-// 0x53: Load the value of register E into register D
-func LD_D_E(c *CPU, operand []byte) {
-	if debug {
-		fmt.Printf("LD D, E (DE=0x%X => ", c.DE)
-	}
-	c.DE = c.DE << 8 | (c.DE & 0x00FF);
-	if debug {
-		fmt.Printf("0x%X)\n", c.DE)
-	}
-	c.incrementPC(1);
-}
-
-// 0xC3: Load the next two bytes into the PC register
-func JP_a16(c *CPU, operand []byte) {
-	if debug {
-		fmt.Printf("JP a16 (a16=0x%X)\n", operand)
-	}
-	c.PC = bytesToUint16([2]byte{operand[0], operand[1]})
+	return instructions["cbprefixed"][opcode]
 }
