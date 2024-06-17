@@ -32,12 +32,12 @@ type Flags struct {
 }
 
 // Load the gameboy instructions set from the JSON file
-func loadJSONOpcodeTable() GameboyInstructionsMap {
+func LoadJSONOpcodeTable() GameboyInstructionsMap {
 	// CREDITS: Please note that I am using the https://gbdev.io/gb-opcodes/Opcodes.json file
 	// It is a reliable community accepted opcode table for the Gameboy CPU that has been used in many projects and was updated many times
 	
 	// Open the json file containing the opcode table
-	content, err := ioutil.ReadFile("./gameboy/opcodes.json")
+	content, err := ioutil.ReadFile("./opcodes.json")
 	if err != nil {
 			log.Fatal("Error when opening opcodes.json file: ", err)
 	}
@@ -52,7 +52,7 @@ func loadJSONOpcodeTable() GameboyInstructionsMap {
 }
 
 // load the gameboy instructions set from the JSON file
-var instructions GameboyInstructionsMap = loadJSONOpcodeTable()
+var instructions GameboyInstructionsMap = LoadJSONOpcodeTable()
 
 func GetInstruction(opcode Opcode, prefixed bool) Instruction {
 	if !prefixed {
