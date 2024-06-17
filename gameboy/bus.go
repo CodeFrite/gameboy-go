@@ -1,38 +1,61 @@
 package gameboy
 
+import "errors"
+
+type Accessible interface {
+	Read(uint16) uint8
+	Write(uint16, uint8)
+	Size() uint16
+}
+
+type MemoryMap struct {
+	Address uint16
+	Memory Accessible
+}
+
 type Bus struct {
-	cartridge *Cartridge
-	vram *VRAM
-	wram *WRAM
+	router []MemoryMap
 }
 
-func NewBus(c *Cartridge, vram *VRAM, wram *WRAM) *Bus {
+func NewBus() *Bus {
 	return &Bus{
-		cartridge: c,
-		vram: vram,
-		wram: wram,
+		router: []MemoryMap{},
 	}
 }
 
-func (b *Bus) Read(addr [2]byte) byte {
-	addr16 := bytesToUint16(addr)
-	if addr16 <= 0x7FFF {
-		return b.cartridge.Read(addr)
-	} else if addr16 >= 0x8000 && addr16 <= 0x9FFF {
-		return b.vram.Read(addr16 - 0x8000)
-	} else if addr16 >= 0xC000 && addr16 <= 0xDFFF {
-		return b.wram.Read(addr16 - 0xC000)
-	}
-	return 0
+func (b *Bus) AttachMemory(memory Accessible, address uint16) {
+	b.router = append(b.router, MemoryMap{
+		Address: address,
+		Memory: memory,
+	})
 }
 
-func (b *Bus) Write(addr [2]byte, value byte) {
-	addr16 := bytesToUint16(addr)
-	if addr16 <= 0x7FFF {
-		b.cartridge.Write(addr, value)
-	} else if addr16 >= 0x8000 && addr16 <= 0x9FFF {
-		b.vram.Write(addr16 - 0x8000, value)
-	} else if addr16 >= 0xC000 && addr16 <= 0xDFFF {
-		b.wram.Write(addr16 - 0xC000, value)
+/*
+ * Return the memory map that contains the address or return nil
+ */
+func (b *Bus) findMemory(address uint16) (*MemoryMap,error) {
+	for _, memoryMap := range b.router {
+		if address >= memoryMap.Address && address < memoryMap.Address + memoryMap.Memory.Size(){
+			return &memoryMap, nil
+		}
+	}
+	return nil, errors.New("Memory location not found")
+}
+
+func (b *Bus) Read(addr uint16) uint8 {
+	memoryMap, err := b.findMemory(addr)
+	if err == nil {
+		return memoryMap.Memory.Read(addr - memoryMap.Address)
+	} else {
+		panic(err)
+	}
+}
+
+func (b *Bus) Write(addr uint16, value uint8) {
+	memoryMap, err := b.findMemory(addr)
+	if err == nil {
+		memoryMap.Memory.Write(addr - memoryMap.Address, value)
+	} else {
+		panic(err)
 	}
 }
