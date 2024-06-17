@@ -10,10 +10,10 @@ import (
 
 func initGameboy() *gameboy.CPU {
 	// 1. Init VRAM
-	vram := gameboy.NewVRAM()
+	vram := gameboy.NewMemory(0x2000)
 
 	// 2. Init WRAM
-	wram := gameboy.NewWRAM()
+	wram := gameboy.NewMemory(0x2000)
 
 	// 3. Init Cartridge
 	// get current directory
@@ -21,13 +21,16 @@ func initGameboy() *gameboy.CPU {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// instantiate a new cartridge with tetris for the moment
+	// load tetris for the moment
 	c := gameboy.NewCartridge(currentDir + "/roms", "tetris.gb")
 
 	// 4. init BUS
-	bus := gameboy.NewBus(c, vram, wram)
+	bus := gameboy.NewBus()
+	bus.AttachMemory(c, 0x0000)
+	bus.AttachMemory(vram, 0x8000)
+	bus.AttachMemory(wram, 0xC000)
 
-	// 4. instantiate a new CPU
+	// 5. instantiate a new CPU
 	cpu := gameboy.NewCPU(bus)
 
 	return cpu
@@ -40,8 +43,8 @@ func main() {
 	// print cpu info
 	//cpu.PrintRegisters()
 
-	// set CPU PC to 0x100
-	cpu.PC = 0x100
+	// set CPU PC to 0x100 to skip the boot rom and start executing the game
+	cpu.PC = 0x0100
 	
 	// main game loop
 	for {
