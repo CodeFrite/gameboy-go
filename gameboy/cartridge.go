@@ -9,23 +9,23 @@ import (
 type Cartridge struct {
 	cartridgePath string
 	cartridgeName string
-	rom []byte
-	header []byte
-	entry_point []byte
-	nintendo_logo []byte
-	title []byte
-	manufacturer_code []byte
-	cgb_flag []byte
-	new_licensee_code []byte
-	sgb_flag []byte
-	cartridge_type []byte
-	rom_size []byte
-	ram_size []byte
-	destination_code []byte
-	old_licensee_code []byte
-	mask_rom_version []byte
-	header_checksum []byte
-	global_checksum []byte
+	rom []uint8
+	header []uint8
+	entry_point []uint8
+	nintendo_logo []uint8
+	title []uint8
+	manufacturer_code []uint8
+	cgb_flag []uint8
+	new_licensee_code []uint8
+	sgb_flag []uint8
+	cartridge_type []uint8
+	rom_size []uint8
+	ram_size []uint8
+	destination_code []uint8
+	old_licensee_code []uint8
+	mask_rom_version []uint8
+	header_checksum []uint8
+	global_checksum []uint8
 }
 
 func NewCartridge(uri string, name string) *Cartridge {
@@ -95,12 +95,14 @@ func (c *Cartridge) PrintInfo() {
 	fmt.Println("Global Checksum:", c.global_checksum)
 }
 
-func (c *Cartridge) Read(addr [2]byte) byte {
-	addr16 := bytesToUint16(addr)
-	return c.rom[addr16]
+func (c *Cartridge) Read(addr uint16) uint8 {
+	return c.rom[addr]
 }
 
-func (c *Cartridge) Write(addr [2]byte, value byte) {
-	addr16 := bytesToUint16(addr)
-	c.rom[addr16] = value
+func (c *Cartridge) Write(addr uint16, value uint8) {
+	c.rom[addr] = value
+}
+
+func (c *Cartridge) Size() uint16 {
+	return uint16(len(c.rom))
 }
