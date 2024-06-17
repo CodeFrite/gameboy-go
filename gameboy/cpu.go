@@ -387,8 +387,20 @@ func (c *CPU) fetchOperandAddress(operand Operand) interface{} {
 	return address
 }
 
+// > instructions handlers (NO PREFIX)
 
-/* 
+// Misc / Control instructions
+func (c *CPU) DI(instruction *Instruction) {
+	panic("DI not implemented")
+}
+func (c *CPU) EI(instruction *Instruction) {
+	panic("EI not implemented")
+}
+func (c *CPU) HALT(instruction *Instruction) {
+	panic("HALT not implemented")
+}
+
+/*
 	NOP: No operation, does nothing apart from incrementing the program counter
 	opcodes: 0x00=NOP
 	flags impacted: -
@@ -410,7 +422,7 @@ func (c *CPU) CALL(instruction *Instruction) {
 
 /*
 	JP: Jumps to an address
-	opcodes: 
+	opcodes:
 		- 0xC2 = JP NZ, a16
 		- 0xC3 = JP a16
 		- 0xCA = JP Z, a16
@@ -420,41 +432,44 @@ func (c *CPU) CALL(instruction *Instruction) {
 	flags: -
 */
 func (c *CPU) JP(instruction *Instruction) {
-	switch c.IR {
-		case 0xC2:
-			// JP NZ, a16
-			if !c.getZFlag() {
-				operand := c.fetchOperandValue(instruction.Operands[1])
+	panic("JP not implemented")
+	/*
+		switch c.IR {
+			case 0xC2:
+				// JP NZ, a16
+				if !c.getZFlag() {
+					operand := c.fetchOperandValue(instruction.Operands[1])
+					c.PC = uint16(operand)
+				}
+			case 0xC3:
+				// JP a16
+				operand := c.fetchOperandValue(instruction.Operands[0])
 				c.PC = bytesToUint16(operand.([2]byte))
-			}
-		case 0xC3:
-			// JP a16
-			operand := c.fetchOperandValue(instruction.Operands[0])
-			c.PC = bytesToUint16(operand.([2]byte))
-		case 0xCA:
-			// JP Z, a16
-			if c.getZFlag() {
-				operand := c.fetchOperandValue(instruction.Operands[1])
-				c.PC = bytesToUint16(operand.([2]byte))
-			}
-		case 0xD2:
-			// JP NC, a16
-			if !c.getNFlag() {
-				operand := c.fetchOperandValue(instruction.Operands[1])
-				c.PC = bytesToUint16(operand.([2]byte))
-			}
-		case 0xDA:
-			// JP C, a16
-			if c.getNFlag() {
-				operand := c.fetchOperandValue(instruction.Operands[1])
-				c.PC = bytesToUint16(operand.([2]byte))
-			}
-		case 0xE9:
-			// JP HL
-			c.PC = c.HL
-		default:
-			panic("JP not implemented")
-	}
+			case 0xCA:
+				// JP Z, a16
+				if c.getZFlag() {
+					operand := c.fetchOperandValue(instruction.Operands[1])
+					c.PC = bytesToUint16(operand.([2]byte))
+				}
+			case 0xD2:
+				// JP NC, a16
+				if !c.getNFlag() {
+					operand := c.fetchOperandValue(instruction.Operands[1])
+					c.PC = bytesToUint16(operand.([2]byte))
+				}
+			case 0xDA:
+				// JP C, a16
+				if c.getNFlag() {
+					operand := c.fetchOperandValue(instruction.Operands[1])
+					c.PC = bytesToUint16(operand.([2]byte))
+				}
+			case 0xE9:
+				// JP HL
+				c.PC = c.HL
+			default:
+				panic("JP not implemented")
+		}
+	*/
 }
 func (c *CPU) JR(instruction *Instruction) {
 	panic("JR not implemented")
@@ -473,97 +488,27 @@ func (c *CPU) RST(instruction *Instruction) {
 
 /*
 	LD: Load data from one location to another
-	opcodes: 
-		- 0x01 = LD BC, n16
-		- 0x02 = LD [BC], A
-		- 0x06 = LD B, n8
-		- 0x08 = LD [a16], SP
-		- 0x0A = LD A, [BC]
-		- 0x0E = LD C, n8
-		- 0x11 = LD DE, n16
-		- 0x12 = LD [DE], A
-		- 0x16 = LD D, n8
-		- 0x1A = LD A, [DE]
-		- 0x1E = LD E, n8
-		- 0x21 = LD HL, n16
-		- 0x22 = LD [HL+], A	=> increment HL after loading A into [HL]
-		- 0x26 = LD H, n8
-		- 0x2A = LD A, [HL+] 	=> increment HL after loading [HL] into A
-		- 0x2E = LD L, n8
-		- 0x31 = LD SP, n16
-		- 0x32 = LD [HL-], A	=> decrement HL after loading A into [HL] ([HL]=A--)
-		- 0x36 = LD [HL], n8
-		- 0x3A = LD A, [HL-]	=> decrement HL after loading [HL] into A (A=[HL] & [HL]=[HL]--)
-		- 0x3E = LD A, n8
-		- 0x40 = LD B, B
-		- 0x41 = LD B, C
-		- 0x42 = LD B, D
-		- 0x43 = LD B, E
-		- 0x44 = LD B, H
-		- 0x45 = LD B, L
-		- 0x46 = LD B, [HL]
-		- 0x47 = LD B, A
-		- 0x48 = LD C, B
-		- 0x49 = LD C, C
-		- 0x4A = LD C, D
-		- 0x4B = LD C, E
-		- 0x4C = LD C, H
-		- 0x4D = LD C, L
-		- 0x4E = LD C, [HL]
-		- 0x4F = LD C, A
-		- 0x50 = LD D, B
-		- 0x51 = LD D, C
-		- 0x52 = LD D, D
-		- 0x53 = LD D, E
-		- 0x54 = LD D, H
-		- 0x55 = LD D, L
-		- 0x56 = LD D, [HL]
-		- 0x57 = LD D, A
-		- 0x58 = LD E, B
-		- 0x59 = LD E, C
-		- 0x5A = LD E, D
-		- 0x5B = LD E, E
-		- 0x5C = LD E, H
-		- 0x5D = LD E, L
-		- 0x5E = LD E, [HL]
-		- 0x5F = LD E, A
-		- 0x60 = LD H, B
-		- 0x61 = LD H, C
-		- 0x62 = LD H, D
-		- 0x63 = LD H, E
-		- 0x64 = LD H, H
-		- 0x65 = LD H, L
-		- 0x66 = LD H, [HL]
-		- 0x67 = LD H, A
-		- 0x68 = LD L, B
-		- 0x69 = LD L, C
-		- 0x6A = LD L, D
-		- 0x6B = LD L, E
-		- 0x6C = LD L, H
-		- 0x6D = LD L, L
-		- 0x6E = LD L, [HL]
-		- 0x6F = LD L, A
-		- 0x70 = LD [HL], B
-		- 0x71 = LD [HL], C
-		- 0x72 = LD [HL], D
-		- 0x73 = LD [HL], E
-		- 0x74 = LD [HL], H
-		- 0x75 = LD [HL], L
-		- 0x77 = LD [HL], A
-		- 0x78 = LD A, B
-		- 0x79 = LD A, C
-		- 0x7A = LD A, D
-		- 0x7B = LD A, E
-		- 0x7C = LD A, H
-		- 0x7D = LD A, L
-		- 0x7E = LD A, [HL]
-		- 0x7F = LD A, A
-		- 0xE2 = LD [C], A
-		- 0xEA = LD [a16], A
-		- 0xF2 = LD A, [C]
-		- 0xF8 = LD HL, SP+e8	=> add signed immediate to SP and store the result in HL
-		- 0xF9 = LD SP, HL
-		- 0xFA = LD A, [a16]
+	opcodes:
+
+	LD r8, n8 = LD A/B/C/D/E/H/L, n8 								[7]
+	LD r8, r8 = LD A/B/C/D/E/H/L, A/B/C/D/E/H/L 		[49]
+	LD r8, [r8] + 0xFF00 = LD A, [C]								[1]
+	LD r8, [a16] = LD A, [a16]											[1]
+	LD r8, [r16] = LD A, [BC]/[DE]/[HL]/[HL+]/[HL-]	[5]
+							 = LD B/C/D/E/L/H, [HL]							[6]
+	LD [r8], r8 = LD [C], A													[1]
+
+	LD r16, n16 = LD BC/DE/HL/SP, n16								[4]
+	LD r16, r16 + e8 = LD HL, SP+e8									[1]
+	LD r16, r16 = LD SP, HL													[1]
+	LD [r16], r8 = LD [BC]/[DE]/[HL+]/[HL-],  A			[4]
+							 = LD [HL],  A/B/C/D/E/H/L					[7]
+	LD [r16], n8 = LD [HL], n8											[1]
+
+	LD [a16], r8 = LD [a16], A											[1]
+	LD [a16], r16 = LD [a16], SP										[1]
+
+
 	flags: - except for 0xF8 where Z->0 N->0 H->C C->C
 
 	NOTE: all LD instructions have 2 operands, the first one is always the destination and the second one is always the source (except for LD HL, SP+r8)
@@ -571,12 +516,19 @@ func (c *CPU) RST(instruction *Instruction) {
 */
 func (c *CPU) LD(instruction *Instruction) {
 	if c.IR != 0xF8 {
+		panic("LD not implemented")
 		// fetch the first operand as an address
-		address := c.fetchOperandAddress(instruction.Operands[0])
+		//address := c.fetchOperandAddress(instruction.Operands[0])
 		// fetch the second operand as a value
-		value := c.fetchOperandValue(instruction.Operands[1])
-		
-		
+		//value := c.fetchOperandValue(instruction.Operands[1])
+		// load the value into the address
+		//switch v := value.(type) {
+		//c.bus.Write(address, value)
+
+		// take care of
+	} else {
+		panic("LD HL, SP+r8 not implemented")
+	}
 }
 func (c *CPU) LDH(instruction *Instruction) {
 	panic("LDH not implemented")
@@ -598,18 +550,90 @@ func (c *CPU) ADD(instruction *Instruction) {
 func (c *CPU) AND(instruction *Instruction) {
 	panic("AND not implemented")
 }
+
+/*
+ * CCF: Complement Carry Flag
+ * opcodes: 0x3F
+ * flags: Z:- N:0 H:0 C:~C
+ */
 func (c *CPU) CCF(instruction *Instruction) {
-	panic("CCF not implemented")
+	c.F ^= 0b00010000 // reset the N and H flags and set the C flag
+	// reset N and H flags
+	c.resetNFlag()
+	c.resetHFlag()
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) CP(instruction *Instruction) {
 	panic("CP not implemented")
 }
+
+/*
+ * CPL: Complement A (flip all bits)
+ * opcodes: 0x2F=CPL
+ * flags: Z:- N:1 H:1 C:-
+ */
 func (c *CPU) CPL(instruction *Instruction) {
-	panic("CPL not implemented")
+	// flip all bits of the accumulator
+	c.A = ^c.A
+	// update flags
+	c.setNFlag()
+	c.setHFlag()
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+ * DAA: Decimal Adjust Accumulator
+ * This instruction adjusts the contents of the accumulator to form a binary-coded decimal (BCD) representation.
+ * The DAA instruction adjusts the result of an addition or subtraction operation so that the correct representation of the result is obtained.
+ * It only relies on the content of the accumulator and the flags to correct the result.
+ * opcodes: 0x27=DAA
+ * flags: Z:Z N:- H:0 C:C
+ */
 func (c *CPU) DAA(instruction *Instruction) {
-	panic("DAA not implemented")
+	offset := uint8(0)
+	// if the last operation was an addition
+	if !c.getNFlag() {
+		// lower nibble correction
+		if c.A&0x0F > 0x09 || c.getHFlag() {
+			offset = 0x06
+		}
+		// upper nibble correction
+		if c.A > 0x99 || c.getCFlag() {
+			offset |= 0x60
+			c.setCFlag() // set the carry flag
+		}
+		// apply the correction
+		c.A += offset
+
+	} else {
+		// if the last operation was subtraction
+		// lower nibble correction
+		if c.A&0x0F > 0x09 || c.getHFlag() {
+			offset = 0xFA // adjust for subtraction in BCD
+		}
+		// upper nibble correction
+		if c.A&0xF0 > 0x90 || c.getCFlag() {
+			offset |= 0xA0 // adjust for subtraction in BCD
+			c.setCFlag()   // set the carry flag for subtraction
+		}
+		// apply the correction
+		c.A -= offset
+	}
+	// update Z flag
+	if c.A == 0 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	// reset the H flag
+	c.resetHFlag()
+	// N flag is not modified
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
+
 func (c *CPU) DEC(instruction *Instruction) {
 	panic("DEC not implemented")
 }
@@ -622,15 +646,28 @@ func (c *CPU) SUB(instruction *Instruction) {
 func (c *CPU) SBC(instruction *Instruction) {
 	panic("SBC not implemented")
 }
+
+/*
+ * SCF: Set Carry Flag
+ * opcodes: 0x37=SCF
+ * flags: Z:- N:0 H:0 C:1
+ */
 func (c *CPU) SCF(instruction *Instruction) {
-	panic("SCF not implemented")
+	c.F |= 0b00010000
+
+	// reset the N and H flags and leave the Z flag unchanged
+	c.resetNFlag()
+	c.resetHFlag()
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) OR(instruction *Instruction) {
 	panic("OR not implemented")
 }
+
 /*
 	XOR: Bitwise XOR
-	opcodes: 
+	opcodes:
 		- 0xA8 = XOR A, B
 		- 0xA9 = XOR A, C
 		- 0xAA = XOR A, D
@@ -649,17 +686,115 @@ func (c *CPU) XOR(instruction *Instruction) {
 }
 
 // Shift / Rotate and Bit instructions
+
+/*
+ * RLA: Rotate A left through carry
+ * opcodes: 0x17=RLA
+ * flags: Z:0 N:0 H:0 C:C = bit 7 of A before rotation
+ */
 func (c *CPU) RLA(instruction *Instruction) {
-	panic("RLA not implemented")
+	// save the carry flag value
+	carry := c.getCFlag()
+
+	// update the carry flag with accumulator MSB
+	if c.A&0x80 == 0x80 {
+		c.setCFlag()
+	} else {
+		c.resetCFlag()
+	}
+
+	// rotate the accumulator left and replace LSB with old carry value
+	if carry {
+		c.A = c.A<<1 | 0x01
+	} else {
+		c.A = c.A << 1
+	}
+
+	// update flags
+	c.resetZFlag()
+	c.resetNFlag()
+	c.resetHFlag()
+
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+ * RLCA: Rotate A left
+ * opcodes: 0x07=RLCA
+ * flags: Z:0 N:0 H:0 C:C (bit 7 of A)
+ */
 func (c *CPU) RLCA(instruction *Instruction) {
-	panic("RLCA not implemented")
+	// update the carry flag with accumulator MSB
+	if c.A&0x80 == 0x80 {
+		c.setCFlag()
+	} else {
+		c.resetCFlag()
+	}
+	// rotate the accumulator left
+	c.A = (c.A << 1) | (c.A >> 7)
+
+	// update flags
+	c.resetZFlag()
+	c.resetNFlag()
+	c.resetHFlag()
+
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+ * RRA: Rotate A right through carry
+ * opcodes: 0x17=RRA
+ * flags: Z:0 N:0 H:0 C:C = bit 0 of A before rotation
+ */
 func (c *CPU) RRA(instruction *Instruction) {
-	panic("RRA not implemented")
+	// save the carry flag value
+	carry := c.getCFlag()
+
+	// update the carry flag with accumulator MSB
+	if c.A&0x01 == 0x01 {
+		c.setCFlag()
+	} else {
+		c.resetCFlag()
+	}
+
+	// rotate the accumulator left and replace LSB with old carry value
+	if carry {
+		c.A = c.A>>1 | 0x80
+	} else {
+		c.A = c.A >> 1
+	}
+
+	// update flags
+	c.resetZFlag()
+	c.resetNFlag()
+	c.resetHFlag()
+
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+ * RRCA: Rotate A right
+ * opcodes: 0x0F=RRCA
+ * flags: Z:0 N:0 H:0 C:C (bit 0 of A)
+ */
 func (c *CPU) RRCA(instruction *Instruction) {
-	panic("RRCA not implemented")
+	// update the carry flag with Accumulator LSB
+	if c.A&0x01 == 0x01 {
+		c.setCFlag()
+	} else {
+		c.resetCFlag()
+	}
+	// rotate the accumulator right
+	c.A = (c.A >> 1) | (c.A << 7)
+	// update flags
+	c.resetZFlag()
+	c.resetNFlag()
+	c.resetHFlag()
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
 
 // > instructions handlers (PREFIX CB)
