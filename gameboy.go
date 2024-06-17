@@ -7,7 +7,6 @@ import (
 	"codefrite.dev/emulators/gameboy"
 )
 
-
 func initGameboy() *gameboy.CPU {
 	// 1. Init VRAM
 	vram := gameboy.NewMemory(0x2000)
@@ -22,7 +21,7 @@ func initGameboy() *gameboy.CPU {
 		log.Fatal(err)
 	}
 	// load tetris for the moment
-	c := gameboy.NewCartridge(currentDir + "/roms", "tetris.gb")
+	c := gameboy.NewCartridge(currentDir+"/roms", "tetris.gb")
 
 	// 4. init BUS
 	bus := gameboy.NewBus()
@@ -45,13 +44,9 @@ func main() {
 
 	// set CPU PC to 0x100 to skip the boot rom and start executing the game
 	cpu.PC = 0x0100
-	
+
 	// main game loop
-	for {
-		// cpu fetches the opcode located at the program counter
-		err := cpu.Step()
-		if err != nil {
-			break
-		}
-	}
+	cpu.Run()
+
+	return
 }

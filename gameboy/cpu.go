@@ -22,6 +22,9 @@ type CPU struct {
 
 	// reference to the bus
 	bus *Bus
+
+	// is the cpu halted
+	halted bool
 }
 
 func NewCPU(bus *Bus) *CPU {
@@ -231,7 +234,7 @@ func (c *CPU) incrementPC(offset uint16) {
 	c.PC += uint16(offset)
 }
 
-func (c *CPU) Step() error {
+func (c *CPU) step() error {
 	// 1. Fetch the opcode from memory and save it to the instruction register IR
 	c.fetchOpcode()
 
@@ -256,6 +259,22 @@ func (c *CPU) Step() error {
 	}
 
 	return nil
+}
+
+// Run the CPU
+func (c *CPU) Run() {
+	for {
+		if c.halted {
+			// if the CPU is halted, wiat for an interrupt to wake it up
+			// TODO: implement the interrupt handling
+			// ! for the moment, we will break the loop to avoid an infinite loop
+			break
+		}
+		// Execute the next instruction
+		if err := c.step(); err != nil {
+			panic(err)
+		}
+	}
 }
 
 /*
@@ -396,8 +415,14 @@ func (c *CPU) DI(instruction *Instruction) {
 func (c *CPU) EI(instruction *Instruction) {
 	panic("EI not implemented")
 }
+
+/*
+ * HALT: Halt the CPU until an interrupt occurs
+ * opcodes: 0x76
+ * flags: -
+ */
 func (c *CPU) HALT(instruction *Instruction) {
-	panic("HALT not implemented")
+	c.halted = true
 }
 
 /*

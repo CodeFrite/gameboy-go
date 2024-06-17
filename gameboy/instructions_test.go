@@ -898,6 +898,31 @@ func TestCCF(t *testing.T) {
 	}
 }
 
+/*
+ * 0x76: HALT
+ * Halt the CPU until an interrupt occurs
+ */
+func TestHALT(t *testing.T) {
+	// ! Should be tested in the context of the CPU.Run() method when interrupts are implemented
+	cpu, _, _ := createNewGameboy()
+
+	// save cpu state
+	cpuCopy := copyCPU(cpu)
+
+	// Execute the instruction
+	cpu.executeInstruction(GetInstruction("0x76", false), nil, nil)
+
+	// check if the program counter was not modified
+	if cpu.PC != cpuCopy.PC {
+		t.Errorf("Expected PC to be %v, got %v", cpuCopy.PC, cpu.PC)
+	}
+
+	// check if the CPU is halted
+	if !cpu.halted {
+		t.Errorf("Expected CPU to be halted")
+	}
+}
+
 //=========================//
 // 2 operands instructions //
 //=========================//
@@ -919,7 +944,7 @@ func TestLD_BC_n16(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.Step()
+	cpu.Run()
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -964,7 +989,7 @@ func TestLD_DE_n16(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.Step()
+	cpu.Run()
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -1012,7 +1037,7 @@ func TestINC_L_NO_FLAG_SET(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.Step()
+	cpu.Run()
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -1079,7 +1104,7 @@ func TestINC_L_FLAG_H_SET(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.Step()
+	cpu.Run()
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -1149,7 +1174,7 @@ func TestINC_L_FLAGS_Z_H_SET(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.Step()
+	cpu.Run()
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
