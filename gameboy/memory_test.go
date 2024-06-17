@@ -3,7 +3,7 @@ package gameboy
 import "testing"
 
 func TestNewVRAM(t *testing.T) {
-	v := NewVRAM()
+	v := NewMemory(0x2000)
 	if v == nil {
 		t.Error("Expected VRAM to be initialized")
 	}
@@ -13,4 +13,3 @@ func TestNewVRAM(t *testing.T) {
 }
 
 //func TestVRAMReadAndWrite(t *testing.T) {
-
