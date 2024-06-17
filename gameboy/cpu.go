@@ -232,154 +232,154 @@ func (c *CPU) incrementPC(offset uint16) {
 }
 
 func (c *CPU) Step() error {
-	// Fetch the opcode from memory
+	// 1. Fetch the opcode from memory and save it to the instruction register IR
 	c.fetchOpcode()
-	c.PrintPC()
-	c.PrintIR()
-	
-	// Fetch the instruction corresponding to the opcode contained in the instruction register
-	instruction := c.fetchInstruction()
 
-	// Execute the instruction
-	c.executeInstruction(instruction)
+	// 2. Decode the instruction
+
+	// get instruction from opcodes.json file with IR used as key
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), false)
+
+	// get the operands of the instruction
+	operands := instruction.Operands
+
+	// handle 0 operands instructions
+	if len(operands) == 0 {
+		// no oerand to decode
+
+		// execute the instruction
+		c.executeInstruction(instruction, nil, nil)
+	} else if len(operands) == 1 {
+		panic("CPU 1 operand instructions not implemented yet")
+	} else if len(operands) == 2 {
+		panic("CPU 2 operands instructions not implemented yet")
+	}
 
 	return nil
 }
 
-// > instructions handlers (NO PREFIX)
-
-// Misc / Control instructions
-func (c *CPU) DI(instruction *Instruction) {
-	panic("DI not implemented")
-}
-func (c *CPU) EI(instruction *Instruction) {
-	panic("EI not implemented")
-}
-func (c *CPU) HALT(instruction *Instruction) {
-	panic("HALT not implemented")
-}
-
-// Fetch the value of an operand
+/*
+ * Fetch the value of an operand
+ * Returns an interface{} that can either be a uint8 or uint16
+ */
 func (c *CPU) fetchOperandValue(operand Operand) interface{} {
 	var value interface{}
 	switch operand.Name {
-		case "n8": // always immediate
-			value = c.bus.Read(uint16ToBytes(c.PC + 1))
-		case "n16": // always immediate
-			// little-endian
-			value = [2]byte{
-				c.bus.Read(uint16ToBytes(c.PC + 2)),
-				c.bus.Read(uint16ToBytes(c.PC + 1)),
-			}
-		case "a8": // not always immediate
-			if operand.Immediate {
-				value = c.bus.Read(uint16ToBytes(c.PC + 1))
-			} else {
-				addr := c.bus.Read(uint16ToBytes(c.PC + 1))
-				value = c.bus.Read(uint16ToBytes(uint16(addr)))
-			}
-		case "a16": // not always immediate
-			if operand.Immediate {
-				value = [2]byte{
-					c.bus.Read(uint16ToBytes(c.PC + 2)),
-					c.bus.Read(uint16ToBytes(c.PC + 1)),
-				}
-			} else {
-				addr := [2]byte{
-					c.bus.Read(uint16ToBytes(c.PC + 2)),
-					c.bus.Read(uint16ToBytes(c.PC + 1)),
-				}
-				value = c.bus.Read(addr)
-			}
-		case "A":
-			if operand.Immediate {
-				value = c.A
-			} else {
-				value = c.bus.Read(uint16ToBytes(uint16(c.A)))
-			}
-		case "B":
-			if operand.Immediate {
-				value = c.getB()
-			} else {
-				value = c.bus.Read(uint16ToBytes(uint16(c.getB())))
-			}
-		case "C":
-			if operand.Immediate {
-				value = c.getC()
-			} else {
-				value = c.bus.Read(uint16ToBytes(uint16(c.getC())))
-			}
-		case "D":
-			if operand.Immediate {
-				value = c.getD()
-			} else {
-				value = c.bus.Read(uint16ToBytes(uint16(c.getD())))
-			}
-		case "E":
-			if operand.Immediate {
-				value = c.getE()
-			} else {
-				value = c.bus.Read(uint16ToBytes(uint16(c.getE())))
-			}
-		case "H":
-			if operand.Immediate {
-				value = c.getH()
-			} else {
-				value = c.bus.Read(uint16ToBytes(uint16(c.getH())))
-			}
-		case "L":
-			if operand.Immediate {
-				value = c.getL()
-			} else {
-				value = c.bus.Read(uint16ToBytes(uint16(c.getL())))
-			}
-		default:
-			panic("Unknown operand type")
+	case "n8": // always immediate
+		value = c.bus.Read(c.PC + 1)
+	case "n16": // always immediate
+		// little-endian
+		low := c.bus.Read(c.PC + 1)
+		high := c.bus.Read(c.PC + 2)
+		value = uint16(high)<<8 | uint16(low)
+	case "a8": // not always immediate
+		if operand.Immediate {
+			value = c.bus.Read(c.PC + 1)
+		}
+		/* TODO: handle this case where i need to add 0xFF00 to the value (LDH instructions)
+		else {
+			addr := c.bus.Read(c.PC + 1)
+			value = c.bus.Read(addr)
+		}
+		*/
+	case "a16": // not always immediate
+		if operand.Immediate {
+			low := c.bus.Read(c.PC + 1)
+			high := c.bus.Read(c.PC + 2)
+			value = uint16(high)<<8 | uint16(low)
+		} else {
+			low := c.bus.Read(c.PC + 1)
+			high := c.bus.Read(c.PC + 2)
+			addr := uint16(high)<<8 | uint16(low)
+			value = c.bus.Read(addr)
+		}
+	case "A":
+		if operand.Immediate {
+			value = c.A
+		} else {
+			panic("Non immediate operand not implemented yet")
+		}
+	case "B":
+		if operand.Immediate {
+			value = c.B
+		} else {
+			panic("Non immediate operand not implemented yet")
+		}
+	case "C":
+		if operand.Immediate {
+			value = c.C
+		} else {
+			panic("Non immediate operand not implemented yet")
+		}
+	case "D":
+		if operand.Immediate {
+			value = c.D
+		} else {
+			panic("Non immediate operand not implemented yet")
+		}
+	case "E":
+		if operand.Immediate {
+			value = c.E
+		} else {
+			panic("Non immediate operand not implemented yet")
+		}
+	case "H":
+		if operand.Immediate {
+			value = c.H
+		} else {
+			panic("Non immediate operand not implemented yet")
+		}
+	case "L":
+		if operand.Immediate {
+			value = c.L
+		} else {
+			panic("Non immediate operand not implemented yet")
+		}
+	default:
+		panic("Unknown operand type")
 	}
 	return value
 }
 
-// Fetch the address of an operand
-func (c *CPU) fetchOperandAddress(operand Operand) uint16 {
-	var address uint16
+// Fetch the address of an operand or returns a pointer to the register
+func (c *CPU) fetchOperandAddress(operand Operand) interface{} {
+	var address interface{}
 	switch operand.Name {
 	case "A":
-		address = *c.A
+		address = &c.A
 	case "B":
-		address = *c.B
+		address = &c.B
 	case "C":
-		address = *c.C
+		address = &c.C
 	case "D":
-		address = *c.D
+		address = &c.D
 	case "E":
-		address = *c.E
+		address = &c.E
 	case "H":
-		address = *c.H
-	case "L":
-		address = *c.L
+		address = &c.H
 	case "BC":
 		if operand.Immediate {
-			address = c.BC
+			panic("BC immediate not implemented") // should be replaced by a pointer to the setBC function which is not yet implemented
 		} else {
-			address = c.bus.Read(uint16ToBytes(c.BC))
+			address = c.bus.Read(c.getBC())
 		}
 	case "DE":
 		if operand.Immediate {
-			address = c.DE
+			panic("DE immediate not implemented") // same as above
 		} else {
-			address = c.bus.Read(uint16ToBytes(c.DE))
+			address = c.bus.Read(c.getDE())
 		}
 	case "HL":
 		if operand.Immediate {
-			address = c.HL
+			panic("HL immediate not implemented") // same as above
 		} else {
-			address = c.bus.Read(uint16ToBytes(c.HL))
+			address = c.bus.Read(c.getHL())
 		}
 	case "SP":
 		if operand.Immediate {
-			address = c.SP
+			panic("SP immediate not implemented") // same as above
 		} else {
-			address = c.bus.Read(uint16ToBytes(c.SP))
+			address = c.bus.Read(c.SP)
 		}
 	default:
 		panic("Unknown operand type")
