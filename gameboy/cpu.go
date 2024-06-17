@@ -5,18 +5,17 @@ import (
 	"fmt"
 )
 
+/*
+ * CPU: executes instructions fetched from memory, reads and writes to memory (internal registers, flags & bus)
+ */
 type CPU struct {
-	IR uint8 // Instruction Register
-	IE uint8 // Interrupt Enable
-	SP uint16 // Stack Pointer
-	PC uint16 // Program Counter
-
-	// 8-bit registers
-	A uint8 // Accumulator
-	F uint8 // Flags (Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4))
-
-	// 16-bit general purpose registers
-	BC, DE, HL uint16
+	PC               uint16 // Program Counter
+	SP               uint16 // Stack Pointer
+	IR               uint8  // Instruction Register
+	A                uint8  // Accumulator
+	F                uint8  // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
+	B, C, D, E, H, L uint8  // 16-bit general purpose registers
+	IE               uint8  // Interrupt Enable
 
 	// 127bytes of High-Speed RAM
 	HRAM [127]byte
@@ -28,39 +27,20 @@ type CPU struct {
 func NewCPU(bus *Bus) *CPU {
 	// initialize all registers to 0 except the program counter which starts at 0x100 (in cartridge ROM)
 	return &CPU{
-		PC:0x0100, // Start at 0x100 and ignore the boot ROM for now
 		bus: bus,
 	}
 }
 
-func (c *CPU) PrintRegisters() {
-	// Print the registers
-	fmt.Println("> CPU Registers:")
-	fmt.Printf("+ IR: 0x%X\n", c.IR)
-	fmt.Printf("+ IE: 0x%X\n", c.IE)
-	fmt.Printf("+ SP: 0x%X\n", c.SP)
-	fmt.Printf("+ PC: 0x%X\n", c.PC)
-	fmt.Printf("+ A: 0x%X\n", c.A)
-	fmt.Printf("+ F: 0x%X\n", c.F)
-	fmt.Printf("+ BC: 0x%X\n", c.BC)
-	fmt.Printf("+ DE: 0x%X\n", c.DE)
-	fmt.Printf("+ HL: 0x%X\n", c.HL)
-	fmt.Printf("+ HRAM: 0x%X\n", c.HRAM)
-}
+/*
+ * F flags register
+ * 7 6 5 4 3 2 1 0 (position)
+ * Z N H C 0 0 0 0 (flag)
+ */
 
-func (c *CPU) PrintIR() {
-	// Print the instruction register
-	fmt.Printf("IR: 0x%X\n", c.IR)
-}
-
-func (c *CPU) PrintPC() {
-	// Print the program counter
-	fmt.Printf("PC: 0x%X\n", c.PC)
-}
-
+// Zero Flag operations
 // Get the Z flag from the F register
 func (c *CPU) getZFlag() bool {
-	return c.F & 0x80 == 0x80
+	return c.F&0x80 == 0x80
 }
 
 // Set the Z flag in the F register
@@ -73,9 +53,15 @@ func (c *CPU) resetZFlag() {
 	c.F = c.F & 0x7F
 }
 
+// Toggle the Z flag in the F register
+func (c *CPU) toggleZFlag() {
+	c.F = c.F ^ 0x80
+}
+
+// Carry Flag operations
 // Get the N flag from the F register
 func (c *CPU) getNFlag() bool {
-	return c.F & 0x40 == 0x40
+	return c.F&0x40 == 0x40
 }
 
 // Set the N flag in the F register
@@ -88,9 +74,15 @@ func (c *CPU) resetNFlag() {
 	c.F = c.F & 0xBF
 }
 
+// Toggle the N flag in the F register
+func (c *CPU) toggleNFlag() {
+	c.F = c.F ^ 0x40
+}
+
+// Half Carry Flag operations
 // Get the H flag from the F register
 func (c *CPU) getHFlag() bool {
-	return c.F & 0x20 == 0x20
+	return c.F&0x20 == 0x20
 }
 
 // Set the H flag in the F register
@@ -103,45 +95,63 @@ func (c *CPU) resetHFlag() {
 	c.F = c.F & 0xDF
 }
 
-func (c *CPU) getB() byte {
-	return byte(c.BC >> 8)
+// Toggle the H flag in the F register
+func (c *CPU) toggleHFlag() {
+	c.F = c.F ^ 0x20
 }
 
-func (c *CPU) getC() byte {
-	return byte(c.BC)
+// Carry Flag operations
+// Get the C flag from the F register
+func (c *CPU) getCFlag() bool {
+	return c.F&0x10 == 0x10
 }
 
-func (c *CPU) getD() byte {
-	return byte(c.DE >> 8)
+// Set the C flag in the F register
+func (c *CPU) setCFlag() {
+	c.F = c.F | 0x10
 }
 
-func (c *CPU) getE() byte {
-	return byte(c.DE)
+// Reset the C flag in the F register
+func (c *CPU) resetCFlag() {
+	c.F = c.F & 0xEF
 }
 
-func (c *CPU) getH() byte {
-	return byte(c.HL >> 8)
+// Toggle the C flag in the F register
+func (c *CPU) toggleCFlag() {
+	c.F = c.F ^ 0x10
 }
 
-func (c *CPU) getL() byte {
-	return byte(c.HL)
+/*
+ * 16-bit registers accessors
+ */
+func (c *CPU) getBC() uint16 {
+	return uint16(c.B<<8 | c.C)
+}
+
+func (c *CPU) setBC(value uint16) {
+	c.B = byte(value >> 8)
+	c.C = byte(value)
+}
+
+func (c *CPU) getDE() uint16 {
+	return uint16(c.D<<8 | c.E)
+}
+
+func (c *CPU) getHL() uint16 {
+	return uint16(c.H<<8 | c.L)
 }
 
 // Fetch the opcode from bus at address PC and store it in the instruction register
 func (c *CPU) fetchOpcode() {
 	// Fetch the opcode from memory at the address in the program counter
-	opcode := c.bus.Read(uint16ToBytes(c.PC))
+	opcode := c.bus.Read(c.PC)
+
 	// Store the opcode in the instruction register
 	c.IR = opcode
 }
 
-// Fetch the instruction corresponding to the opcode stored in the instruction register
-func (c *CPU) fetchInstruction() Instruction {
-	return GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), false)
-}
-
-// 
-func (c *CPU) executeInstruction(instruction Instruction) {
+// Route the execution to the corresponding instruction handler
+func (c *CPU) executeInstruction(instruction Instruction, op1 interface{}, op2 interface{}) {
 	// Execute the corresponding instruction
 	switch instruction.Mnemonic {
 	case "NOP":
