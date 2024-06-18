@@ -140,8 +140,45 @@ func (c *CPU) getDE() uint16 {
 	return uint16(c.D<<8 | c.E)
 }
 
+func (c *CPU) setDE(value uint16) {
+	c.D = byte(value >> 8)
+	c.E = byte(value)
+}
+
+func (c *CPU) setHL(value uint16) {
+	c.H = byte(value >> 8)
+	c.L = byte(value)
+}
+
 func (c *CPU) getHL() uint16 {
 	return uint16(c.H<<8 | c.L)
+}
+
+// Stack operations
+
+// Push a value to the stack
+func (c *CPU) push(value uint16) {
+	// decrement the stack pointer
+	c.SP -= 1
+	// write the high byte to the stack
+	c.bus.Write(c.SP, byte(value>>8))
+	// decrement the stack pointer
+	c.SP -= 1
+	// write the low byte to the stack
+	c.bus.Write(c.SP, byte(value))
+}
+
+// Pop a value to the stack
+func (c *CPU) pop() uint16 {
+	// pop the low byte to the stack
+	low := c.bus.Read(c.SP)
+	// increment the stack pointer
+	c.SP += 1
+	// write the high byte to the stack
+	high := c.bus.Read(c.SP)
+	// increment the stack pointer
+	c.SP += 1
+	return uint16(high)<<8 | uint16(low)
 }
 
 // Fetch the opcode from bus at address PC and store it in the instruction register
@@ -364,6 +401,9 @@ func (c *CPU) step() error {
 		// decode operand 2
 		c.fetchOperandValue(operands[1])
 	}
+
+	//debug
+	fmt.Printf("PC: 0x%04X, IR: 0x%02X, Operand: 0x%04X, Instruction: %s\n", c.PC, c.IR, c.Operand, instruction.Mnemonic)
 
 	// 3. Execute the instruction
 	c.executeInstruction(instruction)
