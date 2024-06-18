@@ -353,7 +353,7 @@ func (c *CPU) OR(instruction *Instruction) {
 	note: 0xAF XOR 0xAF = 0x00 (Z flag is always set)
 */
 func (c *CPU) XOR(instruction *Instruction) {
-	c.A = c.A ^ c.fetchOperandValue(instruction.Operands[0]).(byte)
+	c.A = c.A ^ uint8(c.Operand)
 	c.incrementPC(uint16(instruction.Bytes))
 }
 

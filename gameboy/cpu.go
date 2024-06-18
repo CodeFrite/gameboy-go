@@ -155,85 +155,77 @@ func (c *CPU) fetchOpcode() {
 
 /*
  * Fetch the value of an operand
- * Returns an interface{} that can either be a uint8 or uint16
+ * Save the result in cpu.Operand as an uint16 (must be casted to the correct type inside the different instruction handlers)
  */
-func (c *CPU) fetchOperandValue(operand Operand) interface{} {
-	var value interface{}
+func (c *CPU) fetchOperandValue(operand Operand) {
+	var value, addr uint16
 	switch operand.Name {
 	case "n8": // always immediate
-		value = c.bus.Read(c.PC + 1)
+		value = uint16(c.bus.Read(c.PC + 1))
 	case "n16": // always immediate
 		// little-endian
-		low := c.bus.Read(c.PC + 1)
-		high := c.bus.Read(c.PC + 2)
-		value = uint16(high)<<8 | uint16(low)
+		value = c.bus.Read16(c.PC + 1)
 	case "a8": // not always immediate
 		if operand.Immediate {
-			value = c.bus.Read(c.PC + 1)
+			value = uint16(c.bus.Read(c.PC + 1))
+		} else {
+			addr = 0xFF00 | uint16(c.bus.Read(c.PC+1))
+			value = uint16(c.bus.Read(addr))
 		}
-		/* TODO: handle this case where i need to add 0xFF00 to the value (LDH instructions)
-		else {
-			addr := c.bus.Read(c.PC + 1)
-			value = c.bus.Read(addr)
-		}
-		*/
 	case "a16": // not always immediate
 		if operand.Immediate {
-			low := c.bus.Read(c.PC + 1)
-			high := c.bus.Read(c.PC + 2)
-			value = uint16(high)<<8 | uint16(low)
+			value = c.bus.Read16(c.PC + 1)
 		} else {
-			low := c.bus.Read(c.PC + 1)
-			high := c.bus.Read(c.PC + 2)
-			addr := uint16(high)<<8 | uint16(low)
-			value = c.bus.Read(addr)
+			addr := c.bus.Read16(c.PC + 1)
+			value = c.bus.Read16(addr)
 		}
 	case "A":
 		if operand.Immediate {
-			value = c.A
+			value = uint16(c.A)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "B":
 		if operand.Immediate {
-			value = c.B
+			value = uint16(c.B)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "C":
 		if operand.Immediate {
-			value = c.C
+			value = uint16(c.C)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "D":
 		if operand.Immediate {
-			value = c.D
+			value = uint16(c.D)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "E":
 		if operand.Immediate {
-			value = c.E
+			value = uint16(c.E)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "H":
 		if operand.Immediate {
-			value = c.H
+			value = uint16(c.H)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "L":
 		if operand.Immediate {
-			value = c.L
+			value = uint16(c.L)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	default:
 		panic("Unknown operand type")
 	}
-	return value
+	// save the current operand value into the cpu context
+	c.Operand = value
 }
 
 // Route the execution to the corresponding instruction handler
