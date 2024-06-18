@@ -499,8 +499,19 @@ func (c *CPU) JP(instruction *Instruction) {
 func (c *CPU) JR(instruction *Instruction) {
 	panic("JR not implemented")
 }
+
+/*
+	RET: Return from a subroutine
+	This intruction pops the address from the stack and jumps to it
+	opcodes: 0xC9
+	flags: -
+*/
 func (c *CPU) RET(instruction *Instruction) {
-	panic("RET not implemented")
+	low := c.bus.Read(c.SP)
+	c.SP++
+	high := c.bus.Read(c.SP)
+	c.SP++
+	c.PC = uint16(high)<<8 | uint16(low)
 }
 func (c *CPU) RETI(instruction *Instruction) {
 	panic("RETI not implemented")

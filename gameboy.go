@@ -45,6 +45,9 @@ func main() {
 	// set CPU PC to 0x100 to skip the boot rom and start executing the game
 	cpu.PC = 0x0100
 
+	// ! the SP is normally set to 0xFFFE by the boot rom. We will set it manually for the moment
+	cpu.SP = 0xFFFE
+
 	// main game loop
 	cpu.Run()
 

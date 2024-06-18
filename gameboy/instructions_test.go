@@ -923,6 +923,14 @@ func TestHALT(t *testing.T) {
 	}
 }
 
+/*
+ * 0xC9: RET
+ * Pop two bytes from the stack and jump to that address
+ */
+func TestRET(t *testing.T) {
+	t.Skip("Skipping until PUSH instruction is implemented")
+}
+
 //=========================//
 // 2 operands instructions //
 //=========================//
