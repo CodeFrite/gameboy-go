@@ -101,6 +101,17 @@ func writeWRAM(bus *Bus, addr uint16, value uint8) uint8 {
 	return bus.Read(relativeAddr)
 }
 
+// allow func to panic without stopping the test
+func mayPanic(f func()) (panicked bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			panicked = true
+		}
+	}()
+	f()
+	return
+}
+
 //=========================//
 // no operand instructions //
 //=========================//
@@ -929,6 +940,43 @@ func TestHALT(t *testing.T) {
  */
 func TestRET(t *testing.T) {
 	t.Skip("Skipping until PUSH instruction is implemented")
+}
+
+/*
+ * 0xCB: PREFIX CB
+ * Execute the next instruction from the CB instruction set
+ */
+func TestPREFIX_CB(t *testing.T) {
+	cpu, bus, _ := createNewGameboy()
+
+	// set the program counter to VRAM 0x00 address (0xC000)
+	cpu.PC = 0xC000
+
+	// write the instruction and operand to vram
+	writeWRAM(bus, 0x00, 0xCB) // PREFIX CB
+	writeWRAM(bus, 0x01, 0xFC) // just need to make sure the next byte is loaded into the IR (any value different than CB is ok)
+
+	// save cpu state
+	cpuCopy := copyCPU(cpu)
+
+	// Execute the instruction (may panic)
+	mayPanic(cpu.Run)
+
+	// get the differences
+	differences := compareCPU(cpu, cpuCopy)
+
+	// check if the program counter was incremented by instruction.Length
+	if _, ok := differences["PC"]; !ok {
+		t.Errorf("Expected PC to be modified")
+	}
+	if cpu.PC != cpuCopy.PC+1 {
+		t.Errorf("Expected PC to be %v, got %v", cpuCopy.PC+1, cpu.PC)
+	}
+
+	// check if the IR register was loaded with the next byte
+	if cpu.IR != 0xFC {
+		t.Errorf("Expected IR to be 0xFC, got 0x%02X", cpu.IR)
+	}
 }
 
 //=========================//
