@@ -104,17 +104,17 @@ Aside from these instructions, there are also 11 illegal opcodes that are not us
 
 | #   | opcode | mnemonic   |
 | --- | ------ | ---------- |
-| 1   | 0xDB   | ILLEGAL_DB |
-| 2   | 0xDD   | ILLEGAL_DD |
-| 13  | 0xD3   | ILLEGAL_D3 |
-| 3   | 0xE3   | ILLEGAL_E3 |
-| 4   | 0xE4   | ILLEGAL_E4 |
-| 5   | 0xEB   | ILLEGAL_EB |
-| 6   | 0xEC   | ILLEGAL_EC |
-| 7   | 0xED   | ILLEGAL_ED |
-| 8   | 0xF4   | ILLEGAL_F4 |
-| 9   | 0xFC   | ILLEGAL_FC |
-| 10  | 0xFD   | ILLEGAL_FD |
+| 1   | 0xD3   | ILLEGAL_D3 |
+| 2   | 0xDB   | ILLEGAL_DB |
+| 3   | 0xDD   | ILLEGAL_DD |
+| 4   | 0xE3   | ILLEGAL_E3 |
+| 5   | 0xE4   | ILLEGAL_E4 |
+| 6   | 0xEB   | ILLEGAL_EB |
+| 7   | 0xEC   | ILLEGAL_EC |
+| 8   | 0xED   | ILLEGAL_ED |
+| 9   | 0xF4   | ILLEGAL_F4 |
+| 10  | 0xFC   | ILLEGAL_FC |
+| 11  | 0xFD   | ILLEGAL_FD |
 
 #### Instructions with 1 operand
 
