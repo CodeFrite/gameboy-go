@@ -62,7 +62,7 @@ func (c *CPU) PREFIX(instruction *Instruction) {
 	// get the instruction from the opcodes.json file
 	cbInstruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), true)
 	// execute the instruction
-	c.executeCBInstruction(cbInstruction, nil, nil)
+	c.executeCBInstruction(cbInstruction)
 }
 func (c *CPU) STOP(instruction *Instruction) {
 	panic("STOP not implemented")
@@ -229,7 +229,7 @@ func (c *CPU) AND(instruction *Instruction) {
  * flags: Z:- N:0 H:0 C:~C
  */
 func (c *CPU) CCF(instruction *Instruction) {
-	c.F ^= 0b00010000 // reset the N and H flags and set the C flag
+	c.toggleCFlag()
 	// reset N and H flags
 	c.resetNFlag()
 	c.resetHFlag()

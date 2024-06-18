@@ -12,11 +12,13 @@ import (
 type CPU struct {
 	PC               uint16 // Program Counter
 	SP               uint16 // Stack Pointer
-	IR               uint8  // Instruction Register
 	A                uint8  // Accumulator
 	F                uint8  // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
 	B, C, D, E, H, L uint8  // 16-bit general purpose registers
 	IE               uint8  // Interrupt Enable
+
+	IR      uint8  // Instruction Register
+	Operand uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
 
 	HRAM [127]byte // 127bytes of High-Speed RAM
 	bus  *Bus      // reference to the bus
@@ -151,169 +153,6 @@ func (c *CPU) fetchOpcode() {
 	c.IR = opcode
 }
 
-// Route the execution to the corresponding instruction handler
-func (c *CPU) executeInstruction(instruction Instruction, op1 interface{}, op2 interface{}) {
-	// Execute the corresponding instruction
-	switch instruction.Mnemonic {
-	case "NOP":
-		c.NOP(&instruction)
-	case "STOP":
-		c.STOP(&instruction)
-	case "HALT":
-		c.HALT(&instruction)
-	case "DI":
-		c.DI(&instruction)
-	case "EI":
-		c.EI(&instruction)
-	case "PREFIX":
-		c.PREFIX(&instruction)
-	case "JP":
-		c.JP(&instruction)
-	case "JR":
-		c.JR(&instruction)
-	case "CALL":
-		c.CALL(&instruction)
-	case "RET":
-		c.RET(&instruction)
-	case "RETI":
-		c.RETI(&instruction)
-	case "RST":
-		c.RST(&instruction)
-	case "LD":
-		c.LD(&instruction)
-	case "LDH":
-		c.LDH(&instruction)
-	case "PUSH":
-		c.PUSH(&instruction)
-	case "POP":
-		c.POP(&instruction)
-	case "ADD":
-		c.ADD(&instruction)
-	case "ADC":
-		c.ADC(&instruction)
-	case "AND":
-		c.AND(&instruction)
-	case "INC":
-		c.INC(&instruction)
-	case "CCF":
-		c.CCF(&instruction)
-	case "CP":
-		c.CP(&instruction)
-	case "CPL":
-		c.CPL(&instruction)
-	case "DAA":
-		c.DAA(&instruction)
-	case "DEC":
-		c.DEC(&instruction)
-	case "SUB":
-		c.SUB(&instruction)
-	case "SBC":
-		c.SBC(&instruction)
-	case "SCF":
-		c.SCF(&instruction)
-	case "OR":
-		c.OR(&instruction)
-	case "XOR":
-		c.XOR(&instruction)
-	case "RLA":
-		c.RLA(&instruction)
-	case "RLCA":
-		c.RLCA(&instruction)
-	case "RRA":
-		c.RRA(&instruction)
-	case "RRCA":
-		c.RRCA(&instruction)
-	default:
-		// Handle illegal instructions first
-		if strings.HasPrefix(instruction.Mnemonic, "ILLEGAL_") {
-			c.ILLEGAL(&instruction)
-		} else {
-			err := fmt.Sprintf("Unknown instruction: 0x%02X= %s", c.IR, instruction.Mnemonic)
-			panic(err)
-		}
-	}
-}
-
-// Route the execution to the corresponding instruction handler (PREFIX CB)
-func (c *CPU) executeCBInstruction(instruction Instruction, op1 interface{}, op2 interface{}) {
-	// Execute the corresponding instruction
-	switch instruction.Mnemonic {
-	case "RLC":
-		c.RLC(&instruction)
-	case "RRC":
-		c.RRC(&instruction)
-	case "RL":
-		c.RL(&instruction)
-	case "RR":
-		c.RR(&instruction)
-	case "SLA":
-		c.SLA(&instruction)
-	case "SRA":
-		c.SRA(&instruction)
-	case "SWAP":
-		c.SWAP(&instruction)
-	case "SRL":
-		c.SRL(&instruction)
-	case "BIT":
-		c.BIT(&instruction)
-	case "RES":
-		c.RES(&instruction)
-	case "SET":
-		c.SET(&instruction)
-	default:
-		fmt.Println("Unknown instruction")
-	}
-}
-
-func (c *CPU) incrementPC(offset uint16) {
-	c.PC += uint16(offset)
-}
-
-// Execute one cycle of the CPU: fetch, decode and execute the next instruction
-// TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
-func (c *CPU) step() error {
-	// 1. Fetch the opcode from memory and save it to the instruction register IR
-	c.fetchOpcode()
-
-	// 2. Decode the instruction
-
-	// get instruction from opcodes.json file with IR used as key
-	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), false)
-
-	// get the operands of the instruction
-	operands := instruction.Operands
-
-	// handle 0 operands instructions
-	if len(operands) == 0 {
-		// no operand to decode
-		// execute the instruction
-		c.executeInstruction(instruction, nil, nil)
-	} else if len(operands) == 1 {
-		fmt.Println(instruction)
-		panic("CPU 1 operand instructions not implemented yet")
-	} else if len(operands) == 2 {
-		panic("CPU 2 operands instructions not implemented yet")
-	}
-
-	return nil
-}
-
-// Run the CPU
-func (c *CPU) Run() {
-	for {
-		if c.halted {
-			// if the CPU is halted, wiat for an interrupt to wake it up
-			// TODO: implement the interrupt handling
-			// ! for the moment, we will break the loop to avoid an infinite loop
-			break
-		}
-		// Execute the next instruction
-		if err := c.step(); err != nil {
-			panic(err)
-		}
-	}
-}
-
 /*
  * Fetch the value of an operand
  * Returns an interface{} that can either be a uint8 or uint16
@@ -397,48 +236,165 @@ func (c *CPU) fetchOperandValue(operand Operand) interface{} {
 	return value
 }
 
-// Fetch the address of an operand or returns a pointer to the register
-func (c *CPU) fetchOperandAddress(operand Operand) interface{} {
-	var address interface{}
-	switch operand.Name {
-	case "A":
-		address = &c.A
-	case "B":
-		address = &c.B
-	case "C":
-		address = &c.C
-	case "D":
-		address = &c.D
-	case "E":
-		address = &c.E
-	case "H":
-		address = &c.H
-	case "BC":
-		if operand.Immediate {
-			panic("BC immediate not implemented") // should be replaced by a pointer to the setBC function which is not yet implemented
-		} else {
-			address = c.bus.Read(c.getBC())
-		}
-	case "DE":
-		if operand.Immediate {
-			panic("DE immediate not implemented") // same as above
-		} else {
-			address = c.bus.Read(c.getDE())
-		}
-	case "HL":
-		if operand.Immediate {
-			panic("HL immediate not implemented") // same as above
-		} else {
-			address = c.bus.Read(c.getHL())
-		}
-	case "SP":
-		if operand.Immediate {
-			panic("SP immediate not implemented") // same as above
-		} else {
-			address = c.bus.Read(c.SP)
-		}
+// Route the execution to the corresponding instruction handler
+func (c *CPU) executeInstruction(instruction Instruction) {
+	// Execute the corresponding instruction
+	switch instruction.Mnemonic {
+	case "NOP":
+		c.NOP(&instruction)
+	case "STOP":
+		c.STOP(&instruction)
+	case "HALT":
+		c.HALT(&instruction)
+	case "DI":
+		c.DI(&instruction)
+	case "EI":
+		c.EI(&instruction)
+	case "PREFIX":
+		c.PREFIX(&instruction)
+	case "JP":
+		c.JP(&instruction)
+	case "JR":
+		c.JR(&instruction)
+	case "CALL":
+		c.CALL(&instruction)
+	case "RET":
+		c.RET(&instruction)
+	case "RETI":
+		c.RETI(&instruction)
+	case "RST":
+		c.RST(&instruction)
+	case "LD":
+		c.LD(&instruction)
+	case "LDH":
+		c.LDH(&instruction)
+	case "PUSH":
+		c.PUSH(&instruction)
+	case "POP":
+		c.POP(&instruction)
+	case "ADD":
+		c.ADD(&instruction)
+	case "ADC":
+		c.ADC(&instruction)
+	case "AND":
+		c.AND(&instruction)
+	case "INC":
+		c.INC(&instruction)
+	case "CCF":
+		c.CCF(&instruction)
+	case "CP":
+		c.CP(&instruction)
+	case "CPL":
+		c.CPL(&instruction)
+	case "DAA":
+		c.DAA(&instruction)
+	case "DEC":
+		c.DEC(&instruction)
+	case "SUB":
+		c.SUB(&instruction)
+	case "SBC":
+		c.SBC(&instruction)
+	case "SCF":
+		c.SCF(&instruction)
+	case "OR":
+		c.OR(&instruction)
+	case "XOR":
+		c.XOR(&instruction)
+	case "RLA":
+		c.RLA(&instruction)
+	case "RLCA":
+		c.RLCA(&instruction)
+	case "RRA":
+		c.RRA(&instruction)
+	case "RRCA":
+		c.RRCA(&instruction)
 	default:
-		panic("Unknown operand type")
+		// Handle illegal instructions first
+		if strings.HasPrefix(instruction.Mnemonic, "ILLEGAL_") {
+			c.ILLEGAL(&instruction)
+		} else {
+			err := fmt.Sprintf("Unknown instruction: 0x%02X= %s", c.IR, instruction.Mnemonic)
+			panic(err)
+		}
 	}
-	return address
+}
+
+// Route the execution to the corresponding instruction handler (PREFIX CB)
+func (c *CPU) executeCBInstruction(instruction Instruction) {
+	// Execute the corresponding instruction
+	switch instruction.Mnemonic {
+	case "RLC":
+		c.RLC(&instruction)
+	case "RRC":
+		c.RRC(&instruction)
+	case "RL":
+		c.RL(&instruction)
+	case "RR":
+		c.RR(&instruction)
+	case "SLA":
+		c.SLA(&instruction)
+	case "SRA":
+		c.SRA(&instruction)
+	case "SWAP":
+		c.SWAP(&instruction)
+	case "SRL":
+		c.SRL(&instruction)
+	case "BIT":
+		c.BIT(&instruction)
+	case "RES":
+		c.RES(&instruction)
+	case "SET":
+		c.SET(&instruction)
+	default:
+		fmt.Println("Unknown instruction")
+	}
+}
+
+func (c *CPU) incrementPC(offset uint16) {
+	c.PC += uint16(offset)
+}
+
+// Execute one cycle of the CPU: fetch, decode and execute the next instruction
+// TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
+func (c *CPU) step() error {
+	// 1. Fetch the opcode from memory and save it to the instruction register IR
+	c.fetchOpcode()
+
+	// 2. Decode the instruction
+
+	// get instruction from opcodes.json file with IR used as key
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), false)
+
+	// get the operands of the instruction
+	operands := instruction.Operands
+
+	// handle 0 operands instructions
+	if len(operands) == 0 {
+		// no operand to decode
+		// execute the instruction
+		c.executeInstruction(instruction)
+	} else if len(operands) == 1 {
+		fmt.Println(instruction)
+		panic("CPU 1 operand instructions not implemented yet")
+	} else if len(operands) == 2 {
+		panic("CPU 2 operands instructions not implemented yet")
+	}
+
+	return nil
+}
+
+// Run the CPU
+func (c *CPU) Run() {
+	for {
+		if c.halted {
+			// if the CPU is halted, wiat for an interrupt to wake it up
+			// TODO: implement the interrupt handling
+			// ! for the moment, we will break the loop to avoid an infinite loop
+			break
+		}
+		// Execute the next instruction
+		if err := c.step(); err != nil {
+			panic(err)
+		}
+	}
 }
