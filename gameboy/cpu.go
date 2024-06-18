@@ -3,6 +3,7 @@ package gameboy
 
 import (
 	"fmt"
+	"strings"
 )
 
 /*
@@ -155,7 +156,7 @@ func (c *CPU) fetchOpcode() {
 
 // Route the execution to the corresponding instruction handler
 func (c *CPU) executeInstruction(instruction Instruction, op1 interface{}, op2 interface{}) {
-	// Exe&ute the corresponding instruction
+	// Execute the corresponding instruction
 	switch instruction.Mnemonic {
 	case "NOP":
 		c.NOP(&instruction)
@@ -226,7 +227,13 @@ func (c *CPU) executeInstruction(instruction Instruction, op1 interface{}, op2 i
 	case "RRCA":
 		c.RRCA(&instruction)
 	default:
-		fmt.Println("Unknown instruction")
+		// Handle illegal instructions first
+		if strings.HasPrefix(instruction.Mnemonic, "ILLEGAL_") {
+			c.ILLEGAL(&instruction)
+		} else {
+			err := fmt.Sprintf("Unknown instruction: 0x%02X= %s", c.IR, instruction.Mnemonic)
+			panic(err)
+		}
 	}
 }
 
@@ -876,6 +883,16 @@ func (c *CPU) RRCA(instruction *Instruction) {
 	c.resetHFlag()
 	// increment the program counter
 	c.incrementPC(uint16(instruction.Bytes))
+}
+
+// Illegal instructions
+/*
+ panic when an illegal instruction is encountered
+ opcodes: 0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD
+*/
+func (c *CPU) ILLEGAL(instruction *Instruction) {
+	err := fmt.Sprintf("Illegal instruction encountered: 0x%02X=%v", c.IR, instruction.Mnemonic)
+	panic(err)
 }
 
 // > instructions handlers (PREFIX CB)

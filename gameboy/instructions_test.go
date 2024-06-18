@@ -979,6 +979,31 @@ func TestPREFIX_CB(t *testing.T) {
 	}
 }
 
+/*
+ Illegal instructions 0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD
+ Should panic when executed
+*/
+func TestILLEGAL(t *testing.T) {
+	cpu, _, _ := createNewGameboy()
+
+	// list all illegal instructions
+	illegalInstructions := []Opcode{"0xD3", "0xDB", "0xDD", "0xE3", "0xE4", "0xEB", "0xEC", "0xED", "0xF4", "0xFC", "0xFD"}
+
+	// test all instructions one by one
+	for _, opcode := range illegalInstructions {
+		instruction := GetInstruction(opcode, false)
+
+		func() {
+			defer func() {
+				if r := recover(); r == nil {
+					t.Errorf("Expected instruction %v to panic", opcode)
+				}
+			}()
+			cpu.executeInstruction(instruction, nil, nil)
+		}()
+	}
+}
+
 //=========================//
 // 2 operands instructions //
 //=========================//
