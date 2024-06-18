@@ -1,6 +1,8 @@
 package gameboy
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // > instructions handlers (NO PREFIX)
 
@@ -69,8 +71,44 @@ func (c *CPU) STOP(instruction *Instruction) {
 }
 
 // Jump / Call instructions
+// only the conditional instructions increment the PC if the condition is not met since they are meant to position the PC at the operand
+/*
+	CALL: Call a subroutine
+	opcodes:
+		- 0xC4 = CALL NZ, a16
+		- 0xCC = CALL Z, a16
+		- 0xCD = CALL a16
+		- 0xD4 = CALL NC, a16
+		- 0xDC = CALL C, a16
+*/
 func (c *CPU) CALL(instruction *Instruction) {
-	panic("CALL not implemented")
+	switch instruction.Operands[0].Name {
+	case "Z":
+		if c.getZFlag() {
+			c.push(c.PC)
+			c.PC = uint16(c.Operand)
+		}
+	case "NZ":
+		if !c.getZFlag() {
+			c.push(c.PC)
+			c.PC = uint16(c.Operand)
+		}
+	case "C":
+		if c.getCFlag() {
+			c.push(c.PC)
+			c.PC = uint16(c.Operand)
+		}
+	case "NC":
+		if !c.getCFlag() {
+			c.push(c.PC)
+			c.PC = uint16(c.Operand)
+		}
+	case "a16":
+		c.push(c.PC)
+		c.PC = uint16(c.Operand)
+	default:
+		panic("CALL: unknown operand")
+	}
 }
 
 /*
@@ -85,44 +123,32 @@ func (c *CPU) CALL(instruction *Instruction) {
 	flags: -
 */
 func (c *CPU) JP(instruction *Instruction) {
-	panic("JP not implemented")
-	/*
-		switch c.IR {
-			case 0xC2:
-				// JP NZ, a16
-				if !c.getZFlag() {
-					operand := c.fetchOperandValue(instruction.Operands[1])
-					c.PC = uint16(operand)
-				}
-			case 0xC3:
-				// JP a16
-				operand := c.fetchOperandValue(instruction.Operands[0])
-				c.PC = bytesToUint16(operand.([2]byte))
-			case 0xCA:
-				// JP Z, a16
-				if c.getZFlag() {
-					operand := c.fetchOperandValue(instruction.Operands[1])
-					c.PC = bytesToUint16(operand.([2]byte))
-				}
-			case 0xD2:
-				// JP NC, a16
-				if !c.getNFlag() {
-					operand := c.fetchOperandValue(instruction.Operands[1])
-					c.PC = bytesToUint16(operand.([2]byte))
-				}
-			case 0xDA:
-				// JP C, a16
-				if c.getNFlag() {
-					operand := c.fetchOperandValue(instruction.Operands[1])
-					c.PC = bytesToUint16(operand.([2]byte))
-				}
-			case 0xE9:
-				// JP HL
-				c.PC = c.HL
-			default:
-				panic("JP not implemented")
+	switch instruction.Operands[0].Name {
+	case "Z":
+		if c.getZFlag() {
+			c.PC = uint16(c.Operand)
+		} else {
+			c.incrementPC(uint16(instruction.Bytes))
 		}
-	*/
+	case "NZ":
+		if !c.getZFlag() {
+			c.PC = uint16(c.Operand)
+		}
+	case "C":
+		if c.getCFlag() {
+			c.PC = uint16(c.Operand)
+		}
+	case "NC":
+		if !c.getCFlag() {
+			c.PC = uint16(c.Operand)
+		}
+	case "a16":
+		c.PC = uint16(c.Operand)
+	case "HL":
+		c.PC = uint16(c.Operand)
+	default:
+		panic("JP: unknown operand")
+	}
 }
 func (c *CPU) JR(instruction *Instruction) {
 	panic("JR not implemented")
@@ -135,11 +161,7 @@ func (c *CPU) JR(instruction *Instruction) {
 	flags: -
 */
 func (c *CPU) RET(instruction *Instruction) {
-	low := c.bus.Read(c.SP)
-	c.SP++
-	high := c.bus.Read(c.SP)
-	c.SP++
-	c.PC = uint16(high)<<8 | uint16(low)
+	c.PC = c.bus.Read16(c.SP)
 }
 
 /*
@@ -187,20 +209,57 @@ func (c *CPU) RST(instruction *Instruction) {
 	=> we will 'automate' the process of fetching the operands expect for LD HL, SP+r8 that will be handled manually
 */
 func (c *CPU) LD(instruction *Instruction) {
-	if c.IR != 0xF8 {
-		panic("LD not implemented")
-		// fetch the first operand as an address
-		//address := c.fetchOperandAddress(instruction.Operands[0])
-		// fetch the second operand as a value
-		//value := c.fetchOperandValue(instruction.Operands[1])
-		// load the value into the address
-		//switch v := value.(type) {
-		//c.bus.Write(address, value)
-
-		// take care of
-	} else {
-		panic("LD HL, SP+r8 not implemented")
+	var address uint16
+	switch instruction.Operands[0].Name {
+	case "A":
+		c.A = uint8(c.Operand)
+	case "B":
+		c.B = uint8(c.Operand)
+	case "C":
+		if instruction.Operands[0].Immediate {
+			c.C = uint8(c.Operand)
+		} else {
+			address = 0xFF00 | uint16(c.C)
+			c.bus.Write(address, uint8(c.Operand))
+		}
+	case "D":
+		c.D = uint8(c.Operand)
+	case "E":
+		c.E = uint8(c.Operand)
+	case "H":
+		c.H = uint8(c.Operand)
+	case "L":
+		c.L = uint8(c.Operand)
+	case "BC":
+		if instruction.Operands[0].Immediate {
+			c.setBC(c.Operand)
+		} else {
+			c.bus.Write(c.getBC(), uint8(c.Operand))
+		}
+	case "DE":
+		if instruction.Operands[0].Immediate {
+			c.setDE(c.Operand)
+		} else {
+			c.bus.Write(c.getDE(), uint8(c.Operand))
+		}
+	case "HL":
+		if instruction.Operands[0].Immediate {
+			c.setHL(c.Operand)
+		} else {
+			c.bus.Write(c.getHL(), uint8(c.Operand))
+		}
+		if instruction.Operands[0].Increment {
+			c.setHL(c.getHL() + 1)
+		} else if instruction.Operands[0].Decrement {
+			c.setHL(c.getHL() - 1)
+		}
+	case "SP":
+		c.SP = uint16(c.Operand)
+	case "a16":
+		panic("LD [a16], r8/r16 not implemented")
 	}
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) LDH(instruction *Instruction) {
 	panic("LDH not implemented")
