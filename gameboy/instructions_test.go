@@ -128,7 +128,7 @@ func TestNOP(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// NOP
-	cpu.executeInstruction(GetInstruction("0x00", false), nil, nil)
+	cpu.executeInstruction(GetInstruction("0x00", false))
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -169,7 +169,7 @@ func TestRLCA(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.executeInstruction(GetInstruction("0x07", false), nil, nil)
+	cpu.executeInstruction(GetInstruction("0x07", false))
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -241,7 +241,7 @@ func TestRRCA(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.executeInstruction(GetInstruction("0x0F", false), nil, nil)
+	cpu.executeInstruction(GetInstruction("0x0F", false))
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -314,7 +314,7 @@ func TestRLA(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.executeInstruction(GetInstruction("0x17", false), nil, nil)
+	cpu.executeInstruction(GetInstruction("0x17", false))
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -387,7 +387,7 @@ func TestRRA(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.executeInstruction(GetInstruction("0x1F", false), nil, nil)
+	cpu.executeInstruction(GetInstruction("0x1F", false))
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -700,7 +700,7 @@ func TestDAA(t *testing.T) {
 		cpuCopy := copyCPU(cpu)
 
 		// Execute the instruction
-		cpu.executeInstruction(GetInstruction("0x27", false), nil, nil)
+		cpu.executeInstruction(GetInstruction("0x27", false))
 
 		// check if the program counter was incremented by instruction.Length
 		if cpu.PC != cpuCopy.PC+1 {
@@ -748,7 +748,7 @@ func TestCPL(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.executeInstruction(GetInstruction("0x2F", false), nil, nil)
+	cpu.executeInstruction(GetInstruction("0x2F", false))
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -812,7 +812,7 @@ func TestSCF(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.executeInstruction(GetInstruction("0x37", false), nil, nil)
+	cpu.executeInstruction(GetInstruction("0x37", false))
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -870,7 +870,7 @@ func TestCCF(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.executeInstruction(GetInstruction("0x3F", false), nil, nil)
+	cpu.executeInstruction(GetInstruction("0x3F", false))
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
@@ -921,7 +921,7 @@ func TestHALT(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.executeInstruction(GetInstruction("0x76", false), nil, nil)
+	cpu.executeInstruction(GetInstruction("0x76", false))
 
 	// check if the program counter was not modified
 	if cpu.PC != cpuCopy.PC {
@@ -999,7 +999,7 @@ func TestILLEGAL(t *testing.T) {
 					t.Errorf("Expected instruction %v to panic", opcode)
 				}
 			}()
-			cpu.executeInstruction(instruction, nil, nil)
+			cpu.executeInstruction(instruction)
 		}()
 	}
 }
@@ -1317,7 +1317,7 @@ func TestLD_C_D(t *testing.T) {
 	cpuCopy := copyCPU(cpu)
 
 	// Execute the instruction
-	cpu.executeInstruction(GetInstruction("0x4A", false), cpu.D, cpu.C)
+	cpu.executeInstruction(GetInstruction("0x4A", false))
 
 	// get the differences
 	differences := compareCPU(cpu, cpuCopy)
