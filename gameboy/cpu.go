@@ -353,25 +353,20 @@ func (c *CPU) step() error {
 	c.fetchOpcode()
 
 	// 2. Decode the instruction
-
 	// get instruction from opcodes.json file with IR used as key
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), false)
-
 	// get the operands of the instruction
 	operands := instruction.Operands
-
-	// handle 0 operands instructions
-	if len(operands) == 0 {
-		// no operand to decode
-		// execute the instruction
-		c.executeInstruction(instruction)
-	} else if len(operands) == 1 {
-		fmt.Println(instruction)
-		panic("CPU 1 operand instructions not implemented yet")
+	// fetch the operand value
+	if len(operands) == 1 {
+		c.fetchOperandValue(operands[0])
 	} else if len(operands) == 2 {
-		panic("CPU 2 operands instructions not implemented yet")
+		// decode operand 2
+		c.fetchOperandValue(operands[1])
 	}
 
+	// 3. Execute the instruction
+	c.executeInstruction(instruction)
 	return nil
 }
 
