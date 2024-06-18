@@ -155,7 +155,7 @@ func (c *CPU) fetchOpcode() {
 
 // Route the execution to the corresponding instruction handler
 func (c *CPU) executeInstruction(instruction Instruction, op1 interface{}, op2 interface{}) {
-	// Execute the corresponding instruction
+	// Exe&ute the corresponding instruction
 	switch instruction.Mnemonic {
 	case "NOP":
 		c.NOP(&instruction)
@@ -230,10 +230,43 @@ func (c *CPU) executeInstruction(instruction Instruction, op1 interface{}, op2 i
 	}
 }
 
+// Route the execution to the corresponding instruction handler (PREFIX CB)
+func (c *CPU) executeCBInstruction(instruction Instruction, op1 interface{}, op2 interface{}) {
+	// Execute the corresponding instruction
+	switch instruction.Mnemonic {
+	case "RLC":
+		c.RLC(&instruction)
+	case "RRC":
+		c.RRC(&instruction)
+	case "RL":
+		c.RL(&instruction)
+	case "RR":
+		c.RR(&instruction)
+	case "SLA":
+		c.SLA(&instruction)
+	case "SRA":
+		c.SRA(&instruction)
+	case "SWAP":
+		c.SWAP(&instruction)
+	case "SRL":
+		c.SRL(&instruction)
+	case "BIT":
+		c.BIT(&instruction)
+	case "RES":
+		c.RES(&instruction)
+	case "SET":
+		c.SET(&instruction)
+	default:
+		fmt.Println("Unknown instruction")
+	}
+}
+
 func (c *CPU) incrementPC(offset uint16) {
 	c.PC += uint16(offset)
 }
 
+// Execute one cycle of the CPU: fetch, decode and execute the next instruction
+// TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
 func (c *CPU) step() error {
 	// 1. Fetch the opcode from memory and save it to the instruction register IR
 	c.fetchOpcode()
@@ -248,8 +281,7 @@ func (c *CPU) step() error {
 
 	// handle 0 operands instructions
 	if len(operands) == 0 {
-		// no oerand to decode
-
+		// no operand to decode
 		// execute the instruction
 		c.executeInstruction(instruction, nil, nil)
 	} else if len(operands) == 1 {
@@ -433,8 +465,21 @@ func (c *CPU) HALT(instruction *Instruction) {
 func (c *CPU) NOP(instruction *Instruction) {
 	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+ 0xCB = PREFIX CB
+ Indicates that the next instruction is a CB instruction
+ flags: -
+*/
 func (c *CPU) PREFIX(instruction *Instruction) {
-	panic("PREFIX not implemented")
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
+	// fetch the next opcode
+	c.fetchOpcode()
+	// get the instruction from the opcodes.json file
+	cbInstruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), true)
+	// execute the instruction
+	c.executeCBInstruction(cbInstruction, nil, nil)
 }
 func (c *CPU) STOP(instruction *Instruction) {
 	panic("STOP not implemented")
@@ -834,26 +879,17 @@ func (c *CPU) RRCA(instruction *Instruction) {
 }
 
 // > instructions handlers (PREFIX CB)
-func (c *CPU) BIT(instruction *Instruction) {
-	panic("BIT not implemented")
-}
-func (c *CPU) RES(instruction *Instruction) {
-	panic("RES not implemented")
-}
-func (c *CPU) RL(instruction *Instruction) {
-	panic("RL not implemented")
-}
 func (c *CPU) RLC(instruction *Instruction) {
 	panic("RLC not implemented")
-}
-func (c *CPU) RR(instruction *Instruction) {
-	panic("RR not implemented")
 }
 func (c *CPU) RRC(instruction *Instruction) {
 	panic("RRC not implemented")
 }
-func (c *CPU) SET(instruction *Instruction) {
-	panic("SET not implemented")
+func (c *CPU) RL(instruction *Instruction) {
+	panic("RL not implemented")
+}
+func (c *CPU) RR(instruction *Instruction) {
+	panic("RR not implemented")
 }
 func (c *CPU) SLA(instruction *Instruction) {
 	panic("SLA not implemented")
@@ -861,9 +897,18 @@ func (c *CPU) SLA(instruction *Instruction) {
 func (c *CPU) SRA(instruction *Instruction) {
 	panic("SRA not implemented")
 }
+func (c *CPU) SWAP(instruction *Instruction) {
+	panic("SWAP not implemented")
+}
 func (c *CPU) SRL(instruction *Instruction) {
 	panic("SRL not implemented")
 }
-func (c *CPU) SWAP(instruction *Instruction) {
-	panic("SWAP not implemented")
+func (c *CPU) BIT(instruction *Instruction) {
+	panic("BIT not implemented")
+}
+func (c *CPU) RES(instruction *Instruction) {
+	panic("RES not implemented")
+}
+func (c *CPU) SET(instruction *Instruction) {
+	panic("SET not implemented")
 }
