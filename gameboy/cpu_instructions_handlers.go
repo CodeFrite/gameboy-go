@@ -81,6 +81,7 @@ func (c *CPU) STOP(instruction *Instruction) {
 		- 0xCD = CALL a16
 		- 0xD4 = CALL NC, a16
 		- 0xDC = CALL C, a16
+	flags: -
 */
 func (c *CPU) CALL(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
@@ -247,7 +248,7 @@ func (c *CPU) RST(instruction *Instruction) {
 	LD [a16], r16 = LD [a16], SP										[1]
 
 
-	flags: - except for 0xF8 where Z->0 N->0 H->C C->C
+	flags: - (except for 0xF8 where Z->0 N->0 H->H C->C)
 
 	NOTE: all LD instructions have 2 operands, the first one is always the destination and the second one is always the source (except for LD HL, SP+r8)
 	=> we will 'automate' the process of fetching the operands expect for LD HL, SP+r8 that will be handled manually
@@ -288,7 +289,29 @@ func (c *CPU) LD(instruction *Instruction) {
 		}
 	case "HL":
 		if instruction.Operands[0].Immediate {
-			c.setHL(c.Operand)
+			// LD HL, SP+e8 (0xF8)
+			if len(instruction.Operands) == 3 {
+				newValue := c.SP + c.Operand
+				// set or reset the H flag
+				if newValue > 0x0F {
+					c.setHFlag()
+				} else {
+					c.resetHFlag()
+				}
+				// set or reset the C flag
+				if newValue > 0xFF {
+					c.setCFlag()
+				} else {
+					c.resetCFlag()
+				}
+				// load the result into HL
+				c.setHL(newValue)
+				// update flags
+				c.resetZFlag()
+				c.resetNFlag()
+			} else {
+				c.setHL(c.Operand)
+			}
 		} else {
 			c.bus.Write(c.getHL(), uint8(c.Operand))
 		}
@@ -302,6 +325,7 @@ func (c *CPU) LD(instruction *Instruction) {
 	case "a16":
 		panic("LD [a16], r8/r16 not implemented")
 	}
+
 	// increment the program counter
 	c.incrementPC(uint16(instruction.Bytes))
 }
