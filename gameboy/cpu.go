@@ -216,6 +216,12 @@ func (c *CPU) fetchOperandValue(operand Operand) {
 			addr := c.bus.Read16(c.PC + 1)
 			value = c.bus.Read16(addr)
 		}
+	case "e8": // not always immediate
+		if operand.Immediate {
+			value = uint16(c.bus.Read(c.PC + 1))
+		} else {
+			panic("e8 non immediate operand not implemented yet")
+		}
 	case "A":
 		if operand.Immediate {
 			value = uint16(c.A)
@@ -259,7 +265,8 @@ func (c *CPU) fetchOperandValue(operand Operand) {
 			panic("Non immediate operand not implemented yet")
 		}
 	default:
-		panic("Unknown operand type")
+		err := fmt.Sprintf("Unknown operand name: %s (0x%02X)", operand.Name, c.IR)
+		panic(err)
 	}
 	// save the current operand value into the cpu context
 	c.Operand = value
