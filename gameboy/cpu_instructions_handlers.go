@@ -151,8 +151,51 @@ func (c *CPU) JP(instruction *Instruction) {
 		panic("JP: unknown operand")
 	}
 }
+
+/*
+	JR: Jump relative
+	Jumps to a relative address
+	opcodes:
+		- 0x18 = JR r8
+		- 0x20 = JR NZ, r8
+		- 0x28 = JR Z, r8
+		- 0x30 = JR NC, r8
+		- 0x38 = JR C, r8
+	flags: -
+	! the int8 r8 operand has already been casted to uint16, safely because uint16 > int8 retains the sign value
+	! by converting for -1 to 0xFF, -2 to 0xFE, etc which is the expected behavior
+*/
 func (c *CPU) JR(instruction *Instruction) {
-	panic("JR not implemented")
+	switch instruction.Operands[0].Name {
+	case "Z":
+		if c.getZFlag() {
+			c.PC += c.Operand
+		} else {
+			c.incrementPC(uint16(instruction.Bytes))
+		}
+	case "NZ":
+		if !c.getZFlag() {
+			c.PC += c.Operand
+		} else {
+			c.incrementPC(uint16(instruction.Bytes))
+		}
+	case "C":
+		if c.getCFlag() {
+			c.PC += c.Operand
+		} else {
+			c.incrementPC(uint16(instruction.Bytes))
+		}
+	case "NC":
+		if !c.getCFlag() {
+			c.PC += uint16(uint8(c.Operand))
+		} else {
+			c.incrementPC(uint16(instruction.Bytes))
+		}
+	case "r8":
+		c.PC += c.Operand
+	default:
+		panic("JR: unknown operand")
+	}
 }
 
 /*
