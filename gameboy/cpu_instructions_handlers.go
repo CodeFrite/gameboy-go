@@ -329,8 +329,22 @@ func (c *CPU) LD(instruction *Instruction) {
 	// increment the program counter
 	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+	LDH: Load data from memory address 0xFF00+a8 to A or from A to memory address 0xFF00+a8
+	opcodes:
+		- 0xE0 = LDH [a8], A
+		- 0xF0 = LDH A, [a8]
+	flags: -
+*/
 func (c *CPU) LDH(instruction *Instruction) {
-	panic("LDH not implemented")
+	switch instruction.Operands[0].Name {
+	case "A":
+		c.A = uint8(c.Operand)
+	case "a8":
+		c.bus.Write(c.Operand, c.A)
+	}
+	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) PUSH(instruction *Instruction) {
 	panic("PUSH not implemented")

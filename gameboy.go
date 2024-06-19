@@ -17,13 +17,17 @@ func initCPU(cpu *gameboy.CPU) {
 	cpu.SP = 0xFFFE
 }
 func initGameboy() *gameboy.CPU {
-	// 1. Init VRAM
+	// 1.Init RAM
+	// VRAM
 	vram := gameboy.NewMemory(0x2000)
 
-	// 2. Init WRAM
+	// WRAM
 	wram := gameboy.NewMemory(0x2000)
 
-	// 3. Init Cartridge
+	// I/O Registers
+	io_registers := gameboy.NewMemory(0x007F)
+
+	// 2. Init Cartridge
 	// get current directory
 	currentDir, err := os.Getwd()
 	if err != nil {
@@ -32,13 +36,14 @@ func initGameboy() *gameboy.CPU {
 	// load tetris for the moment
 	c := gameboy.NewCartridge(currentDir+"/roms", "tetris.gb")
 
-	// 4. init BUS
+	// 3. init BUS
 	bus := gameboy.NewBus()
 	bus.AttachMemory(c, 0x0000)
 	bus.AttachMemory(vram, 0x8000)
 	bus.AttachMemory(wram, 0xC000)
+	bus.AttachMemory(io_registers, 0xFF00)
 
-	// 5. instantiate a new CPU
+	// 4. instantiate a new CPU
 	cpu := gameboy.NewCPU(bus)
 
 	return cpu
@@ -63,5 +68,6 @@ func main() {
 	// main game loop
 	cpu.Run()
 
-	return
+	// Exit program properly
+	os.Exit(0)
 }
