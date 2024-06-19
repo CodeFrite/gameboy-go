@@ -73,7 +73,8 @@ func (c *CPU) STOP(instruction *Instruction) {
 // Jump / Call instructions
 // only the conditional instructions increment the PC if the condition is not met since they are meant to position the PC at the operand
 /*
-	CALL: Call a subroutine
+	CALL: Call a subroutine = if condition is met, push the address of the next instruction to the stack and jump to the address
+	Otherwise, continue with the next instruction
 	opcodes:
 		- 0xC4 = CALL NZ, a16
 		- 0xCC = CALL Z, a16
@@ -85,26 +86,26 @@ func (c *CPU) CALL(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.push(c.PC)
+			c.push(c.PC + uint16(instruction.Bytes))
 			c.PC = uint16(c.Operand)
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.push(c.PC)
+			c.push(c.PC + uint16(instruction.Bytes))
 			c.PC = uint16(c.Operand)
 		}
 	case "C":
 		if c.getCFlag() {
-			c.push(c.PC)
+			c.push(c.PC + uint16(instruction.Bytes))
 			c.PC = uint16(c.Operand)
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.push(c.PC)
+			c.push(c.PC + uint16(instruction.Bytes))
 			c.PC = uint16(c.Operand)
 		}
 	case "a16":
-		c.push(c.PC)
+		c.push(c.PC + uint16(instruction.Bytes))
 		c.PC = uint16(c.Operand)
 	default:
 		panic("CALL: unknown operand")
