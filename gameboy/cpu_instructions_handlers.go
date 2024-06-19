@@ -377,8 +377,42 @@ func (c *CPU) CCF(instruction *Instruction) {
 	// increment the program counter
 	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+ CP: compare 2 memory locations and/or registers by subtracting them without storing the result
+ opcodes:
+	- B8 = CP A, B
+	- B9 = CP A, C
+	- BA = CP A, D
+	- BB = CP A, E
+	- BC = CP A, H
+	- BD = CP A, L
+	- BE = CP A, [HL]
+	- BF = CP A, A
+	- FE = CP A, n8
+ flags: Z:Z N:1 H:H C:C
+*/
 func (c *CPU) CP(instruction *Instruction) {
-	panic("CP not implemented")
+	val := c.A - uint8(c.Operand)
+	// update flags
+	if val == 0 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	c.setNFlag()
+	if c.A&0x0F < uint8(c.Operand)&0x0F {
+		c.setHFlag()
+	} else {
+		c.resetHFlag()
+	}
+	if uint8(c.Operand) > c.A {
+		c.setCFlag()
+	} else {
+		c.resetCFlag()
+	}
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
