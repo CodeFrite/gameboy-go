@@ -365,8 +365,110 @@ func (c *CPU) DAA(instruction *Instruction) {
 	c.incrementPC(uint16(instruction.Bytes))
 }
 
+/*
+ DEC: Decrement register or memory
+ opcodes:
+	- 0x05=DEC B
+	- 0x0B=DEC BC
+	- 0x0D=DEC C
+	- 0x15=DEC D
+	- 0x1B=DEC DE
+	- 0x1D=DEC E
+	- 0x25=DEC H
+	- 0x2B=DEC HL
+	- 0x2D=DEC L
+	- 0x35=DEC [HL]
+	- 0x3B=DEC SP
+	- 0x3D=DEC A
+flags: Z:Z N:1 H:H C:- for all but the 16-bits registers
+
+When to set H ? There will be a borrow from bit 4 if the lower nibble is 0
+*/
 func (c *CPU) DEC(instruction *Instruction) {
-	panic("DEC not implemented")
+	switch instruction.Operands[0].Name {
+	case "A":
+		// check H before DEC
+		if uint8(c.A) == 0x00 {
+			c.setHFlag()
+		}
+		c.A--
+		if c.A == 0x00 {
+			c.setZFlag()
+		}
+		c.setNFlag()
+	case "B":
+		if uint8(c.A) == 0x00 {
+			c.setHFlag()
+		}
+		c.B--
+		if c.A == 0x00 {
+			c.setZFlag()
+		}
+		c.setNFlag()
+	case "C":
+		if uint8(c.A) == 0x00 {
+			c.setHFlag()
+		}
+		c.C--
+		if c.A == 0x00 {
+			c.setZFlag()
+		}
+		c.setNFlag()
+	case "D":
+		if uint8(c.A) == 0x00 {
+			c.setHFlag()
+		}
+		c.D--
+		if c.A == 0x00 {
+			c.setZFlag()
+		}
+		c.setNFlag()
+	case "E":
+		if uint8(c.A) == 0x00 {
+			c.setHFlag()
+		}
+		c.E--
+		if c.A == 0x00 {
+			c.setZFlag()
+		}
+		c.setNFlag()
+	case "H":
+		if uint8(c.A) == 0x00 {
+			c.setHFlag()
+		}
+		c.H--
+		if c.A == 0x00 {
+			c.setZFlag()
+		}
+		c.setNFlag()
+	case "L":
+		if uint8(c.A) == 0x00 {
+			c.setHFlag()
+		}
+		c.L--
+		if c.A == 0x00 {
+			c.setZFlag()
+		}
+		c.setNFlag()
+	case "BC":
+		c.setBC(c.getBC() - 1)
+	case "DE":
+		c.setDE(c.getDE() - 1)
+	case "HL":
+		if instruction.Operands[0].Immediate {
+			c.setHL(c.getHL() - 1)
+		} else {
+			addr := c.getHL()
+			val := c.bus.Read(addr)
+			c.bus.Write(addr, val-1)
+		}
+	case "SP":
+		c.SP--
+	default:
+		panic("DEC: unknown operand")
+	}
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) INC(instruction *Instruction) {
 	panic("INC not implemented")
