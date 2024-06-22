@@ -38,9 +38,9 @@ func (g *Gameboy) initMemory() {
 
 func (g *Gameboy) initBus() {
 	g.bus = NewBus()
-	g.bus.AttachMemory(g.vram, 0x8000)
-	g.bus.AttachMemory(g.wram, 0xC000)
-	g.bus.AttachMemory(g.io_registers, 0xFF00)
+	g.bus.AttachMemory(0x8000, g.vram)
+	g.bus.AttachMemory(0xC000, g.wram)
+	g.bus.AttachMemory(0xFF00, g.io_registers)
 }
 
 func (g *Gameboy) initCPU() {
@@ -66,7 +66,7 @@ func (g *Gameboy) loadCartridge(uri string, name string) {
 		log.Fatal(err)
 	}
 	g.cartridge = NewCartridge(currentDir+uri, name)
-	g.bus.AttachMemory(g.cartridge, 0x0000)
+	g.bus.AttachMemory(0x0000, g.cartridge)
 }
 
 /*
@@ -74,7 +74,7 @@ func (g *Gameboy) loadCartridge(uri string, name string) {
  */
 func (g *Gameboy) Run(uri string, name string) {
 	bootRomData := getBootRomData()
-	g.bus.AttachMemory(g.bootrom, 0x0000)
+	g.bus.AttachMemory(0x0000, g.bootrom)
 	g.bus.WriteBlob(0x0000, bootRomData)
 	g.cpu.Boot()
 	g.loadCartridge(uri, name)
