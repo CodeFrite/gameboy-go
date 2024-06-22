@@ -17,8 +17,9 @@ type CPU struct {
 	B, C, D, E, H, L uint8  // 16-bit general purpose registers
 	IE               uint8  // Interrupt Enable
 
-	IR      uint8  // Instruction Register
-	Operand uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+	IR       uint8  // Instruction Register
+	prefixed bool   // Is the current instruction prefixed with 0xCB
+	Operand  uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
 
 	HRAM [127]byte // 127bytes of High-Speed RAM
 	bus  *Bus      // reference to the bus
@@ -186,6 +187,13 @@ func (c *CPU) fetchOpcode() {
 	// Fetch the opcode from memory at the address in the program counter
 	opcode := c.bus.Read(c.PC)
 
+	// is it a prefixed instruction?
+	if opcode == 0xCB {
+		c.prefixed = true
+		// fetch the next opcode
+		opcode = c.bus.Read(c.PC + 1)
+	}
+
 	// Store the opcode in the instruction register
 	c.IR = opcode
 }
@@ -286,8 +294,6 @@ func (c *CPU) executeInstruction(instruction Instruction) {
 		c.DI(&instruction)
 	case "EI":
 		c.EI(&instruction)
-	case "PREFIX":
-		c.PREFIX(&instruction)
 	case "JP":
 		c.JP(&instruction)
 	case "JR":
@@ -399,7 +405,7 @@ func (c *CPU) incrementPC(offset uint16) {
  * PC: 0x00A6, Bytes: EA AB 01, ASM: LD [$01AB], HL
  */
 func (c *CPU) printCurrentInstruction() {
-	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), false)
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), c.prefixed)
 	getBytes := func() []byte {
 		var bytes []byte
 		for i := 0; i < instruction.Bytes; i++ {
@@ -437,12 +443,15 @@ func (c *CPU) printCurrentInstruction() {
 // Execute one cycle of the CPU: fetch, decode and execute the next instruction
 // TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
 func (c *CPU) step() error {
+	// 0. reset the prefixed flag
+	c.prefixed = false
+
 	// 1. Fetch the opcode from memory and save it to the instruction register IR
 	c.fetchOpcode()
 
 	// 2. Decode the instruction
 	// get instruction from opcodes.json file with IR used as key
-	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), false)
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), c.prefixed)
 	// get the operands of the instruction
 	operands := instruction.Operands
 	// fetch the operand value
@@ -457,7 +466,11 @@ func (c *CPU) step() error {
 	c.printCurrentInstruction()
 
 	// 3. Execute the instruction
-	c.executeInstruction(instruction)
+	if !c.prefixed {
+		c.executeInstruction(instruction)
+	} else {
+		c.executeCBInstruction(instruction)
+	}
 	return nil
 }
 

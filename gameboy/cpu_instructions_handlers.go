@@ -50,22 +50,6 @@ func (c *CPU) HALT(instruction *Instruction) {
 func (c *CPU) NOP(instruction *Instruction) {
 	c.incrementPC(uint16(instruction.Bytes))
 }
-
-/*
- 0xCB = PREFIX CB
- Indicates that the next instruction is a CB instruction
- flags: -
-*/
-func (c *CPU) PREFIX(instruction *Instruction) {
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
-	// fetch the next opcode
-	c.fetchOpcode()
-	// get the instruction from the opcodes.json file
-	cbInstruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), true)
-	// execute the instruction
-	c.executeCBInstruction(cbInstruction)
-}
 func (c *CPU) STOP(instruction *Instruction) {
 	panic("STOP not implemented")
 }
