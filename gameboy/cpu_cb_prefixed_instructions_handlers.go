@@ -25,8 +25,24 @@ func (c *CPU) SWAP(instruction *Instruction) {
 func (c *CPU) SRL(instruction *Instruction) {
 	panic("SRL not implemented")
 }
+
+/*
+ BIT b, r8 / [HL]
+ Test bit b in register r8 or [HL]: If bit b is 0, Z is set.
+ opcodes: 0x40-0x7F
+ flags: Z=Z N=0 H=1 C=-
+*/
 func (c *CPU) BIT(instruction *Instruction) {
-	panic("BIT not implemented")
+	// get the bit position to test
+	b := c.bus.Read(c.PC + 1)
+	// check if bit b of operand is 0
+	if c.Operand&(1<<b) == 0 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	c.resetNFlag()
+	c.setHFlag()
 }
 func (c *CPU) RES(instruction *Instruction) {
 	panic("RES not implemented")
