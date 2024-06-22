@@ -586,8 +586,126 @@ func (c *CPU) DEC(instruction *Instruction) {
 	// increment the program counter
 	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+ INC: Increment register or memory
+ opcodes:
+ 	- 0x04=INC B
+	- 0x0C=INC C
+	- 0x14=INC D
+	- 0x1C=INC E
+	- 0x24=INC H
+	- 0x2C=INC L
+	- 0x34=INC [HL]
+	- 0x3C=INC A
+
+ flags: Z:Z N:0 H:H C:-
+*/
 func (c *CPU) INC(instruction *Instruction) {
-	panic("INC not implemented")
+	switch instruction.Operands[0].Name {
+	case "A":
+		c.A++
+		if c.A == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (c.A & 0x0F) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+	case "B":
+		c.B++
+		if c.B == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (c.B & 0x0F) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+	case "C":
+		c.C++
+		if c.C == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (c.C & 0x0F) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+	case "D":
+		c.D++
+		if c.D == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (c.D & 0x0F) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+	case "E":
+		c.E++
+		if c.E == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (c.E & 0x0F) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+	case "H":
+		c.H++
+		if c.H == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (c.H & 0x0F) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+	case "L":
+		c.L++
+		if c.L == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (c.L & 0x0F) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+	case "HL":
+		addr := c.getHL()
+		val := c.bus.Read(addr) + 1
+		c.bus.Write(addr, val)
+		if val == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (val & 0x0F) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+	}
+	// reset the N flag
+	c.resetNFlag()
+	// increment the program counter
+	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) SUB(instruction *Instruction) {
 	panic("SUB not implemented")
