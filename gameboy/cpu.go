@@ -27,8 +27,8 @@ type CPU struct {
 	halted bool
 }
 
+// Create a new CPU
 func NewCPU(bus *Bus) *CPU {
-	// initialize all registers to 0 except the program counter which starts at 0x100 (in cartridge ROM)
 	return &CPU{
 		bus: bus,
 	}
@@ -390,6 +390,50 @@ func (c *CPU) incrementPC(offset uint16) {
 	c.PC += uint16(offset)
 }
 
+/*
+ * Print the current instruction being executed in the following format (examples):
+ * PC: 0x00A0, Bytes: 00 			, ASM: NOP
+ * PC: 0x00A1, Bytes: 40 			, ASM: LD B, $40
+ * PC: 0x00A2, Bytes: 3E 01 	, ASM: LD A, $01
+ * PC: 0x00A4, Bytes: F8 4E 	, ASM: LD HL, SP + $4E
+ * PC: 0x00A6, Bytes: EA AB 01, ASM: LD [$01AB], HL
+ */
+func (c *CPU) printCurrentInstruction() {
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), false)
+	getBytes := func() []byte {
+		var bytes []byte
+		for i := 0; i < instruction.Bytes; i++ {
+			bytes = append(bytes, c.bus.Read(c.PC+uint16(i)))
+		}
+		return bytes
+	}
+
+	getOperands := func() string {
+		var operands []string
+		for _, operand := range instruction.Operands {
+			var value string
+			if operand.Name == "n8" {
+				value = fmt.Sprintf("$%02X", c.bus.Read(c.PC+1))
+			} else if operand.Name == "n16" {
+				value = fmt.Sprintf("$%04X", c.bus.Read16(c.PC+1))
+			} else {
+				value = operand.Name
+			}
+
+			if !operand.Immediate {
+				value = "[" + value + "]"
+			}
+
+			operands = append(operands, value)
+		}
+		return strings.Join(operands, ", ")
+	}
+
+	fmt.Printf("PC: 0x%04X", c.PC)
+	fmt.Printf(", memory: %-6X", getBytes())
+	fmt.Printf(", asm: %s %s\n", instruction.Mnemonic, getOperands())
+}
+
 // Execute one cycle of the CPU: fetch, decode and execute the next instruction
 // TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
 func (c *CPU) step() error {
@@ -410,7 +454,7 @@ func (c *CPU) step() error {
 	}
 
 	//debug
-	fmt.Printf("PC: 0x%04X, IR: 0x%02X, Operand: 0x%04X, Instruction: %s\n", c.PC, c.IR, c.Operand, instruction.Mnemonic)
+	c.printCurrentInstruction()
 
 	// 3. Execute the instruction
 	c.executeInstruction(instruction)
