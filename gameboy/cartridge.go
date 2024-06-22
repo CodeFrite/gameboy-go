@@ -1,54 +1,43 @@
 package gameboy
 
 import (
-	"errors"
 	"fmt"
-	"os"
 )
 
 type Cartridge struct {
-	cartridgePath string
-	cartridgeName string
-	rom []uint8
-	header []uint8
-	entry_point []uint8
-	nintendo_logo []uint8
-	title []uint8
+	cartridgePath     string
+	cartridgeName     string
+	rom               []uint8
+	header            []uint8
+	entry_point       []uint8
+	nintendo_logo     []uint8
+	title             []uint8
 	manufacturer_code []uint8
-	cgb_flag []uint8
+	cgb_flag          []uint8
 	new_licensee_code []uint8
-	sgb_flag []uint8
-	cartridge_type []uint8
-	rom_size []uint8
-	ram_size []uint8
-	destination_code []uint8
+	sgb_flag          []uint8
+	cartridge_type    []uint8
+	rom_size          []uint8
+	ram_size          []uint8
+	destination_code  []uint8
 	old_licensee_code []uint8
-	mask_rom_version []uint8
-	header_checksum []uint8
-	global_checksum []uint8
+	mask_rom_version  []uint8
+	header_checksum   []uint8
+	global_checksum   []uint8
 }
 
 func NewCartridge(uri string, name string) *Cartridge {
 	var c Cartridge
-	err := c.loadRom(uri + "/" + name)
+	rom, err := LoadRom(uri + "/" + name)
 	if err != nil {
 		fmt.Println("Error loading ROM:", err)
 		return nil
 	}
+	c.rom = rom
 	c.cartridgePath = uri
 	c.cartridgeName = name
 	c.parseHeader()
 	return &c
-}
-
-func (c *Cartridge) loadRom(uri string) error {
-	var err error
-	c.rom, err = os.ReadFile(uri)
-	if err != nil {
-		errText := fmt.Sprint("Error loading ROM:", err)
-		return errors.New(errText)
-	}
-	return nil
 }
 
 func (c *Cartridge) parseHeader() {
