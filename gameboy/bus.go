@@ -1,6 +1,9 @@
 package gameboy
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type Accessible interface {
 	Read(uint16) uint8
@@ -39,7 +42,8 @@ func (b *Bus) findMemory(address uint16) (*MemoryMap, error) {
 			return &memoryMap, nil
 		}
 	}
-	return nil, errors.New("Memory location not found")
+	errMessage := fmt.Sprintf("Memory location 0x%04X not found", address)
+	return nil, errors.New(errMessage)
 }
 
 func (b *Bus) Read(addr uint16) uint8 {
@@ -61,5 +65,11 @@ func (b *Bus) Write(addr uint16, value uint8) {
 		memoryMap.Memory.Write(addr-memoryMap.Address, value)
 	} else {
 		panic(err)
+	}
+}
+
+func (b *Bus) WriteBlob(addr uint16, blob []uint8) {
+	for i, value := range blob {
+		b.Write(addr+uint16(i), uint8(value))
 	}
 }
