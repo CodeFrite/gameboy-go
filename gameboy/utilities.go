@@ -14,6 +14,13 @@ func LoadRom(uri string) ([]byte, error) {
 	}
 	fmt.Println("ROM loaded successfully:")
 	for i, word := range rom {
+		if i == 0 {
+			fmt.Println()
+			fmt.Print("      ")
+			for j := 0; j < 16; j++ {
+				fmt.Printf("%02X ", j)
+			}
+		}
 		if i%16 == 0 {
 			fmt.Println()
 			fmt.Printf("%04X: ", i)
