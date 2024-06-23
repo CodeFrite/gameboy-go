@@ -505,3 +505,11 @@ func (c *CPU) Run() {
 		}
 	}
 }
+
+// Boot the CPU and returns when the boot process is done (PC=0x0100)
+func (c *CPU) Boot() {
+	c.PC = 0x0000
+	for c.PC != 0x0100 {
+		c.step()
+	}
+}
