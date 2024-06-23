@@ -298,6 +298,11 @@ func (c *CPU) LD(instruction *Instruction) {
 			}
 		} else {
 			c.bus.Write(c.getHL(), uint8(c.Operand))
+			if instruction.Operands[0].Increment {
+				c.setHL(c.getHL() + 1)
+			} else if instruction.Operands[0].Decrement {
+				c.setHL(c.getHL() - 1)
+			}
 		}
 		if instruction.Operands[0].Increment {
 			c.setHL(c.getHL() + 1)
@@ -305,7 +310,7 @@ func (c *CPU) LD(instruction *Instruction) {
 			c.setHL(c.getHL() - 1)
 		}
 	case "SP":
-		c.SP = uint16(c.Operand)
+		c.SP = c.Operand
 	case "a16":
 		panic("LD [a16], r8/r16 not implemented")
 	}
