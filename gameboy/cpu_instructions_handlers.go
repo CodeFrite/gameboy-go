@@ -295,14 +295,11 @@ func (c *CPU) LD(instruction *Instruction) {
 				c.resetNFlag()
 			} else {
 				c.setHL(c.Operand)
+				// no flags are impacted
 			}
 		} else {
 			c.bus.Write(c.getHL(), uint8(c.Operand))
-			if instruction.Operands[0].Increment {
-				c.setHL(c.getHL() + 1)
-			} else if instruction.Operands[0].Decrement {
-				c.setHL(c.getHL() - 1)
-			}
+			// no flags are impacted
 		}
 		if instruction.Operands[0].Increment {
 			c.setHL(c.getHL() + 1)
