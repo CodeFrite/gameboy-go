@@ -8,6 +8,10 @@ func NewMemory(size uint16) *Memory {
 	return &Memory{data: make([]uint8, size)}
 }
 
+func (m *Memory) setData(data []uint8) {
+	m.data = data
+}
+
 func (m *Memory) Size() uint16 {
 	return uint16(len(m.data))
 }
