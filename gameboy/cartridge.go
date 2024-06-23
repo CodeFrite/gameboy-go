@@ -7,7 +7,7 @@ import (
 type Cartridge struct {
 	cartridgePath     string
 	cartridgeName     string
-	rom               []uint8
+	rom               *Memory
 	header            []uint8
 	entry_point       []uint8
 	nintendo_logo     []uint8
@@ -33,37 +33,38 @@ func NewCartridge(uri string, name string) *Cartridge {
 		fmt.Println("Error loading ROM:", err)
 		return nil
 	}
-	c.rom = rom
+	c.rom = NewMemory(uint16(len(rom[0x0100:])))
+	c.rom.setData(rom[0x0100:])
 	c.cartridgePath = uri
 	c.cartridgeName = name
-	c.parseHeader()
+	c.parseHeader(rom)
 	return &c
 }
 
-func (c *Cartridge) parseHeader() {
-	c.header = c.rom[0x0100:0x014F]
-	c.entry_point = c.rom[0x0100:0x0103]
-	c.nintendo_logo = c.rom[0x0104:0x0133]
-	c.title = c.rom[0x0134:0x0143]
-	c.manufacturer_code = c.rom[0x013F:0x0142]
-	c.cgb_flag = c.rom[0x0143:0x0144]
-	c.new_licensee_code = c.rom[0x0144:0x0145]
-	c.sgb_flag = c.rom[0x0146:0x0147]
-	c.cartridge_type = c.rom[0x0147:0x0148]
-	c.rom_size = c.rom[0x0148:0x0149]
-	c.ram_size = c.rom[0x0149:0x014A]
-	c.destination_code = c.rom[0x014A:0x014B]
-	c.old_licensee_code = c.rom[0x014B:0x014C]
-	c.mask_rom_version = c.rom[0x014C:0x014D]
-	c.header_checksum = c.rom[0x014D:0x014E]
-	c.global_checksum = c.rom[0x014E:0x0150]
+func (c *Cartridge) parseHeader(rom []uint8) {
+	c.header = rom[0x0100:0x014F]
+	c.entry_point = rom[0x0100:0x0103]
+	c.nintendo_logo = rom[0x0104:0x0133]
+	c.title = rom[0x0134:0x0143]
+	c.manufacturer_code = rom[0x013F:0x0142]
+	c.cgb_flag = rom[0x0143:0x0144]
+	c.new_licensee_code = rom[0x0144:0x0145]
+	c.sgb_flag = rom[0x0146:0x0147]
+	c.cartridge_type = rom[0x0147:0x0148]
+	c.rom_size = rom[0x0148:0x0149]
+	c.ram_size = rom[0x0149:0x014A]
+	c.destination_code = rom[0x014A:0x014B]
+	c.old_licensee_code = rom[0x014B:0x014C]
+	c.mask_rom_version = rom[0x014C:0x014D]
+	c.header_checksum = rom[0x014D:0x014E]
+	c.global_checksum = rom[0x014E:0x0150]
 }
 
 func (c *Cartridge) PrintInfo() {
 	// metadata about the cartridge
 	fmt.Println("Cartridge Path:", c.cartridgePath)
 	fmt.Println("Cartridge Name:", c.cartridgeName)
-	fmt.Println("Cartridge Size:", len(c.rom), "bytes")
+	fmt.Println("Cartridge Size:", c.rom_size, "bytes")
 
 	// header information
 	fmt.Println("Header:", c.header)
@@ -85,13 +86,13 @@ func (c *Cartridge) PrintInfo() {
 }
 
 func (c *Cartridge) Read(addr uint16) uint8 {
-	return c.rom[addr]
+	return c.rom.Read(addr)
 }
 
 func (c *Cartridge) Write(addr uint16, value uint8) {
-	c.rom[addr] = value
+	c.rom.Write(addr, value)
 }
 
 func (c *Cartridge) Size() uint16 {
-	return uint16(len(c.rom))
+	return c.rom.Size()
 }
