@@ -328,7 +328,7 @@ func (c *CPU) LDH(instruction *Instruction) {
 	case "A":
 		c.A = uint8(c.Operand)
 	case "a8":
-		c.bus.Write(c.Operand, c.A)
+		c.bus.Write(0xFF00+c.Operand, c.A)
 	}
 	c.incrementPC(uint16(instruction.Bytes))
 }
