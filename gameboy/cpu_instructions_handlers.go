@@ -738,6 +738,12 @@ func (c *CPU) OR(instruction *Instruction) {
 */
 func (c *CPU) XOR(instruction *Instruction) {
 	c.A = c.A ^ uint8(c.Operand)
+	// update flags
+	if c.A == 0x00 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
 	c.incrementPC(uint16(instruction.Bytes))
 }
 
