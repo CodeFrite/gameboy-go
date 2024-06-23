@@ -70,7 +70,7 @@ func (g *Gameboy) loadCartridge(uri string, name string) {
 		log.Fatal(err)
 	}
 	g.cartridge = NewCartridge(currentDir+uri, name)
-	g.bus.AttachMemory(0x0000, g.cartridge)
+	g.bus.AttachMemory(0x0100, g.cartridge)
 }
 
 /*
@@ -80,7 +80,7 @@ func (g *Gameboy) Run(uri string, name string) {
 	bootRomData := getBootRomData()
 	g.bus.AttachMemory(0x0000, g.bootrom)
 	g.bus.WriteBlob(0x0000, bootRomData)
-	g.cpu.Boot()
 	g.loadCartridge(uri, name)
+	g.cpu.Boot()
 	g.cpu.Run()
 }
