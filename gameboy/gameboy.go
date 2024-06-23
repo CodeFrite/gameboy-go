@@ -12,6 +12,7 @@ type Gameboy struct {
 	vram         *Memory
 	wram         *Memory
 	io_registers *Memory
+	hram         *Memory
 	bus          *Bus
 }
 
@@ -34,6 +35,8 @@ func (g *Gameboy) initMemory() {
 	g.wram = NewMemory(0x2000)
 	// I/O Registers
 	g.io_registers = NewMemory(0x007F)
+	// high ram
+	g.hram = NewMemory(0x007F)
 }
 
 func (g *Gameboy) initBus() {
@@ -41,6 +44,7 @@ func (g *Gameboy) initBus() {
 	g.bus.AttachMemory(0x8000, g.vram)
 	g.bus.AttachMemory(0xC000, g.wram)
 	g.bus.AttachMemory(0xFF00, g.io_registers)
+	g.bus.AttachMemory(0xFF80, g.hram)
 }
 
 func (g *Gameboy) initCPU() {
