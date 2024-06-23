@@ -441,9 +441,14 @@ func (c *CPU) printCurrentInstruction() {
 		return strings.Join(operands, ", ")
 	}
 
-	fmt.Printf("PC: 0x%04X", c.PC)
+	fmt.Printf("PC: 0x%04X, SP: 0x%04X", c.PC, c.SP)
 	fmt.Printf(", memory: %-6X", getBytes())
 	fmt.Printf(", asm: %s %s\n", instruction.Mnemonic, getOperands())
+}
+
+func (c *CPU) printRegisters() {
+	fmt.Printf("A: 0x%02X, B: 0x%02X, C: 0x%02X, D: 0x%02X, E: 0x%02X, H: 0x%02X, L: 0x%02X", c.A, c.B, c.C, c.D, c.E, c.H, c.L)
+	fmt.Printf(", Z: %t, N: %t, H: %t, C: %t\n", c.getZFlag(), c.getNFlag(), c.getHFlag(), c.getCFlag())
 }
 
 // Execute one cycle of the CPU: fetch, decode and execute the next instruction
@@ -477,6 +482,11 @@ func (c *CPU) step() error {
 	} else {
 		c.executeCBInstruction(instruction)
 	}
+
+	// debug
+	c.printRegisters()
+	fmt.Println()
+
 	return nil
 }
 
