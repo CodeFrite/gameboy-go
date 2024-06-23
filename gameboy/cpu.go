@@ -129,7 +129,7 @@ func (c *CPU) toggleCFlag() {
  * 16-bit registers accessors
  */
 func (c *CPU) getBC() uint16 {
-	return uint16(c.B<<8 | c.C)
+	return uint16(c.B)<<8 | uint16(c.C)
 }
 
 func (c *CPU) setBC(value uint16) {
@@ -138,7 +138,7 @@ func (c *CPU) setBC(value uint16) {
 }
 
 func (c *CPU) getDE() uint16 {
-	return uint16(c.D<<8 | c.E)
+	return uint16(c.D)<<8 | uint16(c.E)
 }
 
 func (c *CPU) setDE(value uint16) {
@@ -152,7 +152,7 @@ func (c *CPU) setHL(value uint16) {
 }
 
 func (c *CPU) getHL() uint16 {
-	return uint16(c.H<<8 | c.L)
+	return uint16(c.H)<<8 | uint16(c.L)
 }
 
 // Stack operations
