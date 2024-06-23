@@ -447,7 +447,7 @@ func (c *CPU) printCurrentInstruction() {
 }
 
 func (c *CPU) printRegisters() {
-	fmt.Printf("A: 0x%02X, B: 0x%02X, C: 0x%02X, D: 0x%02X, E: 0x%02X, H: 0x%02X, L: 0x%02X", c.A, c.B, c.C, c.D, c.E, c.H, c.L)
+	fmt.Printf("A: 0x%02X, B: 0x%02X, C: 0x%02X, D: 0x%02X, E: 0x%02X, H: 0x%02X, L: 0x%02X\n", c.A, c.B, c.C, c.D, c.E, c.H, c.L)
 	fmt.Printf(", Z: %t, N: %t, H: %t, C: %t\n", c.getZFlag(), c.getNFlag(), c.getHFlag(), c.getCFlag())
 }
 
