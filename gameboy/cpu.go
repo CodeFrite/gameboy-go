@@ -272,6 +272,19 @@ func (c *CPU) fetchOperandValue(operand Operand) {
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
+
+	case "BC":
+		if operand.Immediate {
+			value = c.getBC()
+		} else {
+			value = c.bus.Read16(c.getBC())
+		}
+	case "DE":
+		if operand.Immediate {
+			value = c.getDE()
+		} else {
+			value = c.bus.Read16(c.getDE())
+		}
 	default:
 		err := fmt.Sprintf("Unknown operand name: %s (0x%02X)", operand.Name, c.IR)
 		panic(err)
