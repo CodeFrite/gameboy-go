@@ -426,6 +426,12 @@ func (c *CPU) printCurrentInstruction() {
 				value = operand.Name
 			}
 
+			if operand.Increment {
+				value += "+"
+			} else if operand.Decrement {
+				value += "-"
+			}
+
 			if !operand.Immediate {
 				value = "[" + value + "]"
 			}
@@ -462,7 +468,7 @@ func (c *CPU) step() error {
 		c.fetchOperandValue(operands[1])
 	}
 
-	//debug
+	// debug
 	c.printCurrentInstruction()
 
 	// 3. Execute the instruction
