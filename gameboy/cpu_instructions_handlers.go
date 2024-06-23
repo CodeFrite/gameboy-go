@@ -332,8 +332,37 @@ func (c *CPU) LDH(instruction *Instruction) {
 	}
 	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+	PUSH: Push a 16-bit register pair onto the stack
+	opcodes:
+		- 0xC5 = PUSH BC
+		- 0xD5 = PUSH DE
+		- 0xE5 = PUSH HL
+		- 0xF5 = PUSH AF
+	flags: -
+*/
 func (c *CPU) PUSH(instruction *Instruction) {
-	panic("PUSH not implemented")
+	c.SP--
+	switch instruction.Operands[0].Name {
+	case "AF":
+		c.bus.Write(c.SP, c.A)
+		c.SP--
+		c.bus.Write(c.SP, c.F)
+	case "BC":
+		c.bus.Write(c.SP, c.B)
+		c.SP--
+		c.bus.Write(c.SP, c.C)
+	case "DE":
+		c.bus.Write(c.SP, c.D)
+		c.SP--
+		c.bus.Write(c.SP, c.E)
+	case "HL":
+		c.bus.Write(c.SP, c.H)
+		c.SP--
+		c.bus.Write(c.SP, c.L)
+	}
+	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) POP(instruction *Instruction) {
 	panic("POP not implemented")
