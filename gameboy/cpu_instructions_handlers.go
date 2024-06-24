@@ -384,8 +384,36 @@ func (c *CPU) PUSH(instruction *Instruction) {
 	}
 	c.incrementPC(uint16(instruction.Bytes))
 }
+
+/*
+	POP: Pop a 16-bit register pair from the stack
+	opcodes:
+		- 0xC1 = POP BC
+		- 0xD1 = POP DE
+		- 0xE1 = POP HL
+		- 0xF1 = POP AF (flags are restored from the stack)
+	flags: - except for 0xF1 where Z->Z N->N H->H C->C
+*/
 func (c *CPU) POP(instruction *Instruction) {
-	panic("POP not implemented")
+	low := c.bus.Read(c.SP)
+	c.SP++
+	high := c.bus.Read(c.SP)
+	c.SP++
+	switch instruction.Operands[0].Name {
+	case "AF":
+		c.A = high
+		c.F = low
+	case "BC":
+		c.B = high
+		c.C = low
+	case "DE":
+		c.D = high
+		c.E = low
+	case "HL":
+		c.H = high
+		c.L = low
+	}
+	c.incrementPC(uint16(instruction.Bytes))
 }
 
 // Arithmetic / Logical instructions
