@@ -13,7 +13,12 @@ func LoadRom(uri string) ([]byte, error) {
 		return nil, errors.New(errText)
 	}
 	fmt.Println("ROM loaded successfully:")
-	for i, word := range rom {
+
+	return rom, nil
+}
+
+func PrintByteTable(data []byte) {
+	for i, word := range data {
 		if i == 0 {
 			fmt.Println()
 			fmt.Print("      ")
@@ -28,5 +33,4 @@ func LoadRom(uri string) ([]byte, error) {
 		fmt.Printf("%02X ", word)
 	}
 	fmt.Print("\n\n")
-	return rom, nil
 }
