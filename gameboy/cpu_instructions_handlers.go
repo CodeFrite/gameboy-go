@@ -203,8 +203,24 @@ func (c *CPU) RET(instruction *Instruction) {
 func (c *CPU) RETI(instruction *Instruction) {
 	panic("RETI not implemented")
 }
+
+/*
+	RST: Restart
+	Restart the CPU at a specific address by pushing the current address to the stack and jumping to the specified address
+	opcodes:
+		- 0xC7 = RST $00
+		- 0xCF = RST $08
+		- 0xD7 = RST $10
+		- 0xDF = RST $18
+		- 0xE7 = RST $20
+		- 0xEF = RST $28
+		- 0xF7 = RST $30
+		- 0xFF = RST $38
+	flags: -
+*/
 func (c *CPU) RST(instruction *Instruction) {
-	panic("RST not implemented")
+	c.push(c.PC)
+	c.PC = c.Operand
 }
 
 // Load / Store instructions
