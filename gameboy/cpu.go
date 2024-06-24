@@ -285,6 +285,31 @@ func (c *CPU) fetchOperandValue(operand Operand) {
 		} else {
 			value = c.bus.Read16(c.getDE())
 		}
+	case "HL":
+		if operand.Immediate {
+			value = c.getHL()
+		} else {
+			value = c.bus.Read16(c.getHL())
+		}
+	case "SP": // always immediate
+		value = c.SP
+	case "$00": // RST $00
+		value = 0x00
+	case "$08": // RST $08
+		value = 0x08
+	case "$10": // RST $10
+		value = 0x10
+	case "$18": // RST $18
+		value = 0x18
+	case "$20": // RST $20
+		value = 0x20
+	case "$28": // RST $28
+		value = 0x28
+	case "$30": // RST $30
+		value = 0x30
+	case "$38": // RST $38
+		value = 0x38
+
 	default:
 		err := fmt.Sprintf("Unknown operand name: %s (0x%02X)", operand.Name, c.IR)
 		panic(err)
@@ -497,7 +522,6 @@ func (c *CPU) step() error {
 	}
 
 	// debug
-	c.printRegisters()
 	fmt.Println()
 
 	return nil
