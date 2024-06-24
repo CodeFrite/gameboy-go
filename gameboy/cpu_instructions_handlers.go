@@ -325,7 +325,11 @@ func (c *CPU) LD(instruction *Instruction) {
 	case "SP":
 		c.SP = c.Operand
 	case "a16":
-		panic("LD [a16], r8/r16 not implemented")
+		low := c.bus.Read(c.PC + 1)
+		high := c.bus.Read(c.PC + 2)
+		addr := uint16(high)<<8 | uint16(low)
+		c.bus.Write(addr, uint8(c.SP))
+		c.bus.Write(addr+1, uint8(c.SP>>8))
 	}
 
 	// increment the program counter
