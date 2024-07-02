@@ -1,6 +1,40 @@
 package gameboy
 
+import "fmt"
+
 // > instructions handlers (PREFIX CB)
+
+// Route the execution to the corresponding instruction handler (PREFIX CB)
+func (c *CPU) executeCBInstruction(instruction Instruction) {
+	// Execute the corresponding instruction
+	switch instruction.Mnemonic {
+	case "RLC":
+		c.RLC(&instruction)
+	case "RRC":
+		c.RRC(&instruction)
+	case "RL":
+		c.RL(&instruction)
+	case "RR":
+		c.RR(&instruction)
+	case "SLA":
+		c.SLA(&instruction)
+	case "SRA":
+		c.SRA(&instruction)
+	case "SWAP":
+		c.SWAP(&instruction)
+	case "SRL":
+		c.SRL(&instruction)
+	case "BIT":
+		c.BIT(&instruction)
+	case "RES":
+		c.RES(&instruction)
+	case "SET":
+		c.SET(&instruction)
+	default:
+		fmt.Println("Unknown instruction")
+	}
+}
+
 func (c *CPU) RLC(instruction *Instruction) {
 	panic("RLC not implemented")
 }

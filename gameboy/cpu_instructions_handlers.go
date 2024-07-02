@@ -2,9 +2,91 @@ package gameboy
 
 import (
 	"fmt"
+	"strings"
 )
 
 // > instructions handlers (NO PREFIX)
+
+// Route the execution to the corresponding instruction handler
+func (c *CPU) executeInstruction(instruction Instruction) {
+	// Execute the corresponding instruction
+	switch instruction.Mnemonic {
+	case "NOP":
+		c.NOP(&instruction)
+	case "STOP":
+		c.STOP(&instruction)
+	case "HALT":
+		c.HALT(&instruction)
+	case "DI":
+		c.DI(&instruction)
+	case "EI":
+		c.EI(&instruction)
+	case "JP":
+		c.JP(&instruction)
+	case "JR":
+		c.JR(&instruction)
+	case "CALL":
+		c.CALL(&instruction)
+	case "RET":
+		c.RET(&instruction)
+	case "RETI":
+		c.RETI(&instruction)
+	case "RST":
+		c.RST(&instruction)
+	case "LD":
+		c.LD(&instruction)
+	case "LDH":
+		c.LDH(&instruction)
+	case "PUSH":
+		c.PUSH(&instruction)
+	case "POP":
+		c.POP(&instruction)
+	case "ADD":
+		c.ADD(&instruction)
+	case "ADC":
+		c.ADC(&instruction)
+	case "AND":
+		c.AND(&instruction)
+	case "INC":
+		c.INC(&instruction)
+	case "CCF":
+		c.CCF(&instruction)
+	case "CP":
+		c.CP(&instruction)
+	case "CPL":
+		c.CPL(&instruction)
+	case "DAA":
+		c.DAA(&instruction)
+	case "DEC":
+		c.DEC(&instruction)
+	case "SUB":
+		c.SUB(&instruction)
+	case "SBC":
+		c.SBC(&instruction)
+	case "SCF":
+		c.SCF(&instruction)
+	case "OR":
+		c.OR(&instruction)
+	case "XOR":
+		c.XOR(&instruction)
+	case "RLA":
+		c.RLA(&instruction)
+	case "RLCA":
+		c.RLCA(&instruction)
+	case "RRA":
+		c.RRA(&instruction)
+	case "RRCA":
+		c.RRCA(&instruction)
+	default:
+		// Handle illegal instructions first
+		if strings.HasPrefix(instruction.Mnemonic, "ILLEGAL_") {
+			c.ILLEGAL(&instruction)
+		} else {
+			err := fmt.Sprintf("Unknown instruction: 0x%02X= %s", c.IR, instruction.Mnemonic)
+			panic(err)
+		}
+	}
+}
 
 // Misc / Control instructions
 
