@@ -43,18 +43,18 @@ func (c *CPU) RRC(instruction *Instruction) {
 }
 
 /*
- RL r8 / [HL]
- Rotate r8 or [HL] left through carry: old bit 7 to Carry flag, new bit 0 to bit 7.
- opcodes:
-	- 0x10:	RL B
-	- 0x11:	RL C
-	- 0x12:	RL D
-	- 0x13:	RL E
-	- 0x14:	RL H
-	- 0x15:	RL L
-	- 0x16:	RL [HL]
-	- 0x17:	RL A
-	 flags: Z=Z N=0 H=0 C=C
+	 RL r8 / [HL]
+	 Rotate r8 or [HL] left through carry: old bit 7 to Carry flag, new bit 0 to bit 7.
+	 opcodes:
+		- 0x10:	RL B
+		- 0x11:	RL C
+		- 0x12:	RL D
+		- 0x13:	RL E
+		- 0x14:	RL H
+		- 0x15:	RL L
+		- 0x16:	RL [HL]
+		- 0x17:	RL A
+		 flags: Z=Z N=0 H=0 C=C
 */
 func (c *CPU) RL(instruction *Instruction) {
 	boolToInt := func(b bool) int {
@@ -186,10 +186,10 @@ func (c *CPU) SRL(instruction *Instruction) {
 }
 
 /*
- BIT b, r8 / [HL]
- Test bit b in register r8 or [HL]: If bit b is 0, Z is set.
- opcodes: 0x40-0x7F
- flags: Z=Z N=0 H=1 C=-
+BIT b, r8 / [HL]
+Test bit b in register r8 or [HL]: If bit b is 0, Z is set.
+opcodes: 0x40-0x7F
+flags: Z=Z N=0 H=1 C=-
 */
 func (c *CPU) BIT(instruction *Instruction) {
 	// get the bit position to test

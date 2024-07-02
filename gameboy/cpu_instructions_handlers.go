@@ -91,10 +91,10 @@ func (c *CPU) executeInstruction(instruction Instruction) {
 // Misc / Control instructions
 
 /*
- Disable Interrupts (DI)
- Disables the IME flag to prevent the CPU from responding to interrupts
- opcodes: 0xF3
- flags: -
+Disable Interrupts (DI)
+Disables the IME flag to prevent the CPU from responding to interrupts
+opcodes: 0xF3
+flags: -
 */
 func (c *CPU) DI(instruction *Instruction) {
 	c.IME = false
@@ -102,11 +102,11 @@ func (c *CPU) DI(instruction *Instruction) {
 }
 
 /*
- Enable Interrupts (EI)
- Enables the IME flag to allow the CPU to respond to interrupts
- Does not enable interrupts immediately, the next instruction will be executed before the interrupts are enabled
- opcodes: 0xFB
- flags: -
+Enable Interrupts (EI)
+Enables the IME flag to allow the CPU to respond to interrupts
+Does not enable interrupts immediately, the next instruction will be executed before the interrupts are enabled
+opcodes: 0xFB
+flags: -
 */
 func (c *CPU) EI(instruction *Instruction) {
 	// execute the next instruction before enabling interrupts
@@ -125,9 +125,9 @@ func (c *CPU) HALT(instruction *Instruction) {
 }
 
 /*
-	NOP: No operation, does nothing apart from incrementing the program counter
-	opcodes: 0x00=NOP
-	flags impacted: -
+NOP: No operation, does nothing apart from incrementing the program counter
+opcodes: 0x00=NOP
+flags impacted: -
 */
 func (c *CPU) NOP(instruction *Instruction) {
 	c.incrementPC(uint16(instruction.Bytes))
@@ -180,15 +180,16 @@ func (c *CPU) CALL(instruction *Instruction) {
 }
 
 /*
-	JP: Jumps to an address
-	opcodes:
-		- 0xC2 = JP NZ, a16
-		- 0xC3 = JP a16
-		- 0xCA = JP Z, a16
-		- 0xD2 = JP NC, a16
-		- 0xDA = JP C, a16
-		- 0xE9 = JP HL
-	flags: -
+JP: Jumps to an address
+opcodes:
+  - 0xC2 = JP NZ, a16
+  - 0xC3 = JP a16
+  - 0xCA = JP Z, a16
+  - 0xD2 = JP NC, a16
+  - 0xDA = JP C, a16
+  - 0xE9 = JP HL
+
+flags: -
 */
 func (c *CPU) JP(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
@@ -220,17 +221,18 @@ func (c *CPU) JP(instruction *Instruction) {
 }
 
 /*
-	JR: Jump relative
-	Jumps to a relative address
-	opcodes:
-		- 0x18 = JR r8
-		- 0x20 = JR NZ, r8
-		- 0x28 = JR Z, r8
-		- 0x30 = JR NC, r8
-		- 0x38 = JR C, r8
-	flags: -
-	! the int8 r8 operand has already been casted to uint16, safely because uint16 > int8 retains the sign value
-	! by converting for -1 to 0xFF, -2 to 0xFE, etc which is the expected behavior
+JR: Jump relative
+Jumps to a relative address
+opcodes:
+  - 0x18 = JR r8
+  - 0x20 = JR NZ, r8
+  - 0x28 = JR Z, r8
+  - 0x30 = JR NC, r8
+  - 0x38 = JR C, r8
+
+flags: -
+! the int8 r8 operand has already been casted to uint16, safely because uint16 > int8 retains the sign value
+! by converting for -1 to 0xFF, -2 to 0xFE, etc which is the expected behavior
 */
 func (c *CPU) JR(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
@@ -266,39 +268,40 @@ func (c *CPU) JR(instruction *Instruction) {
 }
 
 /*
-	RET: Return from a subroutine
-	This intruction pops the address from the stack and jumps to it
-	opcodes: 0xC9
-	flags: -
+RET: Return from a subroutine
+This intruction pops the address from the stack and jumps to it
+opcodes: 0xC9
+flags: -
 */
 func (c *CPU) RET(instruction *Instruction) {
 	c.PC = c.bus.Read16(c.SP)
 }
 
 /*
-	RETI: Return from interrupt
-	Return from subroutine and enable interrupts.
-	This is basically equivalent to executing EI then RET, meaning that IME is set right after this instruction.
-	opcodes: 0xD9
-	flags: -
+RETI: Return from interrupt
+Return from subroutine and enable interrupts.
+This is basically equivalent to executing EI then RET, meaning that IME is set right after this instruction.
+opcodes: 0xD9
+flags: -
 */
 func (c *CPU) RETI(instruction *Instruction) {
 	panic("RETI not implemented")
 }
 
 /*
-	RST: Restart
-	Restart the CPU at a specific address by pushing the current address to the stack and jumping to the specified address
-	opcodes:
-		- 0xC7 = RST $00
-		- 0xCF = RST $08
-		- 0xD7 = RST $10
-		- 0xDF = RST $18
-		- 0xE7 = RST $20
-		- 0xEF = RST $28
-		- 0xF7 = RST $30
-		- 0xFF = RST $38
-	flags: -
+RST: Restart
+Restart the CPU at a specific address by pushing the current address to the stack and jumping to the specified address
+opcodes:
+  - 0xC7 = RST $00
+  - 0xCF = RST $08
+  - 0xD7 = RST $10
+  - 0xDF = RST $18
+  - 0xE7 = RST $20
+  - 0xEF = RST $28
+  - 0xF7 = RST $30
+  - 0xFF = RST $38
+
+flags: -
 */
 func (c *CPU) RST(instruction *Instruction) {
 	c.push(c.PC)
@@ -308,32 +311,32 @@ func (c *CPU) RST(instruction *Instruction) {
 // Load / Store instructions
 
 /*
-	LD: Load data from one location to another
-	opcodes:
+LD: Load data from one location to another
+opcodes:
 
-	LD r8, n8 = LD A/B/C/D/E/H/L, n8 								[7]
-	LD r8, r8 = LD A/B/C/D/E/H/L, A/B/C/D/E/H/L 		[49]
-	LD r8, [r8] + 0xFF00 = LD A, [C]								[1]
-	LD r8, [a16] = LD A, [a16]											[1]
-	LD r8, [r16] = LD A, [BC]/[DE]/[HL]/[HL+]/[HL-]	[5]
-							 = LD B/C/D/E/L/H, [HL]							[6]
-	LD [r8], r8 = LD [C], A													[1]
+LD r8, n8 = LD A/B/C/D/E/H/L, n8 								[7]
+LD r8, r8 = LD A/B/C/D/E/H/L, A/B/C/D/E/H/L 		[49]
+LD r8, [r8] + 0xFF00 = LD A, [C]								[1]
+LD r8, [a16] = LD A, [a16]											[1]
+LD r8, [r16] = LD A, [BC]/[DE]/[HL]/[HL+]/[HL-]	[5]
 
-	LD r16, n16 = LD BC/DE/HL/SP, n16								[4]
-	LD r16, r16 + e8 = LD HL, SP+e8									[1]
-	LD r16, r16 = LD SP, HL													[1]
-	LD [r16], r8 = LD [BC]/[DE]/[HL+]/[HL-],  A			[4]
-							 = LD [HL],  A/B/C/D/E/H/L					[7]
-	LD [r16], n8 = LD [HL], n8											[1]
+	= LD B/C/D/E/L/H, [HL]							[6]
 
-	LD [a16], r8 = LD [a16], A											[1]
-	LD [a16], r16 = LD [a16], SP										[1]
+LD [r8], r8 = LD [C], A													[1]
+LD r16, n16 = LD BC/DE/HL/SP, n16								[4]
+LD r16, r16 + e8 = LD HL, SP+e8									[1]
+LD r16, r16 = LD SP, HL													[1]
+LD [r16], r8 = LD [BC]/[DE]/[HL+]/[HL-],  A			[4]
 
+	= LD [HL],  A/B/C/D/E/H/L					[7]
 
-	flags: - (except for 0xF8 where Z->0 N->0 H->H C->C)
+LD [r16], n8 = LD [HL], n8											[1]
+LD [a16], r8 = LD [a16], A											[1]
+LD [a16], r16 = LD [a16], SP										[1]
+flags: - (except for 0xF8 where Z->0 N->0 H->H C->C)
 
-	NOTE: all LD instructions have 2 operands, the first one is always the destination and the second one is always the source (except for LD HL, SP+r8)
-	=> we will 'automate' the process of fetching the operands expect for LD HL, SP+r8 that will be handled manually
+NOTE: all LD instructions have 2 operands, the first one is always the destination and the second one is always the source (except for LD HL, SP+r8)
+=> we will 'automate' the process of fetching the operands expect for LD HL, SP+r8 that will be handled manually
 */
 func (c *CPU) LD(instruction *Instruction) {
 	var address uint16
@@ -419,11 +422,12 @@ func (c *CPU) LD(instruction *Instruction) {
 }
 
 /*
-	LDH: Load data from memory address 0xFF00+a8 to A or from A to memory address 0xFF00+a8
-	opcodes:
-		- 0xE0 = LDH [a8], A
-		- 0xF0 = LDH A, [a8]
-	flags: -
+LDH: Load data from memory address 0xFF00+a8 to A or from A to memory address 0xFF00+a8
+opcodes:
+  - 0xE0 = LDH [a8], A
+  - 0xF0 = LDH A, [a8]
+
+flags: -
 */
 func (c *CPU) LDH(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
@@ -436,13 +440,14 @@ func (c *CPU) LDH(instruction *Instruction) {
 }
 
 /*
-	PUSH: Push a 16-bit register pair onto the stack
-	opcodes:
-		- 0xC5 = PUSH BC
-		- 0xD5 = PUSH DE
-		- 0xE5 = PUSH HL
-		- 0xF5 = PUSH AF
-	flags: -
+PUSH: Push a 16-bit register pair onto the stack
+opcodes:
+  - 0xC5 = PUSH BC
+  - 0xD5 = PUSH DE
+  - 0xE5 = PUSH HL
+  - 0xF5 = PUSH AF
+
+flags: -
 */
 func (c *CPU) PUSH(instruction *Instruction) {
 	c.SP--
@@ -468,13 +473,14 @@ func (c *CPU) PUSH(instruction *Instruction) {
 }
 
 /*
-	POP: Pop a 16-bit register pair from the stack
-	opcodes:
-		- 0xC1 = POP BC
-		- 0xD1 = POP DE
-		- 0xE1 = POP HL
-		- 0xF1 = POP AF (flags are restored from the stack)
-	flags: - except for 0xF1 where Z->Z N->N H->H C->C
+POP: Pop a 16-bit register pair from the stack
+opcodes:
+  - 0xC1 = POP BC
+  - 0xD1 = POP DE
+  - 0xE1 = POP HL
+  - 0xF1 = POP AF (flags are restored from the stack)
+
+flags: - except for 0xF1 where Z->Z N->N H->H C->C
 */
 func (c *CPU) POP(instruction *Instruction) {
 	low := c.bus.Read(c.SP)
@@ -524,18 +530,18 @@ func (c *CPU) CCF(instruction *Instruction) {
 }
 
 /*
- CP: compare 2 memory locations and/or registers by subtracting them without storing the result
- opcodes:
-	- B8 = CP A, B
-	- B9 = CP A, C
-	- BA = CP A, D
-	- BB = CP A, E
-	- BC = CP A, H
-	- BD = CP A, L
-	- BE = CP A, [HL]
-	- BF = CP A, A
-	- FE = CP A, n8
- flags: Z:Z N:1 H:H C:C
+	 CP: compare 2 memory locations and/or registers by subtracting them without storing the result
+	 opcodes:
+		- B8 = CP A, B
+		- B9 = CP A, C
+		- BA = CP A, D
+		- BB = CP A, E
+		- BC = CP A, H
+		- BD = CP A, L
+		- BE = CP A, [HL]
+		- BF = CP A, A
+		- FE = CP A, n8
+	 flags: Z:Z N:1 H:H C:C
 */
 func (c *CPU) CP(instruction *Instruction) {
 	val := c.A - uint8(c.Operand)
@@ -627,20 +633,21 @@ func (c *CPU) DAA(instruction *Instruction) {
 }
 
 /*
- DEC: Decrement register or memory
- opcodes:
-	- 0x05=DEC B
-	- 0x0B=DEC BC
-	- 0x0D=DEC C
-	- 0x15=DEC D
-	- 0x1B=DEC DE
-	- 0x1D=DEC E
-	- 0x25=DEC H
-	- 0x2B=DEC HL
-	- 0x2D=DEC L
-	- 0x35=DEC [HL]
-	- 0x3B=DEC SP
-	- 0x3D=DEC A
+	 DEC: Decrement register or memory
+	 opcodes:
+		- 0x05=DEC B
+		- 0x0B=DEC BC
+		- 0x0D=DEC C
+		- 0x15=DEC D
+		- 0x1B=DEC DE
+		- 0x1D=DEC E
+		- 0x25=DEC H
+		- 0x2B=DEC HL
+		- 0x2D=DEC L
+		- 0x35=DEC [HL]
+		- 0x3B=DEC SP
+		- 0x3D=DEC A
+
 flags: Z:Z N:1 H:H C:- for all but the 16-bits registers
 
 When to set H ? There will be a borrow from bit 4 if the lower nibble is 0
@@ -733,18 +740,18 @@ func (c *CPU) DEC(instruction *Instruction) {
 }
 
 /*
- INC: Increment register or memory
- opcodes:
- 	- 0x04=INC B
-	- 0x0C=INC C
-	- 0x14=INC D
-	- 0x1C=INC E
-	- 0x24=INC H
-	- 0x2C=INC L
-	- 0x34=INC [HL]
-	- 0x3C=INC A
+	 INC: Increment register or memory
+	 opcodes:
+	 	- 0x04=INC B
+		- 0x0C=INC C
+		- 0x14=INC D
+		- 0x1C=INC E
+		- 0x24=INC H
+		- 0x2C=INC L
+		- 0x34=INC [HL]
+		- 0x3C=INC A
 
- flags: Z:Z N:0 H:H C:-
+	 flags: Z:Z N:0 H:H C:-
 */
 func (c *CPU) INC(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
@@ -878,19 +885,20 @@ func (c *CPU) OR(instruction *Instruction) {
 }
 
 /*
-	XOR: Bitwise XOR
-	opcodes:
-		- 0xA8 = XOR A, B
-		- 0xA9 = XOR A, C
-		- 0xAA = XOR A, D
-		- 0xAB = XOR A, E
-		- 0xAC = XOR A, H
-		- 0xAD = XOR A, L
-		- 0xAE = XOR A, [HL]
-		- 0xAF = XOR A, A
-		- 0xEE = XOR A, n8
-	flags: Z->Z N->0 H->0 C->0
-	note: 0xAF XOR 0xAF = 0x00 (Z flag is always set)
+XOR: Bitwise XOR
+opcodes:
+  - 0xA8 = XOR A, B
+  - 0xA9 = XOR A, C
+  - 0xAA = XOR A, D
+  - 0xAB = XOR A, E
+  - 0xAC = XOR A, H
+  - 0xAD = XOR A, L
+  - 0xAE = XOR A, [HL]
+  - 0xAF = XOR A, A
+  - 0xEE = XOR A, n8
+
+flags: Z->Z N->0 H->0 C->0
+note: 0xAF XOR 0xAF = 0x00 (Z flag is always set)
 */
 func (c *CPU) XOR(instruction *Instruction) {
 	c.A = c.A ^ uint8(c.Operand)
