@@ -197,175 +197,8 @@ func (c *CPU) fetchOperandValue(operand Operand) {
 	c.Operand = value
 }
 
-// Route the execution to the corresponding instruction handler
-func (c *CPU) executeInstruction(instruction Instruction) {
-	// Execute the corresponding instruction
-	switch instruction.Mnemonic {
-	case "NOP":
-		c.NOP(&instruction)
-	case "STOP":
-		c.STOP(&instruction)
-	case "HALT":
-		c.HALT(&instruction)
-	case "DI":
-		c.DI(&instruction)
-	case "EI":
-		c.EI(&instruction)
-	case "JP":
-		c.JP(&instruction)
-	case "JR":
-		c.JR(&instruction)
-	case "CALL":
-		c.CALL(&instruction)
-	case "RET":
-		c.RET(&instruction)
-	case "RETI":
-		c.RETI(&instruction)
-	case "RST":
-		c.RST(&instruction)
-	case "LD":
-		c.LD(&instruction)
-	case "LDH":
-		c.LDH(&instruction)
-	case "PUSH":
-		c.PUSH(&instruction)
-	case "POP":
-		c.POP(&instruction)
-	case "ADD":
-		c.ADD(&instruction)
-	case "ADC":
-		c.ADC(&instruction)
-	case "AND":
-		c.AND(&instruction)
-	case "INC":
-		c.INC(&instruction)
-	case "CCF":
-		c.CCF(&instruction)
-	case "CP":
-		c.CP(&instruction)
-	case "CPL":
-		c.CPL(&instruction)
-	case "DAA":
-		c.DAA(&instruction)
-	case "DEC":
-		c.DEC(&instruction)
-	case "SUB":
-		c.SUB(&instruction)
-	case "SBC":
-		c.SBC(&instruction)
-	case "SCF":
-		c.SCF(&instruction)
-	case "OR":
-		c.OR(&instruction)
-	case "XOR":
-		c.XOR(&instruction)
-	case "RLA":
-		c.RLA(&instruction)
-	case "RLCA":
-		c.RLCA(&instruction)
-	case "RRA":
-		c.RRA(&instruction)
-	case "RRCA":
-		c.RRCA(&instruction)
-	default:
-		// Handle illegal instructions first
-		if strings.HasPrefix(instruction.Mnemonic, "ILLEGAL_") {
-			c.ILLEGAL(&instruction)
-		} else {
-			err := fmt.Sprintf("Unknown instruction: 0x%02X= %s", c.IR, instruction.Mnemonic)
-			panic(err)
-		}
-	}
-}
-
-// Route the execution to the corresponding instruction handler (PREFIX CB)
-func (c *CPU) executeCBInstruction(instruction Instruction) {
-	// Execute the corresponding instruction
-	switch instruction.Mnemonic {
-	case "RLC":
-		c.RLC(&instruction)
-	case "RRC":
-		c.RRC(&instruction)
-	case "RL":
-		c.RL(&instruction)
-	case "RR":
-		c.RR(&instruction)
-	case "SLA":
-		c.SLA(&instruction)
-	case "SRA":
-		c.SRA(&instruction)
-	case "SWAP":
-		c.SWAP(&instruction)
-	case "SRL":
-		c.SRL(&instruction)
-	case "BIT":
-		c.BIT(&instruction)
-	case "RES":
-		c.RES(&instruction)
-	case "SET":
-		c.SET(&instruction)
-	default:
-		fmt.Println("Unknown instruction")
-	}
-}
-
 func (c *CPU) incrementPC(offset uint16) {
 	c.PC += uint16(offset)
-}
-
-/*
- * Print the current instruction being executed in the following format (examples):
- * PC: 0x00A0, Bytes: 00 			, ASM: NOP
- * PC: 0x00A1, Bytes: 40 			, ASM: LD B, $40
- * PC: 0x00A2, Bytes: 3E 01 	, ASM: LD A, $01
- * PC: 0x00A4, Bytes: F8 4E 	, ASM: LD HL, SP + $4E
- * PC: 0x00A6, Bytes: EA AB 01, ASM: LD [$01AB], HL
- */
-func (c *CPU) printCurrentInstruction() {
-	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), c.prefixed)
-	getBytes := func() []byte {
-		var bytes []byte
-		for i := 0; i < instruction.Bytes; i++ {
-			bytes = append(bytes, c.bus.Read(c.PC+uint16(i)))
-		}
-		return bytes
-	}
-
-	getOperands := func() string {
-		var operands []string
-		for _, operand := range instruction.Operands {
-			var value string
-			if operand.Name == "n8" {
-				value = fmt.Sprintf("$%02X", c.bus.Read(c.PC+1))
-			} else if operand.Name == "n16" {
-				value = fmt.Sprintf("$%04X", c.bus.Read16(c.PC+1))
-			} else {
-				value = operand.Name
-			}
-
-			if operand.Increment {
-				value += "+"
-			} else if operand.Decrement {
-				value += "-"
-			}
-
-			if !operand.Immediate {
-				value = "[" + value + "]"
-			}
-
-			operands = append(operands, value)
-		}
-		return strings.Join(operands, ", ")
-	}
-
-	fmt.Printf("PC: 0x%04X, SP: 0x%04X", c.PC, c.SP)
-	fmt.Printf(", memory: %-6X", getBytes())
-	fmt.Printf(", asm: %s %s\n", instruction.Mnemonic, getOperands())
-}
-
-func (c *CPU) printRegisters() {
-	fmt.Printf("A: 0x%02X, B: 0x%02X, C: 0x%02X, D: 0x%02X, E: 0x%02X, H: 0x%02X, L: 0x%02X\n", c.A, c.B, c.C, c.D, c.E, c.H, c.L)
-	fmt.Printf(", Z: %t, N: %t, H: %t, C: %t\n", c.getZFlag(), c.getNFlag(), c.getHFlag(), c.getCFlag())
 }
 
 // Execute one cycle of the CPU: fetch, decode and execute the next instruction
@@ -390,19 +223,12 @@ func (c *CPU) step() error {
 		c.fetchOperandValue(operands[1])
 	}
 
-	// debug
-	c.printCurrentInstruction()
-
 	// 3. Execute the instruction
 	if !c.prefixed {
 		c.executeInstruction(instruction)
 	} else {
 		c.executeCBInstruction(instruction)
 	}
-
-	// debug
-	fmt.Println()
-
 	return nil
 }
 

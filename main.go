@@ -9,6 +9,7 @@ import (
 func main() {
 	// Create a new Gameboy
 	gb := gameboy.NewGameboy()
+	gb.Init()
 	gb.Run("/roms/", "tetris.gb")
 
 	// Exit program properly
