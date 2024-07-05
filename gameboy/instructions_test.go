@@ -27,9 +27,9 @@ func createNewGameboy() (*CPU, *Bus, *Cartridge) {
 
 	// 4. init BUS
 	bus := NewBus()
-	bus.AttachMemory(&cartridge, 0x0000)
-	bus.AttachMemory(vram, 0x8000)
-	bus.AttachMemory(wram, 0xC000)
+	bus.AttachMemory(0x0000, &cartridge)
+	bus.AttachMemory(0x8000, vram)
+	bus.AttachMemory(0xC000, wram)
 
 	// 4. instantiate a new CPU
 	cpu := NewCPU(bus)
@@ -980,8 +980,8 @@ func TestPREFIX_CB(t *testing.T) {
 }
 
 /*
- Illegal instructions 0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD
- Should panic when executed
+Illegal instructions 0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD
+Should panic when executed
 */
 func TestILLEGAL(t *testing.T) {
 	cpu, _, _ := createNewGameboy()
