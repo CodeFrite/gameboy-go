@@ -7,6 +7,7 @@ import (
 
 type Accessible interface {
 	Read(uint16) uint8
+	Dump(uint16, uint16) []uint8
 	Write(uint16, uint8)
 	Size() uint16
 }
@@ -50,6 +51,15 @@ func (b *MMU) Read(addr uint16) uint8 {
 	memoryMap, err := b.findMemory(addr)
 	if err == nil {
 		return memoryMap.Memory.Read(addr - memoryMap.Address)
+	} else {
+		panic(err)
+	}
+}
+
+func (b *MMU) Dump(from uint16, to uint16) []uint8 {
+	memoryMap, err := b.findMemory(from)
+	if err == nil {
+		return memoryMap.Memory.Dump(from-memoryMap.Address, to-memoryMap.Address)
 	} else {
 		panic(err)
 	}

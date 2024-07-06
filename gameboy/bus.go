@@ -22,6 +22,10 @@ func (b *Bus) Read16(addr uint16) uint16 {
 	return b.mmu.Read16(addr)
 }
 
+func (b *Bus) Dump(from uint16, to uint16) []uint8 {
+	return b.mmu.Dump(from, to)
+}
+
 func (b *Bus) Write(addr uint16, value uint8) {
 	b.mmu.Write(addr, value)
 }

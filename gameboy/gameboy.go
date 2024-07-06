@@ -1,8 +1,6 @@
 package gameboy
 
-import (
-	"log"
-)
+import "log"
 
 type Gameboy struct {
 	cpu          *CPU
@@ -45,6 +43,7 @@ func (gb *Gameboy) initCPU() {
 		PREV_CPU_STATE: nil,
 		CURR_CPU_STATE: nil,
 		INSTR:          nil,
+		MEMORY_WRITES:  nil,
 	}
 }
 
