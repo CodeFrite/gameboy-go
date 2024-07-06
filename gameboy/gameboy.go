@@ -1,6 +1,9 @@
 package gameboy
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 type Gameboy struct {
 	cpu          *CPU
@@ -29,7 +32,9 @@ func (gb *Gameboy) init(romName string) *GameboyState {
 	gb.loadCartridge("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms/", romName)
 	gb.initMemory()
 	gb.connectMemoryToBus()
-	gb.saveCurrentState()
+	gb.cpu.prefetch()
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
+	gb.saveCurrentState(instruction)
 	return gb.state
 }
 
@@ -94,12 +99,13 @@ func (gb *Gameboy) Run() {
 }
 
 func (gb *Gameboy) Step() *GameboyState {
-	// shift the state
-	gb.shiftState()
+	// prefetch the instruction to get the correct output
+	gb.cpu.prefetch()
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
 	// execute the instruction
 	gb.cpu.step()
 	// save the state
-	gb.saveCurrentState()
+	gb.saveCurrentState(instruction)
 	return gb.state
 }
 

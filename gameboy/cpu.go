@@ -203,6 +203,29 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 	return value
 }
 
+func (c *CPU) prefetch() {
+	// 0. reset the prefixed flag
+	c.Prefixed = false
+
+	// 1. Store the opcode in the instruction register & prefix flag
+	opCode, prefixed := c.fetchOpcode()
+	c.Prefixed = prefixed
+	c.IR = opCode
+
+	// 2. Decode the instruction
+	// get instruction from opcodes.json file with IR used as key
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), c.Prefixed)
+	// get the operands of the instruction
+	operands := instruction.Operands
+	// fetch the operand value
+	if len(operands) == 1 {
+		c.Operand = c.fetchOperandValue(operands[0])
+	} else if len(operands) == 2 {
+		// decode operand 2
+		c.Operand = c.fetchOperandValue(operands[1])
+	}
+}
+
 // Execute one cycle of the CPU: fetch, decode and execute the next instruction
 // TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
 func (c *CPU) step() error {
