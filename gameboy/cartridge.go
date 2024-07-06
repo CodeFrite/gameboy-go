@@ -89,6 +89,10 @@ func (c *Cartridge) Read(addr uint16) uint8 {
 	return c.rom.Read(addr)
 }
 
+func (c *Cartridge) Dump(from uint16, to uint16) []uint8 {
+	return c.rom.Dump(from, to)
+}
+
 func (c *Cartridge) Write(addr uint16, value uint8) {
 	c.rom.Write(addr, value)
 }

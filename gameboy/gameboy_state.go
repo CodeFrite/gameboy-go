@@ -2,7 +2,7 @@ package gameboy
 
 import "fmt"
 
-type cpuState struct {
+type CpuState struct {
 	// Special registers
 	PC uint16 `json:"PC"` // Program Counter
 	SP uint16 `json:"SP"` // Stack Pointer
@@ -30,10 +30,16 @@ type cpuState struct {
 	HALTED bool `json:"HALTED"` // is the CPU halted
 }
 
+type MemoryWrite struct {
+	Address uint16   `json:"address"`
+	Data    *[]uint8 `json:"data"`
+}
+
 type GameboyState struct {
-	PREV_CPU_STATE *cpuState    `json:"prevState"`
-	CURR_CPU_STATE *cpuState    `json:"currState"`
+	PREV_CPU_STATE *CpuState    `json:"prevState"`
+	CURR_CPU_STATE *CpuState    `json:"currState"`
 	INSTR          *Instruction `json:"instruction"`
+	MEMORY_WRITES  *MemoryWrite `json:"memoryWrites"`
 }
 
 // shift the current state to the previous state and reset the current state
@@ -43,9 +49,10 @@ func (gb *Gameboy) shiftState() {
 
 func (gb *Gameboy) getCurrentState() *GameboyState {
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
+	data := gb.bus.Dump(0, gb.bootrom.Size())
 	return &GameboyState{
 		PREV_CPU_STATE: gb.state.CURR_CPU_STATE,
-		CURR_CPU_STATE: &cpuState{
+		CURR_CPU_STATE: &CpuState{
 			PC:            gb.cpu.PC,
 			SP:            gb.cpu.SP,
 			A:             gb.cpu.A,
@@ -65,6 +72,10 @@ func (gb *Gameboy) getCurrentState() *GameboyState {
 			HALTED:        gb.cpu.halted,
 		},
 		INSTR: &instruction,
+		MEMORY_WRITES: &MemoryWrite{
+			Address: 0x0000,
+			Data:    &data,
+		},
 	}
 }
 

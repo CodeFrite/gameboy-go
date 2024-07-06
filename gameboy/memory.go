@@ -20,6 +20,13 @@ func (m *Memory) Read(addr uint16) uint8 {
 	return m.data[addr]
 }
 
+/*
+ * Dump memory from address 'from' to address 'to'
+ */
+func (m *Memory) Dump(from uint16, to uint16) []uint8 {
+	return m.data[from:to]
+}
+
 func (m *Memory) Write(addr uint16, value uint8) {
 	m.data[addr] = value
 }
