@@ -53,8 +53,8 @@ func (gb *Gameboy) getCurrentState() *GameboyState {
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
 	dump := gb.bus.Dump(0, gb.bootrom.Size())
 	data := make([]string, len(dump))
-	for i, v := range dump {
-		data[i] = fmt.Sprintf("0x%02X", v)
+	for _, v := range dump {
+		data = append(data, fmt.Sprintf("0x%02X", v))
 	}
 	memoryWrites := []MemoryWrite{}
 	memoryWrites = append(memoryWrites, MemoryWrite{

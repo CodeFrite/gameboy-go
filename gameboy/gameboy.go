@@ -43,7 +43,11 @@ func (gb *Gameboy) initCPU() {
 		PREV_CPU_STATE: nil,
 		CURR_CPU_STATE: nil,
 		INSTR:          nil,
-		MEMORY_WRITES:  []MemoryWrite{},
+		MEMORY_WRITES: []MemoryWrite{{
+
+			Address: 0,
+			Data:    []string{},
+		}},
 	}
 }
 

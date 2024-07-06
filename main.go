@@ -10,8 +10,9 @@ func main() {
 	// Create a new Gameboy
 	gb := gameboy.NewGameboy("tetris.gb")
 	gb.Run()
+
+	//TODO> Create a channel to communicate with the Gameboy
 	/*
-		// Create a channel to communicate with the Gameboy
 		ch := make(chan *gameboy.GameboyState)
 		go gb.Run(ch)
 		for range ch {
