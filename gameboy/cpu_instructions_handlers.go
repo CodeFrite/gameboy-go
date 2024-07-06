@@ -98,7 +98,6 @@ flags: -
 */
 func (c *CPU) DI(instruction *Instruction) {
 	c.IME = false
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -110,7 +109,6 @@ flags: -
 */
 func (c *CPU) EI(instruction *Instruction) {
 	// execute the next instruction before enabling interrupts
-	c.incrementPC(uint16(instruction.Bytes))
 	c.step()
 	c.IME = true
 }
@@ -130,7 +128,6 @@ opcodes: 0x00=NOP
 flags impacted: -
 */
 func (c *CPU) NOP(instruction *Instruction) {
-	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) STOP(instruction *Instruction) {
 	panic("STOP not implemented")
@@ -197,7 +194,6 @@ func (c *CPU) JP(instruction *Instruction) {
 		if c.getZFlag() {
 			c.PC = uint16(c.Operand)
 		} else {
-			c.incrementPC(uint16(instruction.Bytes))
 		}
 	case "NZ":
 		if !c.getZFlag() {
@@ -240,25 +236,21 @@ func (c *CPU) JR(instruction *Instruction) {
 		if c.getZFlag() {
 			c.PC += c.Operand
 		} else {
-			c.incrementPC(uint16(instruction.Bytes))
 		}
 	case "NZ":
 		if !c.getZFlag() {
 			c.PC += c.Operand
 		} else {
-			c.incrementPC(uint16(instruction.Bytes))
 		}
 	case "C":
 		if c.getCFlag() {
 			c.PC += c.Operand
 		} else {
-			c.incrementPC(uint16(instruction.Bytes))
 		}
 	case "NC":
 		if !c.getCFlag() {
 			c.PC += uint16(uint8(c.Operand))
 		} else {
-			c.incrementPC(uint16(instruction.Bytes))
 		}
 	case "r8":
 		c.PC += c.Operand
@@ -417,8 +409,6 @@ func (c *CPU) LD(instruction *Instruction) {
 		c.bus.Write(addr+1, uint8(c.SP>>8))
 	}
 
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -436,7 +426,6 @@ func (c *CPU) LDH(instruction *Instruction) {
 	case "a8":
 		c.bus.Write(0xFF00+c.Operand, c.A)
 	}
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -469,7 +458,6 @@ func (c *CPU) PUSH(instruction *Instruction) {
 		c.SP--
 		c.bus.Write(c.SP, c.L)
 	}
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -501,7 +489,6 @@ func (c *CPU) POP(instruction *Instruction) {
 		c.H = high
 		c.L = low
 	}
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 // Arithmetic / Logical instructions
@@ -525,8 +512,6 @@ func (c *CPU) CCF(instruction *Instruction) {
 	// reset N and H flags
 	c.resetNFlag()
 	c.resetHFlag()
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -562,8 +547,6 @@ func (c *CPU) CP(instruction *Instruction) {
 	} else {
 		c.resetCFlag()
 	}
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -577,8 +560,6 @@ func (c *CPU) CPL(instruction *Instruction) {
 	// update flags
 	c.setNFlag()
 	c.setHFlag()
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -628,8 +609,6 @@ func (c *CPU) DAA(instruction *Instruction) {
 	// reset the H flag
 	c.resetHFlag()
 	// N flag is not modified
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -735,8 +714,6 @@ func (c *CPU) DEC(instruction *Instruction) {
 	default:
 		panic("DEC: unknown operand")
 	}
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -856,8 +833,6 @@ func (c *CPU) INC(instruction *Instruction) {
 	}
 	// reset the N flag
 	c.resetNFlag()
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) SUB(instruction *Instruction) {
 	panic("SUB not implemented")
@@ -877,8 +852,6 @@ func (c *CPU) SCF(instruction *Instruction) {
 	// reset the N and H flags and leave the Z flag unchanged
 	c.resetNFlag()
 	c.resetHFlag()
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) OR(instruction *Instruction) {
 	panic("OR not implemented")
@@ -908,7 +881,6 @@ func (c *CPU) XOR(instruction *Instruction) {
 	} else {
 		c.resetZFlag()
 	}
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 // Shift / Rotate and Bit instructions
@@ -941,8 +913,6 @@ func (c *CPU) RLA(instruction *Instruction) {
 	c.resetNFlag()
 	c.resetHFlag()
 
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -965,8 +935,6 @@ func (c *CPU) RLCA(instruction *Instruction) {
 	c.resetNFlag()
 	c.resetHFlag()
 
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -997,8 +965,6 @@ func (c *CPU) RRA(instruction *Instruction) {
 	c.resetNFlag()
 	c.resetHFlag()
 
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 /*
@@ -1019,8 +985,6 @@ func (c *CPU) RRCA(instruction *Instruction) {
 	c.resetZFlag()
 	c.resetNFlag()
 	c.resetHFlag()
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 
 // Illegal instructions

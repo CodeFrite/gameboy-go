@@ -167,7 +167,6 @@ func (c *CPU) RL(instruction *Instruction) {
 	}
 	c.resetNFlag()
 	c.resetHFlag()
-	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) RR(instruction *Instruction) {
 	panic("RR not implemented")
@@ -202,8 +201,6 @@ func (c *CPU) BIT(instruction *Instruction) {
 	}
 	c.resetNFlag()
 	c.setHFlag()
-	// increment the program counter
-	c.incrementPC(uint16(instruction.Bytes))
 }
 func (c *CPU) RES(instruction *Instruction) {
 	panic("RES not implemented")

@@ -20,6 +20,7 @@ type CPU struct {
 	IR       uint8  // Instruction Register
 	Prefixed bool   // Is the current instruction prefixed with 0xCB
 	Operand  uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+	offset   uint16 // offset used in some instructions
 
 	// Memory
 	HRAM [127]byte // 127bytes of High-Speed RAM
@@ -39,8 +40,8 @@ func NewCPU(bus *Bus) *CPU {
 }
 
 // Increment the Program Counter by the given offset
-func (c *CPU) incrementPC(offset uint16) {
-	c.PC += uint16(offset)
+func (c *CPU) incrementPC() {
+	c.PC += uint16(c.offset)
 }
 
 // Stack operations
@@ -206,6 +207,8 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 // Execute one cycle of the CPU: fetch, decode and execute the next instruction
 // TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
 func (c *CPU) step() error {
+	// update the pc
+	c.incrementPC()
 	// 0. reset the prefixed flag
 	c.Prefixed = false
 
@@ -233,6 +236,7 @@ func (c *CPU) step() error {
 	} else {
 		c.executeCBInstruction(instruction)
 	}
+	c.offset = uint16(instruction.Bytes)
 	return nil
 }
 
