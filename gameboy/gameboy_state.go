@@ -36,10 +36,10 @@ type MemoryWrite struct {
 }
 
 type GameboyState struct {
-	PREV_CPU_STATE *CpuState    `json:"prevState"`
-	CURR_CPU_STATE *CpuState    `json:"currState"`
-	INSTR          *Instruction `json:"instruction"`
-	MEMORY_WRITES  *MemoryWrite `json:"memoryWrites"`
+	PREV_CPU_STATE *CpuState     `json:"prevState"`
+	CURR_CPU_STATE *CpuState     `json:"currState"`
+	INSTR          *Instruction  `json:"instruction"`
+	MEMORY_WRITES  []MemoryWrite `json:"memoryWrites"`
 }
 
 // shift the current state to the previous state and reset the current state
@@ -72,10 +72,10 @@ func (gb *Gameboy) getCurrentState() *GameboyState {
 			HALTED:        gb.cpu.halted,
 		},
 		INSTR: &instruction,
-		MEMORY_WRITES: &MemoryWrite{
+		MEMORY_WRITES: []MemoryWrite{{
 			Address: 0x0000,
 			Data:    &data,
-		},
+		}},
 	}
 }
 
