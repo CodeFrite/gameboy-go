@@ -1,6 +1,8 @@
 package gameboy
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type CpuState struct {
 	// Special registers
@@ -31,8 +33,8 @@ type CpuState struct {
 }
 
 type MemoryWrite struct {
-	Address uint16  `json:"address"`
-	Data    []uint8 `json:"data"`
+	Address uint16   `json:"address"`
+	Data    []string `json:"data"`
 }
 
 type GameboyState struct {
@@ -49,7 +51,11 @@ func (gb *Gameboy) shiftState() {
 
 func (gb *Gameboy) getCurrentState() *GameboyState {
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
-	data := gb.bus.Dump(0, gb.bootrom.Size())
+	dump := gb.bus.Dump(0, gb.bootrom.Size())
+	data := make([]string, len(dump))
+	for i, v := range dump {
+		data[i] = fmt.Sprintf("0x%02X", v)
+	}
 	memoryWrites := []MemoryWrite{}
 	memoryWrites = append(memoryWrites, MemoryWrite{
 		Address: 0x0000,
