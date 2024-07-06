@@ -49,7 +49,8 @@ func (gb *Gameboy) shiftState() {
 	gb.state.PREV_CPU_STATE = gb.state.CURR_CPU_STATE
 }
 
-func (gb *Gameboy) getCurrentState(instruction Instruction) *GameboyState {
+func (gb *Gameboy) getCurrentState() *GameboyState {
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
 	dump := gb.bus.Dump(0, gb.bootrom.Size())
 	var data []string
 	for _, v := range dump {
@@ -86,8 +87,8 @@ func (gb *Gameboy) getCurrentState(instruction Instruction) *GameboyState {
 	}
 }
 
-func (gb *Gameboy) saveCurrentState(instruction Instruction) {
-	gb.state = gb.getCurrentState(instruction)
+func (gb *Gameboy) saveCurrentState() {
+	gb.state = gb.getCurrentState()
 }
 
 func (gb *Gameboy) State() *GameboyState {
