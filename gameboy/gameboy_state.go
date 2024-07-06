@@ -31,8 +31,8 @@ type CpuState struct {
 }
 
 type MemoryWrite struct {
-	Address uint16   `json:"address"`
-	Data    *[]uint8 `json:"data"`
+	Address uint16  `json:"address"`
+	Data    []uint8 `json:"data"`
 }
 
 type GameboyState struct {
@@ -74,8 +74,8 @@ func (gb *Gameboy) getCurrentState() *GameboyState {
 		INSTR: &instruction,
 		MEMORY_WRITES: []MemoryWrite{{
 			Address: 0x0000,
-			Data:    &data,
-		}},
+			Data:    data,
+		},
 	}
 }
 
