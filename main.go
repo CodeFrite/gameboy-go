@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"codefrite.dev/emulators/gameboy"
+	"github.com/codefrite/gameboy-go/gameboy"
 )
 
 func main() {

@@ -1,3 +1,3 @@
-module codefrite.dev/emulators
+module github.com/codefrite/gameboy-go
 
 go 1.22
