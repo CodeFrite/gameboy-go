@@ -46,7 +46,7 @@ func (gb *Gameboy) initCPU() {
 		MEMORY_WRITES: []MemoryWrite{{
 
 			Address: 0,
-			Data:    []string{},
+			Data:    []uint8{},
 		}},
 	}
 }

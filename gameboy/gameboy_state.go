@@ -33,8 +33,8 @@ type CpuState struct {
 }
 
 type MemoryWrite struct {
-	Address uint16   `json:"address"`
-	Data    []string `json:"data"`
+	Address uint16  `json:"address"`
+	Data    []uint8 `json:"data"`
 }
 
 type GameboyState struct {
@@ -52,9 +52,9 @@ func (gb *Gameboy) shiftState() {
 func (gb *Gameboy) getCurrentState() *GameboyState {
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
 	dump := gb.bus.Dump(0, gb.bootrom.Size())
-	data := make([]string, len(dump))
+	data := make([]uint8, len(dump))
 	for _, v := range dump {
-		data = append(data, fmt.Sprintf("0x%02X", v))
+		data = append(data, uint8(v))
 	}
 	memoryWrites := []MemoryWrite{}
 	memoryWrites = append(memoryWrites, MemoryWrite{
