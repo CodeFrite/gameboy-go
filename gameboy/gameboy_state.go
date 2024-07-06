@@ -50,6 +50,11 @@ func (gb *Gameboy) shiftState() {
 func (gb *Gameboy) getCurrentState() *GameboyState {
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
 	data := gb.bus.Dump(0, gb.bootrom.Size())
+	memoryWrites := []MemoryWrite{}
+	memoryWrites = append(memoryWrites, MemoryWrite{
+		Address: 0x0000,
+		Data:    data,
+	})
 	return &GameboyState{
 		PREV_CPU_STATE: gb.state.CURR_CPU_STATE,
 		CURR_CPU_STATE: &CpuState{
@@ -71,11 +76,8 @@ func (gb *Gameboy) getCurrentState() *GameboyState {
 			IME:           gb.cpu.IME,
 			HALTED:        gb.cpu.halted,
 		},
-		INSTR: &instruction,
-		MEMORY_WRITES: []MemoryWrite{{
-			Address: 0x0000,
-			Data:    data,
-		},
+		INSTR:         &instruction,
+		MEMORY_WRITES: memoryWrites,
 	}
 }
 
