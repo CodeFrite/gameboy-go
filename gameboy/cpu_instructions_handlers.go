@@ -151,26 +151,26 @@ func (c *CPU) CALL(instruction *Instruction) {
 	case "Z":
 		if c.getZFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.PC = uint16(c.Operand)
+			c.offset = uint16(c.Operand)
 		}
 	case "NZ":
 		if !c.getZFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.PC = uint16(c.Operand)
+			c.offset = uint16(c.Operand)
 		}
 	case "C":
 		if c.getCFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.PC = uint16(c.Operand)
+			c.offset = uint16(c.Operand)
 		}
 	case "NC":
 		if !c.getCFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.PC = uint16(c.Operand)
+			c.offset = uint16(c.Operand)
 		}
 	case "a16":
 		c.push(c.PC + uint16(instruction.Bytes))
-		c.PC = uint16(c.Operand)
+		c.offset = uint16(c.Operand)
 	default:
 		panic("CALL: unknown operand")
 	}
@@ -192,25 +192,25 @@ func (c *CPU) JP(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.PC = uint16(c.Operand)
+			c.offset = uint16(c.Operand)
 		} else {
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.PC = uint16(c.Operand)
+			c.offset = uint16(c.Operand)
 		}
 	case "C":
 		if c.getCFlag() {
-			c.PC = uint16(c.Operand)
+			c.offset = uint16(c.Operand)
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.PC = uint16(c.Operand)
+			c.offset = uint16(c.Operand)
 		}
 	case "a16":
-		c.PC = uint16(c.Operand)
+		c.offset = uint16(c.Operand)
 	case "HL":
-		c.PC = uint16(c.Operand)
+		c.offset = uint16(c.Operand)
 	default:
 		panic("JP: unknown operand")
 	}
@@ -234,26 +234,26 @@ func (c *CPU) JR(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.PC += c.Operand
+			c.offset += c.Operand
 		} else {
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.PC += c.Operand
+			c.offset += c.Operand
 		} else {
 		}
 	case "C":
 		if c.getCFlag() {
-			c.PC += c.Operand
+			c.offset += c.Operand
 		} else {
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.PC += uint16(uint8(c.Operand))
+			c.offset += uint16(uint8(c.Operand))
 		} else {
 		}
 	case "r8":
-		c.PC += c.Operand
+		c.offset += c.Operand
 	default:
 		panic("JR: unknown operand")
 	}
@@ -266,7 +266,7 @@ opcodes: 0xC9
 flags: -
 */
 func (c *CPU) RET(instruction *Instruction) {
-	c.PC = c.bus.Read16(c.SP)
+	c.offset = c.bus.Read16(c.SP)
 }
 
 /*
@@ -297,7 +297,7 @@ flags: -
 */
 func (c *CPU) RST(instruction *Instruction) {
 	c.push(c.PC)
-	c.PC = c.Operand
+	c.offset = c.Operand
 }
 
 // Load / Store instructions
