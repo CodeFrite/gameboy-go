@@ -41,7 +41,7 @@ func NewCPU(bus *Bus) *CPU {
 
 // Increment the Program Counter by the given offset
 func (c *CPU) incrementPC() {
-	c.PC += uint16(c.offset)
+	c.PC = uint16(c.offset)
 }
 
 // Stack operations
@@ -209,6 +209,9 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 func (c *CPU) step() error {
 	// update the pc
 	c.incrementPC()
+	// reset the offset
+	c.offset = 0
+
 	// 0. reset the prefixed flag
 	c.Prefixed = false
 
@@ -236,7 +239,10 @@ func (c *CPU) step() error {
 	} else {
 		c.executeCBInstruction(instruction)
 	}
-	c.offset = uint16(instruction.Bytes)
+
+	if c.offset == 0 {
+		c.offset += uint16(instruction.Bytes)
+	}
 	return nil
 }
 
