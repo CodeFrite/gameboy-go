@@ -51,47 +51,6 @@ func (gb *Gameboy) resetState() {
 }
 
 // get the memories current content
-
-func (gb *Gameboy) getCurrentState() *GameboyState {
-	// construct memory writes
-	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
-	dump := gb.bus.Dump(0, gb.bootrom.Size())
-	var data []string
-	for _, v := range dump {
-		data = append(data, fmt.Sprintf("0x%02X", v))
-	}
-	memoryWrites := []MemoryWrite{}
-	fmt.Println(gb.bus.mmu.router)
-	memoryWrites = append(memoryWrites, MemoryWrite{
-		Address: 0x0000,
-		Data:    data,
-	})
-	return &GameboyState{
-		PREV_CPU_STATE: gb.state.CURR_CPU_STATE,
-		CURR_CPU_STATE: &CpuState{
-			PC:            gb.cpu.PC,
-			SP:            gb.cpu.SP,
-			A:             gb.cpu.A,
-			F:             gb.cpu.F,
-			Z:             gb.cpu.F&0x80 != 0,
-			N:             gb.cpu.F&0x40 != 0,
-			H:             gb.cpu.F&0x20 != 0,
-			C:             gb.cpu.F&0x10 != 0,
-			BC:            uint16(gb.cpu.B)<<8 | uint16(gb.cpu.C),
-			DE:            uint16(gb.cpu.D)<<8 | uint16(gb.cpu.E),
-			HL:            uint16(gb.cpu.H)<<8 | uint16(gb.cpu.L),
-			PREFIXED:      gb.cpu.Prefixed,
-			IR:            gb.cpu.IR,
-			OPERAND_VALUE: gb.cpu.Operand,
-			IE:            gb.cpu.IE,
-			IME:           gb.cpu.IME,
-			HALTED:        gb.cpu.halted,
-		},
-		INSTR:         &instruction,
-		MEMORY_WRITES: memoryWrites,
-	}
-}
-
 func (gb *Gameboy) currCpuState() *CpuState {
 	return &CpuState{
 		PC:            gb.cpu.PC,
@@ -133,7 +92,7 @@ func (gb *Gameboy) currMemoryWrites() []MemoryWrite {
 			Data:    data,
 		})
 	}
-	return []MemoryWrite{}
+	return memoryWrites
 }
 
 func (gb *Gameboy) saveCurrentState() {
