@@ -10,8 +10,8 @@ func NewBus() *Bus {
 	}
 }
 
-func (b *Bus) AttachMemory(address uint16, memory Accessible) {
-	b.mmu.AttachMemory(address, memory)
+func (b *Bus) AttachMemory(name string, address uint16, memory Accessible) {
+	b.mmu.AttachMemory(name, address, memory)
 }
 
 func (b *Bus) Read(addr uint16) uint8 {

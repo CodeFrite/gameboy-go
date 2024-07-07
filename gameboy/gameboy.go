@@ -54,7 +54,7 @@ func (gb *Gameboy) initCPU() {
 func (gb *Gameboy) initBootRom() {
 	bootRomData := gb.getBootRomData()
 	gb.bootrom = NewMemory(0x100)
-	gb.bus.AttachMemory(0x0000, gb.bootrom)
+	gb.bus.AttachMemory("boot rom", 0x0000, gb.bootrom)
 	gb.bus.WriteBlob(0x0000, bootRomData)
 }
 
@@ -72,11 +72,11 @@ func (gb *Gameboy) initMemory() {
 
 func (gb *Gameboy) connectMemoryToBus() {
 	// attach memories to the bus
-	gb.bus.AttachMemory(0x0100, gb.cartridge)
-	gb.bus.AttachMemory(0x8000, gb.vram)
-	gb.bus.AttachMemory(0xC000, gb.wram)
-	gb.bus.AttachMemory(0xFF00, gb.io_registers)
-	gb.bus.AttachMemory(0xFF80, gb.hram)
+	gb.bus.AttachMemory("cartridge", 0x0100, gb.cartridge)
+	gb.bus.AttachMemory("vram", 0x8000, gb.vram)
+	gb.bus.AttachMemory("wram", 0xC000, gb.wram)
+	gb.bus.AttachMemory("i/o registers", 0xFF00, gb.io_registers)
+	gb.bus.AttachMemory("hram", 0xFF80, gb.hram)
 }
 
 //! Public interface

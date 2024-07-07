@@ -13,6 +13,7 @@ type Accessible interface {
 }
 
 type MemoryMap struct {
+	Name    string
 	Address uint16
 	Memory  Accessible
 }
@@ -27,8 +28,9 @@ func NewMMU() *MMU {
 	}
 }
 
-func (b *MMU) AttachMemory(address uint16, memory Accessible) {
+func (b *MMU) AttachMemory(name string, address uint16, memory Accessible) {
 	b.router = append(b.router, MemoryMap{
+		Name:    name,
 		Address: address,
 		Memory:  memory,
 	})
@@ -64,7 +66,6 @@ func (b *MMU) Dump(from uint16, to uint16) []uint8 {
 		panic(err)
 	}
 }
-
 func (b *MMU) Read16(addr uint16) uint16 {
 	return uint16(b.Read(addr+1))<<8 | uint16(b.Read(addr))
 }
