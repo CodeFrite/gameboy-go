@@ -151,26 +151,26 @@ func (c *CPU) CALL(instruction *Instruction) {
 	case "Z":
 		if c.getZFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.offset = uint16(c.Operand)
+			c.offset = uint16(c.Operand - uint16(c.PC))
 		}
 	case "NZ":
 		if !c.getZFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.offset = uint16(c.Operand)
+			c.offset = uint16(c.Operand - uint16(c.PC))
 		}
 	case "C":
 		if c.getCFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.offset = uint16(c.Operand)
+			c.offset = uint16(c.Operand - uint16(c.PC))
 		}
 	case "NC":
 		if !c.getCFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.offset = uint16(c.Operand)
+			c.offset = uint16(c.Operand - uint16(c.PC))
 		}
 	case "a16":
 		c.push(c.PC + uint16(instruction.Bytes))
-		c.offset = uint16(c.Operand)
+		c.offset = uint16(c.Operand - uint16(c.PC))
 	default:
 		panic("CALL: unknown operand")
 	}
@@ -192,25 +192,25 @@ func (c *CPU) JP(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.offset = uint16(c.Operand)
+			c.offset = uint16(c.Operand - c.PC)
 		} else {
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.offset = uint16(c.Operand)
+			c.offset = uint16(c.Operand - c.PC)
 		}
 	case "C":
 		if c.getCFlag() {
-			c.offset = uint16(c.Operand)
+			c.offset = uint16(c.Operand - c.PC)
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.offset = uint16(c.Operand)
+			c.offset = uint16(c.Operand - c.PC)
 		}
 	case "a16":
-		c.offset = uint16(c.Operand)
+		c.offset = uint16(c.Operand - c.PC)
 	case "HL":
-		c.offset = uint16(c.Operand)
+		c.offset = uint16(c.Operand - c.PC)
 	default:
 		panic("JP: unknown operand")
 	}
@@ -234,26 +234,30 @@ func (c *CPU) JR(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.offset += c.Operand
+			c.offset += c.Operand - c.PC
 		} else {
+			c.offset += uint16(instruction.Bytes)
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.offset += c.Operand
+			c.offset += c.Operand - c.PC
 		} else {
+			c.offset += uint16(instruction.Bytes)
 		}
 	case "C":
 		if c.getCFlag() {
-			c.offset += c.Operand
+			c.offset += c.Operand - c.PC
 		} else {
+			c.offset += uint16(instruction.Bytes)
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.offset += uint16(uint8(c.Operand))
+			c.offset += uint16(uint8(c.Operand - c.PC))
 		} else {
+			c.offset += uint16(instruction.Bytes)
 		}
 	case "r8":
-		c.offset += c.Operand
+		c.offset += c.Operand - c.PC
 	default:
 		panic("JR: unknown operand")
 	}
@@ -266,7 +270,7 @@ opcodes: 0xC9
 flags: -
 */
 func (c *CPU) RET(instruction *Instruction) {
-	c.offset = c.bus.Read16(c.SP)
+	c.offset = c.pop()
 }
 
 /*
