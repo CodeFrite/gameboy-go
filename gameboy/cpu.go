@@ -241,7 +241,7 @@ func (c *CPU) step() error {
 	}
 
 	if c.offset == 0 {
-		c.offset += uint16(instruction.Bytes)
+		c.offset = uint16(instruction.Bytes)
 	}
 	return nil
 }
