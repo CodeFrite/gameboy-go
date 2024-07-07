@@ -33,6 +33,7 @@ type CpuState struct {
 }
 
 type MemoryWrite struct {
+	Name    string   `json:"name"`
 	Address uint16   `json:"address"`
 	Data    []string `json:"data"`
 }
@@ -44,12 +45,15 @@ type GameboyState struct {
 	MEMORY_WRITES  []MemoryWrite `json:"memoryWrites"`
 }
 
-// shift the current state to the previous state and reset the current state
-func (gb *Gameboy) shiftState() {
-	gb.state.PREV_CPU_STATE = gb.state.CURR_CPU_STATE
+// TODO! test and integrate this function. DO NOT COMMIT YET !!!
+func (gb *Gameboy) resetState() {
+	gb.state.CURR_CPU_STATE = nil
 }
 
+// get the memories current content
+
 func (gb *Gameboy) getCurrentState() *GameboyState {
+	// construct memory writes
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
 	dump := gb.bus.Dump(0, gb.bootrom.Size())
 	var data []string
@@ -57,6 +61,7 @@ func (gb *Gameboy) getCurrentState() *GameboyState {
 		data = append(data, fmt.Sprintf("0x%02X", v))
 	}
 	memoryWrites := []MemoryWrite{}
+	fmt.Println(gb.bus.mmu.router)
 	memoryWrites = append(memoryWrites, MemoryWrite{
 		Address: 0x0000,
 		Data:    data,
@@ -87,8 +92,57 @@ func (gb *Gameboy) getCurrentState() *GameboyState {
 	}
 }
 
+func (gb *Gameboy) currCpuState() *CpuState {
+	return &CpuState{
+		PC:            gb.cpu.PC,
+		SP:            gb.cpu.SP,
+		A:             gb.cpu.A,
+		F:             gb.cpu.F,
+		Z:             gb.cpu.F&0x80 != 0,
+		N:             gb.cpu.F&0x40 != 0,
+		H:             gb.cpu.F&0x20 != 0,
+		C:             gb.cpu.F&0x10 != 0,
+		BC:            uint16(gb.cpu.B)<<8 | uint16(gb.cpu.C),
+		DE:            uint16(gb.cpu.D)<<8 | uint16(gb.cpu.E),
+		HL:            uint16(gb.cpu.H)<<8 | uint16(gb.cpu.L),
+		PREFIXED:      gb.cpu.Prefixed,
+		IR:            gb.cpu.IR,
+		OPERAND_VALUE: gb.cpu.Operand,
+		IE:            gb.cpu.IE,
+		IME:           gb.cpu.IME,
+		HALTED:        gb.cpu.halted,
+	}
+}
+
+func (gb *Gameboy) currInstruction() *Instruction {
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
+	return &instruction
+}
+
+func (gb *Gameboy) currMemoryWrites() []MemoryWrite {
+	var memoryWrites []MemoryWrite
+	for _, memoryMap := range gb.bus.mmu.router {
+		dump := gb.bus.Dump(memoryMap.Address, memoryMap.Address+memoryMap.Memory.Size())
+		var data []string
+		for _, v := range dump {
+			data = append(data, fmt.Sprintf("0x%02X", v))
+		}
+		memoryWrites = append(memoryWrites, MemoryWrite{
+			Name:    memoryMap.Name,
+			Address: memoryMap.Address,
+			Data:    data,
+		})
+	}
+	return []MemoryWrite{}
+}
+
 func (gb *Gameboy) saveCurrentState() {
-	gb.state = gb.getCurrentState()
+	gb.state = &GameboyState{
+		PREV_CPU_STATE: gb.state.CURR_CPU_STATE,
+		CURR_CPU_STATE: gb.currCpuState(),
+		INSTR:          gb.currInstruction(),
+		MEMORY_WRITES:  gb.currMemoryWrites(),
+	}
 }
 
 func (gb *Gameboy) State() *GameboyState {
