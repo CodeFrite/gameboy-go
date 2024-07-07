@@ -41,7 +41,7 @@ func NewCPU(bus *Bus) *CPU {
 
 // Increment the Program Counter by the given offset
 func (c *CPU) incrementPC() {
-	c.PC = uint16(c.offset)
+	c.PC = c.offset
 }
 
 // Stack operations

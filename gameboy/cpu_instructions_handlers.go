@@ -193,26 +193,18 @@ func (c *CPU) JP(instruction *Instruction) {
 	case "Z":
 		if c.getZFlag() {
 			c.offset = c.Operand
-		} else {
-			c.offset = uint16(instruction.Bytes)
 		}
 	case "NZ":
 		if !c.getZFlag() {
 			c.offset = c.Operand
-		} else {
-			c.offset = uint16(instruction.Bytes)
 		}
 	case "C":
 		if c.getCFlag() {
 			c.offset = c.Operand
-		} else {
-			c.offset = uint16(instruction.Bytes)
 		}
 	case "NC":
 		if !c.getCFlag() {
 			c.offset = c.Operand
-		} else {
-			c.offset = uint16(instruction.Bytes)
 		}
 	case "a16":
 		c.offset = c.Operand
