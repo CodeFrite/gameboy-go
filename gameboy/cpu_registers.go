@@ -119,3 +119,12 @@ func (c *CPU) setHL(value uint16) {
 func (c *CPU) getHL() uint16 {
 	return uint16(c.H)<<8 | uint16(c.L)
 }
+
+// Interrupt Enable
+func (c *CPU) getIE() uint8 {
+	return c.bus.Read(0xFFFF)
+}
+
+func (c *CPU) setIE(value uint8) {
+	c.bus.Write(0xFFFF, value)
+}

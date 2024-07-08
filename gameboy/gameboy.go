@@ -22,19 +22,38 @@ func NewGameboy(romName string) *Gameboy {
 
 // Initializers
 
+// Memory Map:
+// 0x0000-0x00FF (256 bytes) - Boot ROM
+// 0x0100-0x7FFF (32KB switchable) - Cartridge ROM
+// 0x8000-0x9FFF (8KB Video RAM) - VRAM
+// 0xA000-0xBFFF (8KB switchable) - External RAM
+// 0xC000-0xDFFF (8KB internal RAM) - WRAM
+// 0xE000-0xFDFF (7.5KB Echo RAM) - Echo RAM
+// 0xFE00-0xFE9F (160 bytes) - OAM
+// (0xFEA0-0xFEFF (96 bytes) - Not used)
+// 0xFF00-0xFF7F (128 bytes) - I/O Registers
+// 0xFF80-0xFFFE (127 bytes) - High RAM
+// 0xFFFF (1 byte) - Interrupt Enable Register
+
 func (gb *Gameboy) init(romName string) *GameboyState {
 	gb.initBus()
-	gb.initCPU()
 	gb.initBootRom()
-	gb.loadCartridge("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms/", romName)
+	gb.initCPU()
+	gb.initCartridge("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms/", romName)
 	gb.initMemory()
-	gb.connectMemoryToBus()
 	gb.saveCurrentState()
 	return gb.state
 }
 
 func (gb *Gameboy) initBus() {
 	gb.bus = NewBus()
+}
+
+func (gb *Gameboy) initBootRom() {
+	bootRomData := gb.getBootRomData()
+	gb.bootrom = NewMemory(0x100)
+	gb.bus.AttachMemory("Boot ROM", 0x0000, gb.bootrom)
+	gb.bus.WriteBlob(0x0000, bootRomData)
 }
 
 func (gb *Gameboy) initCPU() {
@@ -49,34 +68,27 @@ func (gb *Gameboy) initCPU() {
 			Data:    []string{},
 		}},
 	}
+	gb.bus.AttachMemory("HRAM", 0xFF80, gb.cpu.HRAM)
+	gb.bus.AttachMemory("IE", 0xFFFF, gb.cpu.IE)
 }
 
-func (gb *Gameboy) initBootRom() {
-	bootRomData := gb.getBootRomData()
-	gb.bootrom = NewMemory(0x100)
-	gb.bus.AttachMemory("boot rom", 0x0000, gb.bootrom)
-	gb.bus.WriteBlob(0x0000, bootRomData)
-}
-
-func (gb *Gameboy) loadCartridge(uri string, name string) {
+func (gb *Gameboy) initCartridge(uri string, name string) {
 	gb.cartridge = NewCartridge(uri, name)
+	gb.bus.AttachMemory("Cartridge", 0x0100, gb.cartridge.rom)
 }
 
 func (gb *Gameboy) initMemory() {
 	// initialize memories
+
 	gb.vram = NewMemory(0x2000)         // VRAM
 	gb.wram = NewMemory(0x2000)         // WRAM
 	gb.io_registers = NewMemory(0x0080) // I/O Registers
-	gb.hram = NewMemory(0x0080)         // high ram
-}
+	// high ram　127bytes set by the CPU
+	// IE register 1byte set by the CPU
 
-func (gb *Gameboy) connectMemoryToBus() {
-	// attach memories to the bus
-	gb.bus.AttachMemory("cartridge", 0x0100, gb.cartridge)
-	gb.bus.AttachMemory("vram", 0x8000, gb.vram)
-	gb.bus.AttachMemory("wram", 0xC000, gb.wram)
-	gb.bus.AttachMemory("i/o registers", 0xFF00, gb.io_registers)
-	gb.bus.AttachMemory("hram", 0xFF80, gb.hram)
+	gb.bus.AttachMemory("Video RAM (VRAM)", 0x8000, gb.vram)
+	gb.bus.AttachMemory("Working RAM (WRAM)", 0xC000, gb.wram)
+	gb.bus.AttachMemory("I/O Registers", 0xFF00, gb.io_registers)
 }
 
 //! Public interface

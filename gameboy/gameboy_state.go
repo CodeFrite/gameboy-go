@@ -67,7 +67,7 @@ func (gb *Gameboy) currCpuState() *CpuState {
 		PREFIXED:      gb.cpu.Prefixed,
 		IR:            gb.cpu.IR,
 		OPERAND_VALUE: gb.cpu.Operand,
-		IE:            gb.cpu.IE,
+		IE:            gb.cpu.getIE(),
 		IME:           gb.cpu.IME,
 		HALTED:        gb.cpu.halted,
 	}

@@ -41,7 +41,10 @@ func (b *MMU) AttachMemory(name string, address uint16, memory Accessible) {
  */
 func (b *MMU) findMemory(address uint16) (*MemoryMap, error) {
 	for _, memoryMap := range b.router {
-		if address >= memoryMap.Address && address < memoryMap.Address+memoryMap.Memory.Size() {
+		memoryMapSize := memoryMap.Memory.Size() - 1
+		condition1 := address >= memoryMap.Address
+		condition2 := address <= memoryMap.Address+memoryMapSize
+		if condition1 && condition2 {
 			return &memoryMap, nil
 		}
 	}

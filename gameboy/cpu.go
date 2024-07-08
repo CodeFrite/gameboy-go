@@ -23,19 +23,21 @@ type CPU struct {
 	offset   uint16 // offset used in some instructions
 
 	// Memory
-	HRAM [127]byte // 127bytes of High-Speed RAM
-	bus  *Bus      // reference to the bus
+	HRAM *Memory // 127bytes of High-Speed RAM
+	bus  *Bus    // reference to the bus
 
 	// Interrupts
-	IE     uint8 // Interrupt Enable
-	IME    bool  // interrupt master enable
+	IE     *Memory // Interrupt Enable
+	IME    bool    // interrupt master enable
 	halted bool
 }
 
 // Create a new CPU
 func NewCPU(bus *Bus) *CPU {
 	return &CPU{
-		bus: bus,
+		bus:  bus,
+		HRAM: NewMemory(127),
+		IE:   NewMemory(1),
 	}
 }
 
