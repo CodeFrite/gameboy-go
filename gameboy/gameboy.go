@@ -66,8 +66,8 @@ func (gb *Gameboy) initMemory() {
 	// initialize memories
 	gb.vram = NewMemory(0x2000)         // VRAM
 	gb.wram = NewMemory(0x2000)         // WRAM
-	gb.io_registers = NewMemory(0x007F) // I/O Registers
-	gb.hram = NewMemory(0x007F)         // high ram
+	gb.io_registers = NewMemory(0x0080) // I/O Registers
+	gb.hram = NewMemory(0x0080)         // high ram
 }
 
 func (gb *Gameboy) connectMemoryToBus() {
