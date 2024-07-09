@@ -876,6 +876,10 @@ func (c *CPU) XOR(instruction *Instruction) {
 	} else {
 		c.resetZFlag()
 	}
+	// reset N, H and C flags
+	c.resetNFlag()
+	c.resetHFlag()
+	c.resetCFlag()
 }
 
 // Shift / Rotate and Bit instructions
