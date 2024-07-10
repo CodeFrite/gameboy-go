@@ -419,8 +419,8 @@ func (c *CPU) LDH(instruction *Instruction) {
 	case "A":
 		c.A = uint8(c.Operand)
 	case "a8":
-		op := c.fetchOperandValue(instruction.Operands[0])
-		c.bus.Write(op, c.A)
+		a8 := 0xFFFF + uint16(c.bus.Read(c.PC+1))
+		c.bus.Write(a8, c.A)
 	default:
 		panic("LDH: unknown operand")
 	}
