@@ -815,18 +815,23 @@ func (c *CPU) INC(instruction *Instruction) {
 			c.resetHFlag()
 		}
 	case "HL":
-		addr := c.getHL()
-		val := c.bus.Read(addr) + 1
-		c.bus.Write(addr, val)
-		if val == 0x00 {
-			c.setZFlag()
-		} else {
-			c.resetZFlag()
-		}
-		if (val & 0x0F) == 0x00 {
-			c.setHFlag()
-		} else {
-			c.resetHFlag()
+		if instruction.Operands[0].Immediate {
+			c.setHL(c.getHL() + 1)
+		} else if instruction.Operands[0].Increment {
+			addr := c.getHL()
+			val := c.bus.Read(addr) + 1
+			c.bus.Write(addr, val)
+
+			if val == 0x00 {
+				c.setZFlag()
+			} else {
+				c.resetZFlag()
+			}
+			if (val & 0x0F) == 0x00 {
+				c.setHFlag()
+			} else {
+				c.resetHFlag()
+			}
 		}
 	}
 	// reset the N flag
