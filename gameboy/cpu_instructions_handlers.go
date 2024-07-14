@@ -633,7 +633,7 @@ func (c *CPU) DEC(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "A":
 		// check H before DEC
-		if uint8(c.A) == 0x00 {
+		if c.A&0x0F == 0x00 {
 			c.setHFlag()
 		}
 		c.A--
@@ -642,56 +642,56 @@ func (c *CPU) DEC(instruction *Instruction) {
 		}
 		c.setNFlag()
 	case "B":
-		if uint8(c.A) == 0x00 {
+		if c.B&0x0F == 0x00 {
 			c.setHFlag()
 		}
 		c.B--
-		if c.A == 0x00 {
+		if c.B == 0x00 {
 			c.setZFlag()
 		}
 		c.setNFlag()
 	case "C":
-		if uint8(c.A) == 0x00 {
+		if c.C&0x0F == 0x00 {
 			c.setHFlag()
 		}
 		c.C--
-		if c.A == 0x00 {
+		if c.C == 0x00 {
 			c.setZFlag()
 		}
 		c.setNFlag()
 	case "D":
-		if uint8(c.A) == 0x00 {
+		if c.D&0x0F == 0x00 {
 			c.setHFlag()
 		}
 		c.D--
-		if c.A == 0x00 {
+		if c.D == 0x00 {
 			c.setZFlag()
 		}
 		c.setNFlag()
 	case "E":
-		if uint8(c.A) == 0x00 {
+		if c.E&0x0F == 0x00 {
 			c.setHFlag()
 		}
 		c.E--
-		if c.A == 0x00 {
+		if c.E == 0x00 {
 			c.setZFlag()
 		}
 		c.setNFlag()
 	case "H":
-		if uint8(c.A) == 0x00 {
+		if c.H&0x0F == 0x00 {
 			c.setHFlag()
 		}
 		c.H--
-		if c.A == 0x00 {
+		if c.H == 0x00 {
 			c.setZFlag()
 		}
 		c.setNFlag()
 	case "L":
-		if uint8(c.A) == 0x00 {
+		if c.L&0x0F == 0x00 {
 			c.setHFlag()
 		}
 		c.L--
-		if c.A == 0x00 {
+		if c.L == 0x00 {
 			c.setZFlag()
 		}
 		c.setNFlag()
