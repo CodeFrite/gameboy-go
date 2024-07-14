@@ -217,7 +217,7 @@ func (c *CPU) JP(instruction *Instruction) {
 
 /*
 JR: Jump relative
-Jumps to a relative address
+Jumps to a relative address from the next instruction
 opcodes:
   - 0x18 = JR r8
   - 0x20 = JR NZ, r8
@@ -233,19 +233,19 @@ func (c *CPU) JR(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)) + int(instruction.Bytes))
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)) + int(instruction.Bytes))
 		}
 	case "C":
 		if c.getCFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)) + int(instruction.Bytes))
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)) + int(instruction.Bytes))
 		}
 	case "r8":
 		panic("JR r8 not implemented")
