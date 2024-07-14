@@ -192,9 +192,10 @@ flags: Z=Z N=0 H=1 C=-
 */
 func (c *CPU) BIT(instruction *Instruction) {
 	// get the bit position to test
-	b := c.bus.Read(c.PC + 1)
+	opStr := instruction.Operands[0].Name // the bit position to test is given as a string
+	var b uint16 = uint16(opStr[0] - '0')
 	// check if bit b of operand is 0
-	if c.Operand&(1<<b) == 0 {
+	if c.Operand&uint16(1<<b) == 0 {
 		c.setZFlag()
 	} else {
 		c.resetZFlag()
