@@ -233,22 +233,22 @@ func (c *CPU) JR(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.offset = c.Operand
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.offset = c.Operand
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
 		}
 	case "C":
 		if c.getCFlag() {
-			c.offset = c.Operand
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.offset = c.Operand
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
 		}
 	case "r8":
-		c.offset = c.Operand
+		panic("JR r8 not implemented")
 	default:
 		panic("JR: unknown operand")
 	}
