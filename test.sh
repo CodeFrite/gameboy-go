@@ -5,7 +5,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
-go test -v ./gameboy | while read line; do
+go test -v ./test | while read line; do
   if echo "$line" | grep -q "FAIL"; then
     echo -e "${RED}${line}${NC}"
   elif echo "$line" | grep -q "PASS"; then
