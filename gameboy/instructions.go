@@ -21,11 +21,11 @@ type Instruction struct {
 	Flags     Flags     `json:"flags"`     // cpu flags affected by the instruction
 }
 type Operand struct {
-	Name      string `json:"name"`                 // operand name: register, n8/n16 (immediate unsigned value), e8 (immediate signed value), a8/a16 (memory location)
-	Bytes     int    `json:"bytes,omitempty"`      // number of bytes the operand takes (optional)
-	Immediate bool   `json:"immediate"`            // is the operand an immediate value or should it be fetched from memory
-	Increment bool   `json:"increment, omitempty"` // should the program counter be incremented after fetching the operand
-	Decrement bool   `json:"decrement, omitempty"` // should the program counter be decreased after fetching the operand
+	Name      string `json:"name"`                // operand name: register, n8/n16 (immediate unsigned value), e8 (immediate signed value), a8/a16 (memory location)
+	Bytes     int    `json:"bytes,omitempty"`     // number of bytes the operand takes (optional)
+	Immediate bool   `json:"immediate"`           // is the operand an immediate value or should it be fetched from memory
+	Increment bool   `json:"increment,omitempty"` // should the program counter be incremented after fetching the operand
+	Decrement bool   `json:"decrement,omitempty"` // should the program counter be decreased after fetching the operand
 }
 type Flags struct {
 	Z string `json:"Z"` // Zero flag: set if the result is zero (all bits are 0)
