@@ -73,6 +73,9 @@ func (gb *Gameboy) currCpuState() *CpuState {
 	}
 }
 
+/**
+* currInstruction: returns the current instruction being processed based on cpu IR and prefix values
+ */
 func (gb *Gameboy) currInstruction() *Instruction {
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
 	return &instruction

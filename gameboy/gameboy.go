@@ -63,12 +63,11 @@ func (gb *Gameboy) initCPU() {
 		CURR_CPU_STATE: nil,
 		INSTR:          nil,
 		MEMORY_WRITES: []MemoryWrite{{
-
 			Address: 0,
 			Data:    []string{},
 		}},
 	}
-	gb.bus.AttachMemory("HRAM", 0xFF80, gb.cpu.HRAM)
+	// IE register 1byte set by the CPU
 	gb.bus.AttachMemory("IE", 0xFFFF, gb.cpu.IE)
 }
 
@@ -79,13 +78,13 @@ func (gb *Gameboy) initCartridge(uri string, name string) {
 
 func (gb *Gameboy) initMemory() {
 	// initialize memories
+	gb.hram = NewMemory(0x7F)                 // High RAM (127 bytes)
+	gb.vram = NewMemoryWithRandomData(0x2000) // VRAM (8KB)
+	gb.wram = NewMemory(0x2000)               // WRAM (8KB)
+	gb.io_registers = NewMemory(0x0080)       // I/O Registers (128 bytes)
 
-	gb.vram = NewMemory(0x2000)         // VRAM
-	gb.wram = NewMemory(0x2000)         // WRAM
-	gb.io_registers = NewMemory(0x0080) // I/O Registers
-	// high ram　127bytes set by the CPU
-	// IE register 1byte set by the CPU
-
+	// attach memories to the bus
+	gb.bus.AttachMemory("High RAM (HRAM)", 0xFF80, gb.hram)
 	gb.bus.AttachMemory("Video RAM (VRAM)", 0x8000, gb.vram)
 	gb.bus.AttachMemory("Working RAM (WRAM)", 0xC000, gb.wram)
 	gb.bus.AttachMemory("I/O Registers", 0xFF00, gb.io_registers)
