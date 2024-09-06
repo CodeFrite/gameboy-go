@@ -2,6 +2,7 @@ package gameboy
 
 import (
 	"fmt"
+	"reflect"
 )
 
 type CpuState struct {
@@ -32,12 +33,6 @@ type CpuState struct {
 	HALTED bool `json:"HALTED"` // is the CPU halted
 }
 
-type MemoryWrite struct {
-	Name    string   `json:"name"`
-	Address uint16   `json:"address"`
-	Data    []string `json:"data"`
-}
-
 type GameboyState struct {
 	PREV_CPU_STATE *CpuState     `json:"prevState"`
 	CURR_CPU_STATE *CpuState     `json:"currState"`
@@ -45,9 +40,61 @@ type GameboyState struct {
 	MEMORY_WRITES  []MemoryWrite `json:"memoryWrites"`
 }
 
-// TODO! test and integrate this function. DO NOT COMMIT YET !!!
-func (gb *Gameboy) resetState() {
-	gb.state.CURR_CPU_STATE = nil
+func (gbs *GameboyState) print() {
+	fmt.Println("CPU State:")
+	gbs.printCPUState()
+}
+
+func (gbs *GameboyState) printCPUState() {
+	fmt.Println("CPU State:")
+	// if previous and current states are nil, there is nothing to print
+	if (gbs.PREV_CPU_STATE == nil) && (gbs.CURR_CPU_STATE == nil) {
+		fmt.Println("No CPU state to print")
+		return
+		// if only the current state is available, print it
+	} else if gbs.PREV_CPU_STATE == nil {
+		curr := reflect.Indirect(reflect.ValueOf(gbs.CURR_CPU_STATE))
+		typeOfCpu := curr.Type()
+		for i := 0; i < curr.NumField(); i++ {
+			if typeOfCpu.Field(i).Type.Kind() == reflect.Bool {
+				fmt.Printf("%s: %t\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+			} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint8 {
+				fmt.Printf("%s: %02X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+			} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint16 {
+				fmt.Printf("%s: %04X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+			} else if typeOfCpu.Field(i).Type.Kind() == reflect.String {
+				fmt.Printf("%s: %s\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+			}
+		}
+	} else {
+		prev := reflect.Indirect(reflect.ValueOf(gbs.PREV_CPU_STATE))
+		curr := reflect.Indirect(reflect.ValueOf(gbs.CURR_CPU_STATE))
+		typeOfCpu := prev.Type()
+
+		for i := 0; i < prev.NumField(); i++ {
+			if prev.Field(i).Interface() != curr.Field(i).Interface() {
+				if typeOfCpu.Field(i).Type.Kind() == reflect.Bool {
+					fmt.Printf("%s: %t -> %t \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint8 {
+					fmt.Printf("%s: %02X -> %02X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint16 {
+					fmt.Printf("%s: %04X -> %04X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+				} else if typeOfCpu.Field(i).Type.Kind() == reflect.String {
+					fmt.Printf("%s: %s -> %s \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+				}
+			} else {
+				if typeOfCpu.Field(i).Type.Kind() == reflect.Bool {
+					fmt.Printf("%s: %t -> %t \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint8 {
+					fmt.Printf("%s: %02X -> %02X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint16 {
+					fmt.Printf("%s: %04X -> %04X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+				} else if typeOfCpu.Field(i).Type.Kind() == reflect.String {
+					fmt.Printf("%s: %s -> %s \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+				}
+			}
+		}
+	}
 }
 
 // get the memories current content
@@ -74,39 +121,24 @@ func (gb *Gameboy) currCpuState() *CpuState {
 }
 
 /**
-* currInstruction: returns the current instruction being processed based on cpu IR and prefix values
+ * currInstruction: returns the current instruction being processed based on cpu IR and prefix values
  */
 func (gb *Gameboy) currInstruction() *Instruction {
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
 	return &instruction
 }
 
+/**
+ * clear memory writes
+ */
+func (gb *Gameboy) clearMemoryWrites() {
+	gb.bus.mmu.clearMemoryWrites()
+}
+
+/**
+ * returns the current memory writes
+ *  TODO:
+ */
 func (gb *Gameboy) currMemoryWrites() []MemoryWrite {
-	var memoryWrites []MemoryWrite
-	for _, memoryMap := range gb.bus.mmu.router {
-		dump := gb.bus.Dump(memoryMap.Address, memoryMap.Address+memoryMap.Memory.Size())
-		var data []string
-		for _, v := range dump {
-			data = append(data, fmt.Sprintf("0x%02X", v))
-		}
-		memoryWrites = append(memoryWrites, MemoryWrite{
-			Name:    memoryMap.Name,
-			Address: memoryMap.Address,
-			Data:    data,
-		})
-	}
-	return memoryWrites
-}
-
-func (gb *Gameboy) saveCurrentState() {
-	gb.state = &GameboyState{
-		PREV_CPU_STATE: gb.state.CURR_CPU_STATE,
-		CURR_CPU_STATE: gb.currCpuState(),
-		INSTR:          gb.currInstruction(),
-		MEMORY_WRITES:  gb.currMemoryWrites(),
-	}
-}
-
-func (gb *Gameboy) State() *GameboyState {
-	return gb.state
+	return gb.bus.mmu.memoryWrites
 }
