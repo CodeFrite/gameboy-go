@@ -22,13 +22,13 @@ type CPU struct {
 	Operand  uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
 	offset   uint16 // offset used in some instructions
 
-	// Memory
-	bus *Bus // reference to the bus
-
 	// Interrupts
 	IE     *Memory // Interrupt Enable
 	IME    bool    // interrupt master enable
 	halted bool
+
+	// Memory
+	bus *Bus // reference to the bus
 }
 
 // Create a new CPU
@@ -58,13 +58,13 @@ func (c *CPU) push(value uint16) {
 	c.bus.Write(c.SP, byte(value))
 }
 
-// Pop a value to the stack
+// Pop a value from the stack
 func (c *CPU) pop() uint16 {
-	// pop the low byte to the stack
+	// pop the low byte from the stack
 	low := c.bus.Read(c.SP)
 	// increment the stack pointer
 	c.SP += 1
-	// write the high byte to the stack
+	// write the high byte from the stack
 	high := c.bus.Read(c.SP)
 	// increment the stack pointer
 	c.SP += 1
