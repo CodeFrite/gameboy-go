@@ -2,21 +2,25 @@ package gameboy
 
 import "log"
 
+/**
+ * the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
+ */
 type Gameboy struct {
 	cpu          *CPU
 	bootrom      *Memory
 	cartridge    *Cartridge
 	vram         *Memory
 	wram         *Memory
-	io_registers *Memory
 	hram         *Memory
+	io_registers *Memory
 	bus          *Bus
-	state        *GameboyState
 }
 
-func NewGameboy(romName string) *Gameboy {
+/**
+ * creates a new gameboy empty struct
+ */
+func NewGameboy() *Gameboy {
 	gb := &Gameboy{}
-	gb.init(romName)
 	return gb
 }
 
@@ -35,20 +39,27 @@ func NewGameboy(romName string) *Gameboy {
 // 0xFF80-0xFFFE (127 bytes) - High RAM
 // 0xFFFF (1 byte) - Interrupt Enable Register
 
-func (gb *Gameboy) init(romName string) *GameboyState {
-	gb.initBus()
+/**
+ * initializes the gameboy by creating the bus, bootrom, cpu, cartridge and the different memories
+ */
+func (gb *Gameboy) init(romName string) {
+	gb.initBus() // the bus is created first to be able to attach the memories to it
 	gb.initBootRom()
 	gb.initCPU()
-	gb.initCartridge("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms/", romName)
+	gb.initCartridge("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms", romName)
 	gb.initMemory()
-	gb.saveCurrentState()
-	return gb.state
 }
 
+/**
+ * initializes the bus
+ */
 func (gb *Gameboy) initBus() {
 	gb.bus = NewBus()
 }
 
+/**
+ * initializes the bootrom @ 0x0000
+ */
 func (gb *Gameboy) initBootRom() {
 	bootRomData := gb.getBootRomData()
 	gb.bootrom = NewMemory(0x100)
@@ -56,26 +67,31 @@ func (gb *Gameboy) initBootRom() {
 	gb.bus.WriteBlob(0x0000, bootRomData)
 }
 
+/**
+ * initializes the CPU: creates a new CPU, passes it the bus and attaches the IE register to the bus @ 0xFFFF
+ */
 func (gb *Gameboy) initCPU() {
 	gb.cpu = NewCPU(gb.bus)
-	gb.state = &GameboyState{
-		PREV_CPU_STATE: nil,
-		CURR_CPU_STATE: nil,
-		INSTR:          nil,
-		MEMORY_WRITES: []MemoryWrite{{
-			Address: 0,
-			Data:    []string{},
-		}},
-	}
 	// IE register 1byte set by the CPU
 	gb.bus.AttachMemory("IE", 0xFFFF, gb.cpu.IE)
 }
 
+/**
+ * initializes the cartridge: creates a new cartridge, attaches the ROM to the bus @ 0x0100
+ * Please note that the first 0x100 correspond to the bootrom which i chosed to load separately from a different file (see cartridge.go)
+ */
 func (gb *Gameboy) initCartridge(uri string, name string) {
 	gb.cartridge = NewCartridge(uri, name)
 	gb.bus.AttachMemory("Cartridge", 0x0100, gb.cartridge.rom)
 }
 
+/**
+ * initializes the memories and attaches them to the bus
+ * HRAM: 127 bytes @ 0xFF80
+ * VRAM: 8KB bytes @ 0x8000
+ * WRAM: 8KB @ 0xC000
+ * I/O Registers: 128 bytes @ 0xFF00
+ */
 func (gb *Gameboy) initMemory() {
 	// initialize memories
 	gb.hram = NewMemory(0x7F)                 // High RAM (127 bytes)
@@ -92,8 +108,8 @@ func (gb *Gameboy) initMemory() {
 
 //! Public interface
 
-/*
- * Run the bootrom and then the game
+/**
+ * runs the bootrom and then the game
  */
 func (gb *Gameboy) Run() {
 	for {
@@ -104,17 +120,20 @@ func (gb *Gameboy) Run() {
 	}
 }
 
-func (gb *Gameboy) Step() *GameboyState {
+/**
+ * executes the next instruction
+ */
+func (gb *Gameboy) Step() {
 	// execute the instruction
 	gb.cpu.step()
-	// save the state
-	gb.saveCurrentState()
-	return gb.state
 }
 
 // Utility functions
 
-// load data content as []uint8 from a rom file
+/**
+ * loads data content as []uint8 from a rom file
+ * TODO: no need for this function: it already calls a utility function from utilies.go
+ */
 func (gb *Gameboy) getBootRomData() []uint8 {
 	romData, err := LoadRom("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms/dmg_boot.bin")
 	if err != nil {
