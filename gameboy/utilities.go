@@ -12,7 +12,7 @@ func LoadRom(uri string) ([]byte, error) {
 		errText := fmt.Sprint("Error loading ROM:", err)
 		return nil, errors.New(errText)
 	}
-	fmt.Println("ROM loaded successfully:")
+	fmt.Println("ROM", uri, "loaded successfully:")
 	PrintByteTable(rom, 16)
 
 	return rom, nil
