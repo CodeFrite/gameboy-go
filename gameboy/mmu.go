@@ -88,7 +88,7 @@ func (m *MMU) AttachMemory(name string, address uint16, memory Accessible) {
 func (b *MMU) GetMemoryMaps() []MemoryWrite {
 	memoryWrites := []MemoryWrite{}
 	for _, memoryMap := range b.memoryMaps {
-		memoryDump := memoryMap.Memory.Dump(0, memoryMap.Memory.Size())
+		memoryDump := memoryMap.Memory.Dump(0, memoryMap.Memory.Size()-1)
 		memoryWrite := MemoryWrite{
 			Name:    memoryMap.Name,
 			Address: memoryMap.Address,
