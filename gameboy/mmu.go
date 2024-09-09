@@ -12,6 +12,12 @@ type Accessible interface {
 	Size() uint16
 }
 
+/**
+ * represents a memory mapped to a specific address
+ * @param Name: string name of the memory
+ * @param Address: uint16 address where the memory is mapped
+ * @param Memory: Accessible memory
+ */
 type MemoryMap struct {
 	Name    string
 	Address uint16
@@ -34,7 +40,7 @@ type MemoryWrite struct {
  * the memory management unit (MMU) is responsible for routing memory accesses to the correct memory.
  */
 type MMU struct {
-	router       []MemoryMap
+	memoryMaps   []MemoryMap
 	memoryWrites []MemoryWrite
 }
 
@@ -43,7 +49,7 @@ type MMU struct {
  */
 func NewMMU() *MMU {
 	return &MMU{
-		router:       []MemoryMap{},
+		memoryMaps:   []MemoryMap{},
 		memoryWrites: []MemoryWrite{},
 	}
 }
@@ -65,11 +71,19 @@ func (m *MMU) clearMemoryWrites() {
  * @return void
  */
 func (b *MMU) AttachMemory(name string, address uint16, memory Accessible) {
-	b.router = append(b.router, MemoryMap{
+	b.memoryMaps = append(b.memoryMaps, MemoryMap{
 		Name:    name,
 		Address: address,
 		Memory:  memory,
 	})
+}
+
+/**
+ * return the memory maps attached to the MMU (used by the debugger to display the memories)
+ * @return []MemoryMap memory maps attached to the MMU
+ */
+func (b *MMU) GetMemoryMaps() []MemoryMap {
+	return b.memoryMaps
 }
 
 // TODO: i could implement a detachMemory method to remove a memory from the MMU like the cartrige from the gameboy
@@ -80,7 +94,7 @@ func (b *MMU) AttachMemory(name string, address uint16, memory Accessible) {
  * @return *MemoryMap memory map containing the address or an error if the address is not found
  */
 func (b *MMU) findMemory(address uint16) (*MemoryMap, error) {
-	for _, memoryMap := range b.router {
+	for _, memoryMap := range b.memoryMaps {
 		memoryMapSize := memoryMap.Memory.Size() - 1
 		condition1 := address >= memoryMap.Address
 		condition2 := address <= memoryMap.Address+memoryMapSize
