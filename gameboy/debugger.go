@@ -143,6 +143,7 @@ func (d *Debugger) PrintCPUState() {
 	d.state.printCPUState()
 }
 
-func (d *Debugger) GetMemoryMaps() []MemoryMap {
+// return the list of memories attached to the mmu including their name, address and data
+func (d *Debugger) GetAttachedMemories() []MemoryWrite {
 	return d.gameboy.bus.mmu.GetMemoryMaps()
 }

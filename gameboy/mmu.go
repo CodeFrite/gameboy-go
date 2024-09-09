@@ -31,9 +31,9 @@ type MemoryMap struct {
  * - before a new run from a breakpoint to another breakpoint
  */
 type MemoryWrite struct {
-	Name    string   `json:"name"`
-	Address uint16   `json:"address"`
-	Data    []string `json:"data"`
+	Name    string  `json:"name"`
+	Address uint16  `json:"address"`
+	Data    []uint8 `json:"data"`
 }
 
 /**
@@ -54,9 +54,12 @@ func NewMMU() *MMU {
 	}
 }
 
-/**
- * clear memory writes
- */
+// add a memory write to the memory writes
+func (m *MMU) addMemoryWrite(memoryWrite MemoryWrite) {
+	m.memoryWrites = append(m.memoryWrites, memoryWrite)
+}
+
+// clear the memory writes
 func (m *MMU) clearMemoryWrites() {
 	m.memoryWrites = []MemoryWrite{}
 }
@@ -70,8 +73,8 @@ func (m *MMU) clearMemoryWrites() {
  * @param memory: Accessible memory to attach
  * @return void
  */
-func (b *MMU) AttachMemory(name string, address uint16, memory Accessible) {
-	b.memoryMaps = append(b.memoryMaps, MemoryMap{
+func (m *MMU) AttachMemory(name string, address uint16, memory Accessible) {
+	m.memoryMaps = append(m.memoryMaps, MemoryMap{
 		Name:    name,
 		Address: address,
 		Memory:  memory,
@@ -79,11 +82,21 @@ func (b *MMU) AttachMemory(name string, address uint16, memory Accessible) {
 }
 
 /**
- * return the memory maps attached to the MMU (used by the debugger to display the memories)
+ * return the memory maps attached to the MMU as MemoryWrite[] (used by the debugger to display the memories)
  * @return []MemoryMap memory maps attached to the MMU
  */
-func (b *MMU) GetMemoryMaps() []MemoryMap {
-	return b.memoryMaps
+func (b *MMU) GetMemoryMaps() []MemoryWrite {
+	memoryWrites := []MemoryWrite{}
+	for _, memoryMap := range b.memoryMaps {
+		memoryDump := memoryMap.Memory.Dump(0, memoryMap.Memory.Size())
+		memoryWrite := MemoryWrite{
+			Name:    memoryMap.Name,
+			Address: memoryMap.Address,
+			Data:    memoryDump,
+		}
+		memoryWrites = append(memoryWrites, memoryWrite)
+	}
+	return memoryWrites
 }
 
 // TODO: i could implement a detachMemory method to remove a memory from the MMU like the cartrige from the gameboy
@@ -136,6 +149,7 @@ func (b *MMU) Dump(from uint16, to uint16) []uint8 {
 		panic(err)
 	}
 }
+
 func (b *MMU) Read16(addr uint16) uint16 {
 	return uint16(b.Read(addr+1))<<8 | uint16(b.Read(addr))
 }
@@ -154,9 +168,9 @@ func (b *MMU) Write(addr uint16, value uint8) {
 		memoryWrite := MemoryWrite{
 			Name:    memoryMap.Name,
 			Address: addr,
-			Data:    []string{fmt.Sprintf("0x%02X", value)},
+			Data:    []uint8{value},
 		}
-		b.memoryWrites = append(b.memoryWrites, memoryWrite)
+		b.addMemoryWrite(memoryWrite)
 	} else {
 		panic(err)
 	}
@@ -164,14 +178,29 @@ func (b *MMU) Write(addr uint16, value uint8) {
 
 /**
  * Write the provided blob at the given address.
+ * Please note that the entire blob should belong to the same memory otherwise,
+ * the write process will panic once it reaches the end of the first memory,
+ * resulting in the partial write of the blob.
  * @param addr: uint16 address where the blob will be written
  * @param blob: []uint8 blob to write
  * @return void
  * @panic if one of the addresses in the range (addr, addr+len(blob)) is not found
  */
 func (b *MMU) WriteBlob(addr uint16, blob []uint8) {
-	for i, value := range blob {
-		b.Write(addr+uint16(i), uint8(value))
-		// memory writes are already logged in the Write method
+	memoryMap, err := b.findMemory(addr)
+	if err == nil {
+		// write the blob to the memory
+		for i, value := range blob {
+			memoryMap.Memory.Write(addr-memoryMap.Address+uint16(i), value)
+		}
+		// log the memory write
+		memoryWrite := MemoryWrite{
+			Name:    memoryMap.Name,
+			Address: addr,
+			Data:    blob,
+		}
+		b.addMemoryWrite(memoryWrite)
+	} else {
+		panic(err)
 	}
 }
