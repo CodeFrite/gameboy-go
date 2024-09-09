@@ -32,10 +32,7 @@ func (d *Debugger) Init(romName string) *GameboyState {
 		PREV_CPU_STATE: nil,
 		CURR_CPU_STATE: nil,
 		INSTR:          nil,
-		MEMORY_WRITES: []MemoryWrite{{
-			Address: 0,
-			Data:    []string{},
-		}},
+		MEMORY_WRITES:  []MemoryWrite{},
 	}
 	return d.state
 }
@@ -135,7 +132,7 @@ func (d *Debugger) Run() *GameboyState {
 	d.state.CURR_CPU_STATE = d.gameboy.currCpuState()
 	d.state.INSTR = d.gameboy.currInstruction()
 	d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
-	fmt.Println("Executed %d steps\n", steps)
+	fmt.Printf("Executed %d steps\n", steps)
 	return d.state
 }
 
@@ -144,4 +141,8 @@ func (d *Debugger) Run() *GameboyState {
  */
 func (d *Debugger) PrintCPUState() {
 	d.state.printCPUState()
+}
+
+func (d *Debugger) GetMemoryMaps() []MemoryMap {
+	return d.gameboy.bus.mmu.GetMemoryMaps()
 }
