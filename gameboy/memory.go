@@ -1,6 +1,8 @@
 package gameboy
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 /**
  * Memory struct represents any memory type RAM or ROM in the GameBoy.
@@ -67,7 +69,7 @@ func (m *Memory) Read(addr uint16) uint8 {
  * panics if the addresses are out of bounds.
  */
 func (m *Memory) Dump(from uint16, to uint16) []uint8 {
-	if from >= m.Size() || to >= m.Size() {
+	if from >= m.Size() || to > m.Size() {
 		panic("Memory address out of bounds while dumping")
 	}
 	return m.data[from:to]
