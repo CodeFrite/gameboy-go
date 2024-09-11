@@ -182,7 +182,7 @@ func (b *MMU) Write(addr uint16, value uint8) {
 		memoryMap.Memory.Write(addr-memoryMap.Address, value)
 		memoryWrite := MemoryWrite{
 			Name:    memoryMap.Name,
-			Address: addr,
+			Address: addr - memoryMap.Address,
 			Data:    []uint8{value},
 		}
 		b.addMemoryWrite(memoryWrite)
@@ -211,7 +211,7 @@ func (b *MMU) WriteBlob(addr uint16, blob []uint8) {
 		// log the memory write
 		memoryWrite := MemoryWrite{
 			Name:    memoryMap.Name,
-			Address: addr,
+			Address: addr - memoryMap.Address,
 			Data:    blob,
 		}
 		b.addMemoryWrite(memoryWrite)
