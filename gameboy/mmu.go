@@ -176,7 +176,7 @@ func (b *MMU) Read16(addr uint16) uint16 {
  * @return void
  * @panic if the address is not found
  */
-func (b *MMU) Write(addr uint16, value uint8) {
+func (b *MMU) Write(addr uint16, value uint8) error {
 	memoryMap, err := b.findMemory(addr)
 	if err == nil {
 		memoryMap.Memory.Write(addr-memoryMap.Address, value)
@@ -186,8 +186,9 @@ func (b *MMU) Write(addr uint16, value uint8) {
 			Data:    []uint8{value},
 		}
 		b.addMemoryWrite(memoryWrite)
+		return nil
 	} else {
-		panic(err)
+		return errors.New("Memory address out of bounds while writing")
 	}
 }
 

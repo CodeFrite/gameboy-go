@@ -55,8 +55,8 @@ func (b *Bus) Dump(from uint16, to uint16) []uint8 {
  * @param value: uint8 value to write
  * @return nothing
  */
-func (b *Bus) Write(addr uint16, value uint8) {
-	b.mmu.Write(addr, value)
+func (b *Bus) Write(addr uint16, value uint8) error {
+	return b.mmu.Write(addr, value)
 }
 
 /* writes a blob of uint8 values to the bus at a given address

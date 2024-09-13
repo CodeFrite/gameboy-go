@@ -327,6 +327,8 @@ NOTE: all LD instructions have 2 operands, the first one is always the destinati
 */
 func (c *CPU) LD(instruction *Instruction) {
 	var address uint16
+	var err error
+
 	switch instruction.Operands[0].Name {
 	case "A":
 		c.A = uint8(c.Operand)
@@ -337,7 +339,11 @@ func (c *CPU) LD(instruction *Instruction) {
 			c.C = uint8(c.Operand)
 		} else {
 			address = 0xFF00 | uint16(c.C)
-			c.bus.Write(address, uint8(c.Operand))
+			err = c.bus.Write(address, uint8(c.Operand))
+			if err != nil {
+				fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+				panic(err)
+			}
 		}
 	case "D":
 		c.D = uint8(c.Operand)
@@ -351,13 +357,21 @@ func (c *CPU) LD(instruction *Instruction) {
 		if instruction.Operands[0].Immediate {
 			c.setBC(c.Operand)
 		} else {
-			c.bus.Write(c.getBC(), uint8(c.Operand))
+			err := c.bus.Write(c.getBC(), uint8(c.Operand))
+			if err != nil {
+				fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+				panic(err)
+			}
 		}
 	case "DE":
 		if instruction.Operands[0].Immediate {
 			c.setDE(c.Operand)
 		} else {
-			c.bus.Write(c.getDE(), uint8(c.Operand))
+			err := c.bus.Write(c.getDE(), uint8(c.Operand))
+			if err != nil {
+				fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+				panic(err)
+			}
 		}
 	case "HL":
 		if instruction.Operands[0].Immediate {
@@ -386,7 +400,11 @@ func (c *CPU) LD(instruction *Instruction) {
 				// no flags are impacted
 			}
 		} else {
-			c.bus.Write(c.getHL(), uint8(c.Operand))
+			err = c.bus.Write(c.getHL(), uint8(c.Operand))
+			if err != nil {
+				fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+				panic(err)
+			}
 			// no flags are impacted
 		}
 		if instruction.Operands[0].Increment {
@@ -400,8 +418,16 @@ func (c *CPU) LD(instruction *Instruction) {
 		low := c.bus.Read(c.PC + 1)
 		high := c.bus.Read(c.PC + 2)
 		addr := uint16(high)<<8 | uint16(low)
-		c.bus.Write(addr, uint8(c.SP))
-		c.bus.Write(addr+1, uint8(c.SP>>8))
+		err = c.bus.Write(addr, uint8(c.SP))
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
+		err = c.bus.Write(addr+1, uint8(c.SP>>8))
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 	}
 
 }
@@ -415,12 +441,18 @@ opcodes:
 flags: -
 */
 func (c *CPU) LDH(instruction *Instruction) {
+	var err error
+
 	switch instruction.Operands[0].Name {
 	case "A":
 		c.A = uint8(c.Operand)
 	case "a8":
 		a8 := 0xFF00 + uint16(c.bus.Read(c.PC+1))
-		c.bus.Write(a8, c.A)
+		err = c.bus.Write(a8, c.A)
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 	default:
 		panic("LDH: unknown operand")
 	}
@@ -440,21 +472,53 @@ func (c *CPU) PUSH(instruction *Instruction) {
 	c.SP--
 	switch instruction.Operands[0].Name {
 	case "AF":
-		c.bus.Write(c.SP, c.A)
+		err := c.bus.Write(c.SP, c.A)
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 		c.SP--
-		c.bus.Write(c.SP, c.F)
+		err = c.bus.Write(c.SP, c.F)
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 	case "BC":
-		c.bus.Write(c.SP, c.B)
+		err := c.bus.Write(c.SP, c.B)
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 		c.SP--
-		c.bus.Write(c.SP, c.C)
+		err = c.bus.Write(c.SP, c.C)
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 	case "DE":
-		c.bus.Write(c.SP, c.D)
+		err := c.bus.Write(c.SP, c.D)
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 		c.SP--
-		c.bus.Write(c.SP, c.E)
+		err = c.bus.Write(c.SP, c.E)
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 	case "HL":
-		c.bus.Write(c.SP, c.H)
+		err := c.bus.Write(c.SP, c.H)
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 		c.SP--
-		c.bus.Write(c.SP, c.L)
+		err = c.bus.Write(c.SP, c.L)
+		if err != nil {
+			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+			panic(err)
+		}
 	}
 }
 
@@ -705,7 +769,11 @@ func (c *CPU) DEC(instruction *Instruction) {
 		} else {
 			addr := c.getHL()
 			val := c.bus.Read(addr)
-			c.bus.Write(addr, val-1)
+			err := c.bus.Write(addr, val-1)
+			if err != nil {
+				fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+				panic(err)
+			}
 		}
 	case "SP":
 		c.SP--
@@ -820,7 +888,11 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else if instruction.Operands[0].Increment {
 			addr := c.getHL()
 			val := c.bus.Read(addr) + 1
-			c.bus.Write(addr, val)
+			err := c.bus.Write(addr, val)
+			if err != nil {
+				fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+				panic(err)
+			}
 
 			if val == 0x00 {
 				c.setZFlag()
@@ -833,6 +905,31 @@ func (c *CPU) INC(instruction *Instruction) {
 				c.resetHFlag()
 			}
 		}
+	case "DE":
+		if instruction.Operands[0].Immediate {
+			c.setDE(c.getDE() + 1)
+		} else if instruction.Operands[0].Increment {
+			addr := c.getDE()
+			val := c.bus.Read(addr) + 1
+			err := c.bus.Write(addr, val)
+			if err != nil {
+				fmt.Printf("\n> Panic @0x%04X\n", c.PC)
+				panic(err)
+			}
+
+			if val == 0x00 {
+				c.setZFlag()
+			} else {
+				c.resetZFlag()
+			}
+			if (val & 0x0F) == 0x00 {
+				c.setHFlag()
+			} else {
+				c.resetHFlag()
+			}
+		}
+	default:
+		panic(fmt.Sprintf(">> PANIC >> INC instruction: unknown operand %s", instruction.Operands[0].Name))
 	}
 	// reset the N flag
 	c.resetNFlag()
