@@ -27,7 +27,7 @@ func main() {
 		var action string
 		var err error
 
-		fmt.Print("What do you want to do?? (run/R/r, step/S/s, pause/P/p, break/B/b, delete/D/d, list/L/l, state/X/x, exit/E/e): ")
+		fmt.Print("\nWhat do you want to do?? (run/R/r, step/S/s, pause/P/p, break/B/b, delete/D/d, list/L/l, state/X/x, exit/E/e): ")
 		action, err = reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading user input:", err)
@@ -84,6 +84,7 @@ func main() {
 		// - print the current state (state/X/x)
 		if action == "state" || action == "X" || action == "x" {
 			db.PrintCPUState()
+			db.PrintMemoryProperties()
 		}
 		// - exit the debugger (exit/E/e)
 		if action == "exit" || action == "E" || action == "e" {

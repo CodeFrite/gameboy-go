@@ -143,6 +143,19 @@ func (d *Debugger) PrintCPUState() {
 	d.state.printCPUState()
 }
 
+/**
+ * print the properties of the memories attached to the bus
+ */
+func (d *Debugger) PrintMemoryProperties() {
+	memoryMaps := d.gameboy.bus.mmu.GetMemoryMaps()
+	fmt.Println("")
+	fmt.Println("\n> Memory Mapping:")
+	fmt.Println("-----------------")
+	for _, memoryMap := range memoryMaps {
+		fmt.Printf("> Memory %s: %d bytes @ 0x%04X->0x%04X\n", memoryMap.Name, len(memoryMap.Data), memoryMap.Address, memoryMap.Address+uint16(len(memoryMap.Data))-1)
+	}
+}
+
 // return the list of memories attached to the mmu including their name, address and data
 func (d *Debugger) GetAttachedMemories() []MemoryWrite {
 	return d.gameboy.bus.mmu.GetMemoryMaps()
