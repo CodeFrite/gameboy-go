@@ -46,24 +46,25 @@ func (gbs *GameboyState) print() {
 }
 
 func (gbs *GameboyState) printCPUState() {
-	fmt.Println("CPU State:")
+	fmt.Println("")
+	fmt.Println("\n> CPU State:")
+	fmt.Println("------------")
 	// if previous and current states are nil, there is nothing to print
 	if (gbs.PREV_CPU_STATE == nil) && (gbs.CURR_CPU_STATE == nil) {
-		fmt.Println("No CPU state to print")
-		return
+		fmt.Println("> No CPU state to print")
 		// if only the current state is available, print it
 	} else if gbs.PREV_CPU_STATE == nil {
 		curr := reflect.Indirect(reflect.ValueOf(gbs.CURR_CPU_STATE))
 		typeOfCpu := curr.Type()
 		for i := 0; i < curr.NumField(); i++ {
 			if typeOfCpu.Field(i).Type.Kind() == reflect.Bool {
-				fmt.Printf("%s: %t\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+				fmt.Printf("- %s: %t\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 			} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint8 {
-				fmt.Printf("%s: %02X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+				fmt.Printf("- %s: %02X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 			} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint16 {
-				fmt.Printf("%s: %04X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+				fmt.Printf("- %s: %04X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 			} else if typeOfCpu.Field(i).Type.Kind() == reflect.String {
-				fmt.Printf("%s: %s\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+				fmt.Printf("- %s: %s\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 			}
 		}
 	} else {
@@ -74,23 +75,23 @@ func (gbs *GameboyState) printCPUState() {
 		for i := 0; i < prev.NumField(); i++ {
 			if prev.Field(i).Interface() != curr.Field(i).Interface() {
 				if typeOfCpu.Field(i).Type.Kind() == reflect.Bool {
-					fmt.Printf("%s: %t -> %t \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %t -> %t \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint8 {
-					fmt.Printf("%s: %02X -> %02X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %02X -> %02X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint16 {
-					fmt.Printf("%s: %04X -> %04X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %04X -> %04X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.String {
-					fmt.Printf("%s: %s -> %s \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %s -> %s \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				}
 			} else {
 				if typeOfCpu.Field(i).Type.Kind() == reflect.Bool {
-					fmt.Printf("%s: %t -> %t \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %t -> %t \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint8 {
-					fmt.Printf("%s: %02X -> %02X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %02X -> %02X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint16 {
-					fmt.Printf("%s: %04X -> %04X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %04X -> %04X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.String {
-					fmt.Printf("%s: %s -> %s \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %s -> %s \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				}
 			}
 		}
