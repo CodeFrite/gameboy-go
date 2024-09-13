@@ -428,6 +428,8 @@ func (c *CPU) LD(instruction *Instruction) {
 			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
 			panic(err)
 		}
+	default:
+		panic("LD: unknown operand")
 	}
 
 }
@@ -519,6 +521,8 @@ func (c *CPU) PUSH(instruction *Instruction) {
 			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
 			panic(err)
 		}
+	default:
+		panic("PUSH: unknown operand")
 	}
 }
 
@@ -550,6 +554,8 @@ func (c *CPU) POP(instruction *Instruction) {
 	case "HL":
 		c.H = high
 		c.L = low
+	default:
+		panic("POP: unknown operand")
 	}
 }
 
