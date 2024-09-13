@@ -84,13 +84,15 @@ func TestMemoryWriteOutsideRange(t *testing.T) {
 }
 
 func TestMemoryDump(t *testing.T) {
-	data := make([]uint8, 256)
-	for i := 0; i < 256; i++ {
+	memSize := 256
+	memSizeUint16 := 0x0100
+	data := make([]uint8, memSize)
+	for i := 0; i < memSize; i++ {
 		data[i] = uint8(i)
 	}
-	memory := gameboy.NewMemoryWithData(0x100, data)
-	dump := memory.Dump(0, 256)
-	for i := 0; i < 256; i++ {
+	memory := gameboy.NewMemoryWithData(uint16(memSizeUint16), data)
+	dump := memory.Dump(0, memory.Size()-1)
+	for i := 0; i < memSize-1; i++ {
 		memoryCellData := dump[i]
 		if memoryCellData != uint8(i) {
 			t.Errorf("Expected memory to be initialized with %02X at address %04X, got %02X", i, i, memoryCellData)
