@@ -6,6 +6,23 @@ import (
 	"github.com/codefrite/gameboy-go/gameboy"
 )
 
+/*
+
+Feature MEMORY
+==============
+
+Test Cases List:
+- TC1> TestNewMemory 													checks if the memory is initialized with the correct size and 0 at all memory addresses
+- TC2> TestNewMemoryWithData 									checks if the memory is initialized with the correct data being passed on creation as an array of uint8
+- TC3> TestNewMemoryWithDataUnmatchingSize 		checks that Memory.NewMemoryWithRandomData does panic when passed a data array with a size that differs with the memory size
+- TC4> TestNewMemoryWithRandomData 						checks that Memory.NewMemoryWithRandomData does panic when passed a data array with a size that differs with the memory size
+- TC5> TestMemoryReadOutsideRange 						checks that Memory.Read does panic when trying to read from an address that is outside the memory range
+- TC6> TestMemoryWriteOutsideRange 						checks that Memory.Write does panic when trying to write to an address that is outside the memory range
+- TC7> TestMemoryDump 												checks that Memory.Read and Memory.Write work as expected
+
+*/
+
+/* checks if the memory is initialized with the correct size and 0 at all memory addresses */
 func TestNewMemory(t *testing.T) {
 	memory := gameboy.NewMemory(0x2000)
 	if memory == nil {
@@ -21,6 +38,7 @@ func TestNewMemory(t *testing.T) {
 	}
 }
 
+/* checks if the memory is initialized with the correct data being passed on creation as an array of uint8 */
 func TestNewMemoryWithData(t *testing.T) {
 	data := make([]uint8, 256)
 	for i := 0; i < 256; i++ {
@@ -35,6 +53,7 @@ func TestNewMemoryWithData(t *testing.T) {
 	}
 }
 
+/* checks that Memory.NewMemoryWithRandomData does panic when passed a data array with a size that differs with the memory size */
 func TestNewMemoryWithDataUnmatchingSize(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
@@ -61,6 +80,7 @@ func TestNewMemoryWithRandomData(t *testing.T) {
 	}
 }
 
+/* checks that Memory.Read does panic when trying to read from an address that is outside the memory range */
 func TestMemoryReadOutsideRange(t *testing.T) {
 	// it shouldn't be possible to read outside the memory range
 	defer func() {
@@ -72,6 +92,7 @@ func TestMemoryReadOutsideRange(t *testing.T) {
 	memory.Read(11)
 }
 
+/* checks that Memory.Write does panic when trying to write to an address that is outside the memory range */
 func TestMemoryWriteOutsideRange(t *testing.T) {
 	// it shouldn't be possible to write outside the memory range
 	defer func() {
@@ -83,6 +104,7 @@ func TestMemoryWriteOutsideRange(t *testing.T) {
 	memory.Write(11, 0)
 }
 
+/* checks that Memory.Read and Memory.Write work as expected */
 func TestMemoryDump(t *testing.T) {
 	memSize := 256
 	memSizeUint16 := 0x0100
