@@ -41,8 +41,8 @@ type GameboyState struct {
 }
 
 func (gbs *GameboyState) print() {
-	fmt.Println("CPU State:")
 	gbs.printCPUState()
+	gbs.printInstruction()
 }
 
 func (gbs *GameboyState) printCPUState() {
@@ -60,9 +60,9 @@ func (gbs *GameboyState) printCPUState() {
 			if typeOfCpu.Field(i).Type.Kind() == reflect.Bool {
 				fmt.Printf("- %s: %t\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 			} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint8 {
-				fmt.Printf("- %s: %02X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+				fmt.Printf("- %s: 0x%02X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 			} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint16 {
-				fmt.Printf("- %s: %04X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
+				fmt.Printf("- %s: 0x%04X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 			} else if typeOfCpu.Field(i).Type.Kind() == reflect.String {
 				fmt.Printf("- %s: %s\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 			}
@@ -77,24 +77,41 @@ func (gbs *GameboyState) printCPUState() {
 				if typeOfCpu.Field(i).Type.Kind() == reflect.Bool {
 					fmt.Printf("- %s: %t -> %t \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint8 {
-					fmt.Printf("- %s: %02X -> %02X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: 0x%02X -> 0x%02X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint16 {
-					fmt.Printf("- %s: %04X -> %04X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: 0x%04X -> 0x%04X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.String {
 					fmt.Printf("- %s: %s -> %s \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
 				}
 			} else {
 				if typeOfCpu.Field(i).Type.Kind() == reflect.Bool {
-					fmt.Printf("- %s: %t -> %t \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %t \n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint8 {
-					fmt.Printf("- %s: %02X -> %02X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: 0x%02X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.Uint16 {
-					fmt.Printf("- %s: %04X -> %04X \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: 0x%04X\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 				} else if typeOfCpu.Field(i).Type.Kind() == reflect.String {
-					fmt.Printf("- %s: %s -> %s \n", typeOfCpu.Field(i).Name, prev.Field(i).Interface(), curr.Field(i).Interface())
+					fmt.Printf("- %s: %s\n", typeOfCpu.Field(i).Name, curr.Field(i).Interface())
 				}
 			}
 		}
+	}
+}
+
+func (gbs *GameboyState) printInstruction() {
+	fmt.Println("")
+	fmt.Println("\n> Instruction:")
+	fmt.Println("--------------")
+	if gbs.INSTR == nil {
+		fmt.Println("> No instruction to print")
+	} else {
+		fmt.Printf("- Opcode: 0x%02X\n", gbs.CURR_CPU_STATE.IR)
+		fmt.Printf("- Mnemonic: %s\n", gbs.INSTR.Mnemonic)
+		fmt.Printf("- Bytes: %d\n", gbs.INSTR.Bytes)
+		fmt.Printf("- Cycles: %v\n", gbs.INSTR.Cycles)
+		fmt.Printf("- Operands: %v\n", gbs.INSTR.Operands)
+		fmt.Printf("- Immediate: %t\n", gbs.INSTR.Immediate)
+		fmt.Printf("- Flags: %v\n", gbs.INSTR.Flags)
 	}
 }
 
