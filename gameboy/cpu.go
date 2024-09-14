@@ -3,6 +3,7 @@ package gameboy
 
 import (
 	"fmt"
+	"math/rand"
 )
 
 /*
@@ -35,7 +36,18 @@ type CPU struct {
 func NewCPU(bus *Bus) *CPU {
 	return &CPU{
 		bus: bus,
-		IE:  NewMemory(1),
+		// on startup, simulate the CPU registers being in an unknown state
+		PC: uint16(rand.Intn((2 ^ 1) - 1)),
+		SP: uint16(rand.Intn((2 ^ 16) - 1)),
+		A:  uint8(rand.Intn((2 ^ 8) - 1)),
+		F:  uint8(rand.Intn((2 ^ 8) - 1)),
+		B:  uint8(rand.Intn((2 ^ 8) - 1)),
+		C:  uint8(rand.Intn((2 ^ 8) - 1)),
+		D:  uint8(rand.Intn((2 ^ 8) - 1)),
+		E:  uint8(rand.Intn((2 ^ 8) - 1)),
+		H:  uint8(rand.Intn((2 ^ 8) - 1)),
+		L:  uint8(rand.Intn((2 ^ 8) - 1)),
+		IE: NewMemory(1),
 	}
 }
 
