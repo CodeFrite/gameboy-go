@@ -123,10 +123,6 @@ func (d *Debugger) Run() *GameboyState {
 	for {
 		d.state.PREV_CPU_STATE = d.gameboy.currCpuState() // since we do not know if this will be the last step before returning, we have to save the last state into the previous state at each iteration
 		d.gameboy.Step()
-		if contains(d.breakpoints, d.gameboy.cpu.PC) || d.gameboy.cpu.halted {
-			break
-		}
-		steps++
 		// save the current state
 		d.shiftState()
 		d.state.CURR_CPU_STATE = d.gameboy.currCpuState()
@@ -134,6 +130,12 @@ func (d *Debugger) Run() *GameboyState {
 		d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
 		fmt.Printf("\n>Executed %d steps\n", steps)
 		d.state.print()
+		// check if the current PC is a breakpoint or if the gameboy is halted
+		if contains(d.breakpoints, d.gameboy.cpu.PC) || d.gameboy.cpu.halted {
+			// we do not halt the processor which is a feature used by the gameboy to save power, we just stop the execution from the debugger point of view by not executing any more instructions
+			break
+		}
+		steps++
 	}
 	return d.state
 }
