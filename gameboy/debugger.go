@@ -127,12 +127,14 @@ func (d *Debugger) Run() *GameboyState {
 			break
 		}
 		steps++
+		// save the current state
+		d.shiftState()
+		d.state.CURR_CPU_STATE = d.gameboy.currCpuState()
+		d.state.INSTR = d.gameboy.currInstruction()
+		d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
+		fmt.Printf("\n>Executed %d steps\n", steps)
+		d.state.print()
 	}
-	// save the current state
-	d.state.CURR_CPU_STATE = d.gameboy.currCpuState()
-	d.state.INSTR = d.gameboy.currInstruction()
-	d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
-	fmt.Printf("Executed %d steps\n", steps)
 	return d.state
 }
 
