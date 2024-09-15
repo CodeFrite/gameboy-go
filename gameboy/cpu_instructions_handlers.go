@@ -275,7 +275,8 @@ opcodes: 0xD9
 flags: -
 */
 func (c *CPU) RETI(instruction *Instruction) {
-	panic("RETI not implemented")
+	c.offset = c.pop()
+	c.IME = true
 }
 
 /*
