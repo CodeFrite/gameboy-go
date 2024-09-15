@@ -75,11 +75,11 @@ func (c *CPU) push(value uint16) {
 
 // Pop a value from the stack
 func (c *CPU) pop() uint16 {
-	// pop the low byte from the stack
+	// read the low byte from the stack
 	low := c.bus.Read(c.SP)
 	// increment the stack pointer
 	c.SP += 1
-	// write the high byte from the stack
+	// read the high byte from the stack
 	high := c.bus.Read(c.SP)
 	// increment the stack pointer
 	c.SP += 1
