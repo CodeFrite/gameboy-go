@@ -235,24 +235,25 @@ func (c *CPU) JR(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)) + int(instruction.Bytes))
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand))) // we do not need to add the Bytes size of the instruction since the offset is relative
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)) + int(instruction.Bytes))
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
 		}
 	case "C":
 		if c.getCFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)) + int(instruction.Bytes))
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)) + int(instruction.Bytes))
+			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
 		}
-	case "r8":
-		panic("JR r8 not implemented")
+	case "e8":
+		c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
 	default:
-		panic("JR: unknown operand")
+		errMessage := fmt.Sprint("JR: unknown operand, got ", instruction.Operands[0].Name)
+		panic(errMessage)
 	}
 }
 
