@@ -188,7 +188,7 @@ func (b *MMU) Write(addr uint16, value uint8) error {
 		b.addMemoryWrite(memoryWrite)
 		return nil
 	} else {
-		return errors.New("Memory address out of bounds while writing")
+		return err
 	}
 }
 

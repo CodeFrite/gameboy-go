@@ -214,9 +214,14 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 		value = 0x30
 	case "$38": // RST $38
 		value = 0x38
-
+	case "Z":
+		value = uint16(c.F & 0x80)
+	case "NZ":
+		value = uint16(c.F & 0x80)
+	case "NC":
+		value = uint16(c.F & 0x10)
 	default:
-		err := fmt.Sprintf("Unknown operand name: %s (0x%02X)", operand.Name, c.IR)
+		err := fmt.Sprintf("cpu.fetchOperandValue> Unknown operand name: %s (0x%02X)", operand.Name, c.IR)
 		panic(err)
 	}
 	return value

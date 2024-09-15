@@ -260,11 +260,40 @@ func (c *CPU) JR(instruction *Instruction) {
 /*
 RET: Return from a subroutine
 This intruction pops the address from the stack and jumps to it
-opcodes: 0xC9
+opcodes:
+  - 0xC9 = RET
+  - 0xC8 = RET Z
+  - 0xC0 = RET NZ
+  - 0xD8 = RET C
+  - 0xD0 = RET NC
+
 flags: -
 */
 func (c *CPU) RET(instruction *Instruction) {
-	c.offset = c.pop()
+	if len(instruction.Operands) == 0 {
+		c.offset = c.pop()
+	} else {
+		switch instruction.Operands[0].Name {
+		case "Z":
+			if c.getZFlag() {
+				c.offset = c.pop()
+			}
+		case "NZ":
+			if !c.getZFlag() {
+				c.offset = c.pop()
+			}
+		case "C":
+			if c.getCFlag() {
+				c.offset = c.pop()
+			}
+		case "NC":
+			if !c.getCFlag() {
+				c.offset = c.pop()
+			}
+		default:
+			panic("RET: unknown operand")
+		}
+	}
 }
 
 /*

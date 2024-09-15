@@ -95,3 +95,13 @@ I think that I will need to:
 	- frames per second (fps) of the emulator
 8. Render the game image assets in the front-end
 9. Render the VRAM graphics in the front-end
+
+# 15/09/2024: CPU Instructions implementation and unit testing
+
+## Achieved so far today
+
+- I have designed and coded unit tests for JR instruction
+- I discovered through unit testing a bug that I have fixed an error in the JR instruction that was adding the instruction length to the new value of the PC
+- I added a unit test for the JR instruction 
+- I added a unit test for the RET instruction
+- I added a unit test for the RETI instruction
