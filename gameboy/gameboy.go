@@ -113,10 +113,10 @@ func (gb *Gameboy) initMemory() {
  */
 func (gb *Gameboy) Run() {
 	for {
-		gb.Step()
-		if gb.cpu.halted {
+		if gb.cpu.Halted || gb.cpu.Stopped {
 			break
 		}
+		gb.Step()
 	}
 }
 
@@ -124,11 +124,18 @@ func (gb *Gameboy) Run() {
  * executes the next instruction
  */
 func (gb *Gameboy) Step() {
+	// check if the CPU is halted or stopped
+	if gb.cpu.Halted || gb.cpu.Stopped {
+		return
+	}
 	// execute the instruction
-	gb.cpu.step()
+	gb.cpu.Step()
 }
 
-// Utility functions
+func (gb *Gameboy) Crash(err error) {
+	log.Fatal("Gameboy crashed")
+
+}
 
 /**
  * loads data content as []uint8 from a rom file

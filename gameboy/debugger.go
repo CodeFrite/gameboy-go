@@ -131,7 +131,7 @@ func (d *Debugger) Run() *GameboyState {
 		fmt.Printf("\n>Executed %d steps\n", steps)
 		d.state.print()
 		// check if the current PC is a breakpoint or if the gameboy is halted
-		if contains(d.breakpoints, d.gameboy.cpu.PC) || d.gameboy.cpu.halted {
+		if contains(d.breakpoints, d.gameboy.cpu.PC) || d.gameboy.cpu.Halted || d.gameboy.cpu.Stopped {
 			// we do not halt the processor which is a feature used by the gameboy to save power, we just stop the execution from the debugger point of view by not executing any more instructions
 			break
 		}

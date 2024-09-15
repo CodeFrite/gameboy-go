@@ -97,7 +97,8 @@ opcodes: 0xF3
 flags: -
 */
 func (c *CPU) DI(instruction *Instruction) {
-	c.IME = false
+	// ask the CPU to disable interrupts after the next instruction
+	c.IME_DISABLE_NEXT_CYCLE = true
 }
 
 /*
@@ -108,9 +109,8 @@ opcodes: 0xFB
 flags: -
 */
 func (c *CPU) EI(instruction *Instruction) {
-	// execute the next instruction before enabling interrupts
-	c.step()
-	c.IME = true
+	// ask the CPU to enable interrupts after the next instruction
+	c.IME_ENABLE_NEXT_CYCLE = true
 }
 
 /*
@@ -119,7 +119,7 @@ func (c *CPU) EI(instruction *Instruction) {
  * flags: -
  */
 func (c *CPU) HALT(instruction *Instruction) {
-	c.halted = true
+	c.Halted = true
 }
 
 /*
@@ -128,9 +128,11 @@ opcodes: 0x00=NOP
 flags impacted: -
 */
 func (c *CPU) NOP(instruction *Instruction) {
+	// do nothing
 }
 func (c *CPU) STOP(instruction *Instruction) {
-	panic("STOP not implemented")
+	// stop the CPU
+	c.Stopped = true
 }
 
 // Jump / Call instructions
@@ -150,7 +152,7 @@ func (c *CPU) CALL(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.push(c.PC + uint16(instruction.Bytes))
+			c.push(c.PC + uint16(instruction.Bytes)) // push the address of the next instruction onto the stack
 			c.offset = c.Operand
 		}
 	case "NZ":
@@ -179,12 +181,12 @@ func (c *CPU) CALL(instruction *Instruction) {
 /*
 JP: Jumps to an address
 opcodes:
-  - 0xC2 = JP NZ, a16
-  - 0xC3 = JP a16
-  - 0xCA = JP Z, a16
-  - 0xD2 = JP NC, a16
-  - 0xDA = JP C, a16
+  - 0xC3 = JP     a16
   - 0xE9 = JP HL
+  - 0xCA = JP  Z, a16
+  - 0xC2 = JP NZ, a16
+  - 0xDA = JP  C, a16
+  - 0xD2 = JP NC, a16
 
 flags: -
 */

@@ -24,9 +24,12 @@ type CPU struct {
 	offset   uint16 // offset used in some instructions
 
 	// Interrupts
-	IE     *Memory // Interrupt Enable
-	IME    bool    // interrupt master enable
-	halted bool
+	IME                    bool    // interrupt master enable
+	IME_ENABLE_NEXT_CYCLE  bool    // enable the IME on the next cycle
+	IME_DISABLE_NEXT_CYCLE bool    // disable the IME on the next cycle
+	IE                     *Memory // Interrupt Enable
+	Halted                 bool    // is the CPU halted (waiting for an interrupt to wake up)
+	Stopped                bool    // is the CPU stopped (waiting for an interrupt from the joypad)
 
 	// Memory
 	bus *Bus // reference to the bus
@@ -221,21 +224,26 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 
 // Execute one cycle of the CPU: fetch, decode and execute the next instruction
 // TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
-func (c *CPU) step() error {
+func (c *CPU) Step() error {
+	// return if the CPU is halted or stopped
+	if c.Halted || c.Stopped {
+		return nil
+	}
+
 	// update the pc
 	c.incrementPC()
 	// reset the offset
 	c.offset = 0
 
-	// 0. reset the prefixed flag
+	// reset the prefixed flag
 	c.Prefixed = false
 
-	// 1. Store the opcode in the instruction register & prefix flag
+	// Store the opcode in the instruction register & prefix flag
 	opCode, prefixed := c.fetchOpcode()
 	c.Prefixed = prefixed
 	c.IR = opCode
 
-	// 2. Decode the instruction
+	// Decode the instruction
 	// get instruction from opcodes.json file with IR used as key
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), c.Prefixed)
 	// get the operands of the instruction
@@ -248,30 +256,59 @@ func (c *CPU) step() error {
 		c.Operand = c.fetchOperandValue(operands[1])
 	}
 
-	// 3. Execute the instruction
-	if !c.Prefixed {
-		c.executeInstruction(instruction)
+	// Handle the IME
+	if c.IME_ENABLE_NEXT_CYCLE {
+		// Execute the instruction
+		if !c.Prefixed {
+			c.executeInstruction(instruction)
+		} else {
+			c.executeCBInstruction(instruction)
+		}
+		// enable the IME
+		c.IME = true
+		c.IME_ENABLE_NEXT_CYCLE = false
+	} else if c.IME_DISABLE_NEXT_CYCLE {
+		// Execute the instruction
+		if !c.Prefixed {
+			c.executeInstruction(instruction)
+		} else {
+			c.executeCBInstruction(instruction)
+		}
+		// disable the IME
+		c.IME = false
+		c.IME_DISABLE_NEXT_CYCLE = false
 	} else {
-		c.executeCBInstruction(instruction)
+		// Execute the instruction
+		if !c.Prefixed {
+			c.executeInstruction(instruction)
+		} else {
+			c.executeCBInstruction(instruction)
+		}
 	}
 
+	// 4. Handle the offset for the PC to be updated on the next cycle
 	if c.offset == 0 {
 		c.offset = c.PC + uint16(instruction.Bytes)
 	}
+
 	return nil
 }
 
 // Run the CPU
 func (c *CPU) Run() {
 	for {
-		if c.halted {
+		if c.Halted {
 			// if the CPU is halted, wiat for an interrupt to wake it up
 			// TODO: implement the interrupt handling
 			// ! for the moment, we will break the loop to avoid an infinite loop
 			break
 		}
+		if c.Stopped {
+			// if the CPU is stopped, wait for an interrupt from the joypad
+			break
+		}
 		// Execute the next instruction
-		if err := c.step(); err != nil {
+		if err := c.Step(); err != nil {
 			panic(err)
 		}
 	}
@@ -281,6 +318,9 @@ func (c *CPU) Run() {
 func (c *CPU) Boot() {
 	c.PC = 0x0000
 	for c.PC != 0x0100 {
-		c.step()
+		err := c.Step()
+		if err != nil {
+			panic(err)
+		}
 	}
 }

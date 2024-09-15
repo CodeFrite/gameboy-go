@@ -30,7 +30,8 @@ type CpuState struct {
 	IME bool  `json:"IME"` // interrupt master enable
 
 	// emulator state
-	HALTED bool `json:"HALTED"` // is the CPU halted
+	HALTED  bool `json:"HALTED"`  // is the CPU halted
+	STOPPED bool `json:"STOPPED"` // is the CPU stopped
 }
 
 type GameboyState struct {
@@ -134,7 +135,8 @@ func (gb *Gameboy) currCpuState() *CpuState {
 		OPERAND_VALUE: gb.cpu.Operand,
 		IE:            gb.cpu.getIE(),
 		IME:           gb.cpu.IME,
-		HALTED:        gb.cpu.halted,
+		HALTED:        gb.cpu.Halted,
+		STOPPED:       gb.cpu.Stopped,
 	}
 }
 
