@@ -309,6 +309,7 @@ func (c *CPU) JR(instruction *Instruction) {
 		} else {
 			// update the number of cycles executed by the CPU
 			c.CpuCycles += instruction.Cycles[1]
+			c.Offset = c.PC + uint16(instruction.Bytes)
 		}
 	case "NZ":
 		if !c.getZFlag() {
@@ -319,6 +320,7 @@ func (c *CPU) JR(instruction *Instruction) {
 		} else {
 			// update the number of cycles executed by the CPU
 			c.CpuCycles += instruction.Cycles[1]
+			c.Offset = c.PC + uint16(instruction.Bytes)
 		}
 	case "C":
 		if c.getCFlag() {
@@ -329,6 +331,7 @@ func (c *CPU) JR(instruction *Instruction) {
 		} else {
 			// update the number of cycles executed by the CPU
 			c.CpuCycles += instruction.Cycles[1]
+			c.Offset = c.PC + uint16(instruction.Bytes)
 		}
 	case "NC":
 		if !c.getCFlag() {
@@ -339,6 +342,7 @@ func (c *CPU) JR(instruction *Instruction) {
 		} else {
 			// update the number of cycles executed by the CPU
 			c.CpuCycles += instruction.Cycles[1]
+			c.Offset = c.PC + uint16(instruction.Bytes)
 		}
 	case "e8":
 		c.CpuCycles += instruction.Cycles[0]
