@@ -93,6 +93,8 @@ func preconditions() {
 	cpu = gameboy.NewCPU(bus)
 	cpu.PC = 0x0000
 	cpu.SP = 0xFFFE
+	cpu.Halted = false
+	cpu.Stopped = false
 	// initialize the cpu states
 	cpuState := getCpuState()
 	cpuState1 = cpuState
@@ -136,20 +138,20 @@ func getCpuState() *gameboy.CpuState {
 func printCpuState(cpuState *gameboy.CpuState) {
 	fmt.Println(" ***   *** *** ***   *** ***   ***   *** *** ***   ***   *** ***   *** *** ***   ***")
 	fmt.Println("CPU STATE:")
-	fmt.Printf("PC: 0x%4X\n", cpuState.PC)
-	fmt.Printf("SP: 0x%4X\n", cpuState.SP)
-	fmt.Printf("A: 0x%2X\n", cpuState.A)
-	fmt.Printf("F: 0x%2X\n", cpuState.F)
+	fmt.Printf("PC: 0x%04X\n", cpuState.PC)
+	fmt.Printf("SP: 0x%04X\n", cpuState.SP)
+	fmt.Printf("A: 0x%02X\n", cpuState.A)
+	fmt.Printf("F: 0x%02X\n", cpuState.F)
 	fmt.Printf("Z: %t\n", cpuState.Z)
 	fmt.Printf("N: %t\n", cpuState.N)
 	fmt.Printf("H: %t\n", cpuState.H)
 	fmt.Printf("C: %t\n", cpuState.C)
-	fmt.Printf("BC: 0x%4X\n", cpuState.BC)
-	fmt.Printf("DE: 0x%4X\n", cpuState.DE)
-	fmt.Printf("HL: 0x%4X\n", cpuState.HL)
+	fmt.Printf("BC: 0x%04X\n", cpuState.BC)
+	fmt.Printf("DE: 0x%04X\n", cpuState.DE)
+	fmt.Printf("HL: 0x%04X\n", cpuState.HL)
 	fmt.Printf("PREFIXED: %t\n", cpuState.PREFIXED)
-	fmt.Printf("IR: 0x%2X\n", cpuState.IR)
-	fmt.Printf("OPERAND_VALUE: 0x%2X\n", cpuState.OPERAND_VALUE)
+	fmt.Printf("IR: 0x%02X\n", cpuState.IR)
+	fmt.Printf("OPERAND_VALUE: 0x%02X\n", cpuState.OPERAND_VALUE)
 	fmt.Println("IE:", cpuState.IE)
 	fmt.Println("IME:", cpuState.IME)
 	fmt.Println("HALTED:", cpuState.HALTED)
@@ -231,12 +233,17 @@ func TestNOP(t *testing.T) {
 		cmp := compareCpuState(cpuState1, cpuState2)
 		// check if there is only one difference between the two states: PC incremented to i
 		if len(cmp) != 1 {
-			t.Errorf("Error> NOP instruction should change exactly one field, the PC. Here got %v", cmp)
+			t.Errorf("[NOP_TC1_CHK_1] Error> NOP instruction should change exactly one field, the PC. Here got %v", cmp)
 		} else {
 
 			// the key should be PC
 			if cmp[0] != "PC" {
-				t.Errorf("Error> NOP instruction should change the PC field, here got %v\n", cmp[0])
+				t.Errorf("[NOP_TC1_CHK_2] Error> NOP instruction should change the PC field, here got %v\n", cmp[0])
+			}
+
+			// PC should be equal to 0x0E
+			if cpuState1.PC != uint16(i+1) {
+				t.Errorf("[NOP_TC1_CHK_3] Error> NOP instruction should increment the PC by 1, here got %v\n", cpuState1.PC)
 			}
 		}
 	}
@@ -257,12 +264,12 @@ func TestSTOP(t *testing.T) {
 
 	// check if the gameboy is halted on the STOP instruction
 	if !cpu.Stopped {
-		t.Errorf("Error> STOP instruction should stop the gameboy\n")
+		t.Errorf("[STOP_TC1_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 	finalState := getCpuState()
 	// check if the last PC = 0x0005, position of the STOP instruction in the test data program
 	if finalState.PC != 0x0005 {
-		t.Errorf("Error> STOP instruction: the program counter should have stopped at the STOP instruction @0x0005, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[STOP_TC1_CHK_2] Error> the program counter should have stopped at the STOP instruction @0x0005, got @0x%X4 \n", finalState.PC)
 	}
 
 	/*
@@ -286,12 +293,12 @@ func TestHALT(t *testing.T) {
 
 	// check if the gameboy is halted on the HALT instruction
 	if !cpu.Halted {
-		t.Errorf("Error> HALT instruction should halt the gameboy\n")
+		t.Errorf("[HALT_TC1_CHK_1] Error> HALT instruction should halt the gameboy\n")
 	}
 	finalState := getCpuState()
 	// check if the last PC = 0x0001, position of the HALT instruction in the test data program
 	if finalState.PC != 0x0005 {
-		t.Errorf("Error> HALT instruction: the program counter should have stopped at the HALT instruction\n")
+		t.Errorf("[HALT_TC1_CHK_2] Error> HALT instruction: the program counter should have stopped at the HALT instruction\n")
 	}
 
 	postconditions()
@@ -320,11 +327,11 @@ func TestDI(t *testing.T) {
 		// the IME flag should stay up until the end of the execution after the DI instruction
 		if i >= 0 && i <= 5 {
 			if !cpu.IME {
-				t.Errorf("Error> DI instruction should disable the IME flag after the execution of the next instruction\n")
+				t.Errorf("[DI_TC1_CHK_1] Error> DI instruction should disable the IME flag after the execution of the next instruction\n")
 			}
 		} else if i >= 6 {
 			if cpu.IME {
-				t.Errorf("Error> DI instruction should disable the IME flag\n")
+				t.Errorf("[DI_TC1_CHK_2] Error> DI instruction should disable the IME flag\n")
 			}
 		}
 	}
@@ -354,11 +361,11 @@ func TestEI(t *testing.T) {
 		// the IME flag should stay down until the end of the execution after the EI instruction
 		if i >= 0 && i <= 5 {
 			if cpu.IME {
-				t.Errorf("Error> EI instruction should enable the IME flag after the execution of the next instruction\n")
+				t.Errorf("[EI_TC1_CHK_1] Error> EI instruction should enable the IME flag after the execution of the next instruction\n")
 			}
 		} else if i >= 6 {
 			if !cpu.IME {
-				t.Errorf("Error> EI instruction should enable the IME flag\n")
+				t.Errorf("[EI_TC1_CHK_2] Error> EI instruction should enable the IME flag\n")
 			}
 		}
 	}
@@ -426,12 +433,12 @@ func TestJP(t *testing.T) {
 
 	// check if the last PC = 0x00B0, position of the STOP instruction in the test data program
 	if finalState.PC != 0x00B0 {
-		t.Errorf("Error> JP instruction: the program counter should have stopped at the STOP instruction @0x00B0, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[JP_TC1_CHK_1] Error> JP instruction: the program counter should have stopped at the STOP instruction @0x00B0, got @0x%X4 \n", finalState.PC)
 	}
 
 	// no flags should have changed
 	if finalState.F != saveFlags {
-		t.Errorf("Error> JP instruction: no flags should have changed\n")
+		t.Errorf("[JP_TC1_CHK_2] Error> JP instruction: no flags should have changed\n")
 	}
 
 	// postconditions
@@ -478,7 +485,7 @@ func TestJP(t *testing.T) {
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
 	if !cpu.Stopped {
-		t.Errorf("Error> STOP instruction should stop the gameboy\n")
+		t.Errorf("[JP_TC1_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
 	// check the final state of the cpu
@@ -486,12 +493,12 @@ func TestJP(t *testing.T) {
 
 	// check if the last PC = 0x00B0, position of the STOP instruction in the test data program
 	if finalState.PC != 0x00B0 {
-		t.Errorf("Error> JP instruction: the program counter should have stopped at the STOP instruction @0x00B0, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[JP_TC1_CHK_2] Error> JP instruction: the program counter should have stopped at the STOP instruction @0x00B0, got @0x%X4 \n", finalState.PC)
 	}
 
 	// no flags should have changed
 	if finalState.F != saveFlags {
-		t.Errorf("Error> JP instruction: no flags should have changed\n")
+		t.Errorf("[JP_TC1_CHK_3] Error> JP instruction: no flags should have changed\n")
 	}
 
 	// postconditions
@@ -525,22 +532,22 @@ func TestJR(t *testing.T) {
 	// test data
 	testData1 := []uint8{
 		//X0	0xX1	0xX2	0xX3	0xX4	0xX5	0xX6	0xX7	0xX8	0xX9	0xXA	0xXB	0xXC	0xXD	0xXE	0xXF
-		0x18, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @000X	; step 0	;		JR r8(+64 => 0x40)
+		0x18, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @000X	; step 0	;		JR r8(+64 => 0x40)
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @001X
-		0x28, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @002X	; step 2	; 	JR Z, r8(0x40) ; precondition: Z = 1
+		0x28, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @002X	; step 2	; 	JR Z, r8(0x40) ; precondition: Z = 1
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @003X
-		0x18, 0xE0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @004X  ; step 1	;		JR r8(255 - 32 = 223 = DF) ; precondition: C = 1
+		0x18, 0xDE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @004X  	; step 1	;		JR r8(255 - 32 = 223 = DF) ; precondition: C = 1
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @005X
-		0x28, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @006X  ; step 3	;		JR Z, r8(0x40)	; precondition: Z = 1
+		0x28, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @006X  	; step 3	;		JR Z, r8(0x40)	; precondition: Z = 1
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @007X
-		0x38, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @008X  ; step 4	;		JR C, r8(0x40) ; precondition: C = 1
+		0x38, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @008X  	; step 4	;		JR C, r8(0x40) ; precondition: C = 1
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @009X
 		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00AX	; step 7	;   STOP
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00BX
-		0x38, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00CX  ; step 5	;   JR C, r8(0x60) ; precondition: C = 0
+		0x38, 0x2E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00CX  	; step 5	;   JR C, r8(0x60) ; precondition: C = 0
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00DX
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00EX
-		0x38, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00FX  ; step 6	;   JR C, r8(255-80 = 175 = AF) ; precondition: C = 0
+		0x38, 0xAE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00FX  	; step 6	;   JR C, r8(255-80 = 175 = AF) ; precondition: C = 0
 	}
 
 	// load the program into the memory
@@ -551,7 +558,7 @@ func TestJR(t *testing.T) {
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.Stopped {
-		t.Errorf("Error> STOP instruction should stop the gameboy\n")
+		t.Errorf("[JP_TC1_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
 	// check the final state of the cpu
@@ -559,12 +566,12 @@ func TestJR(t *testing.T) {
 
 	// check if the last PC = 0x00B0, position of the STOP instruction in the test data program
 	if finalState.PC != 0x00A0 {
-		t.Errorf("Error> JR instruction: the program counter should have stopped at the STOP instruction @0x00A0, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[JP_TC1_CHK_2] Error> JR instruction: the program counter should have stopped at the STOP instruction @0x00A0, got @0x%X4 \n", finalState.PC)
 	}
 
 	// no flags should have changed
 	if finalState.F != saveFlags {
-		t.Errorf("Error> JR instruction: no flags should have changed\n")
+		t.Errorf("[JP_TC1_CHK_3] Error> JR instruction: no flags should have changed\n")
 	}
 
 	// postconditions
@@ -585,22 +592,22 @@ func TestJR(t *testing.T) {
 	// test data
 	testData2 := []uint8{
 		//X0	0xX1	0xX2	0xX3	0xX4	0xX5	0xX6	0xX7	0xX8	0xX9	0xXA	0xXB	0xXC	0xXD	0xXE	0xXF
-		0x18, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @000X	; step 0	;		JR r8(+64 => 0x40)
+		0x18, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @000X	; step 0	;		JR r8(+64 => 0x40)
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @001X
-		0x20, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @002X	; step 2	; 	JR NZ, r8(0x40) ; precondition: Z = 1
+		0x20, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @002X	; step 2	; 	JR NZ, r8(0x40) ; precondition: Z = 1
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @003X
-		0x18, 0xE0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @004X  ; step 1	;		JR r8(255 - 32 = 223 = DF) ; precondition: C = 1
+		0x18, 0xDE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @004X  ; step 1	;		JR r8(255 - 32 = 223 = DF) ; precondition: C = 1
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @005X
-		0x20, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @006X  ; step 3	;		JR NZ, r8(0x40)	; precondition: Z = 1
+		0x20, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @006X  ; step 3	;		JR NZ, r8(0x40)	; precondition: Z = 1
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @007X
-		0x30, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @008X  ; step 4	;		JR NC, r8(0x40) ; precondition: C = 1
+		0x30, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @008X  ; step 4	;		JR NC, r8(0x40) ; precondition: C = 1
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @009X
 		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00AX	; step 7	;   STOP
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00BX
-		0x30, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00CX  ; step 5	;   JR NC, r8(0x60) ; precondition: C = 0
+		0x30, 0x2E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00CX  ; step 5	;   JR NC, r8(0x60) ; precondition: C = 0
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00DX
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00EX
-		0x30, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00FX  ; step 6	;   JR NC, r8(255-80 = 175 = AF) ; precondition: C = 0
+		0x30, 0xAE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00FX  ; step 6	;   JR NC, r8(255-80 = 175 = AF) ; precondition: C = 0
 	}
 
 	// load the program into the memory
@@ -611,7 +618,7 @@ func TestJR(t *testing.T) {
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.Stopped {
-		t.Errorf("Error> STOP instruction should stop the gameboy\n")
+		t.Errorf("[JP_TC2_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
 	// check the final state of the cpu
@@ -619,12 +626,12 @@ func TestJR(t *testing.T) {
 
 	// check if the last PC = 0x00B0, position of the STOP instruction in the test data program
 	if finalState.PC != 0x00A0 {
-		t.Errorf("Error> JR instruction: the program counter should have stopped at the STOP instruction @0x00A0, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[JP_TC2_CHK_2] Error> JR instruction: the program counter should have stopped at the STOP instruction @0x00A0, got @0x%X4 \n", finalState.PC)
 	}
 
 	// no flags should have changed
 	if finalState.F != saveFlags {
-		t.Errorf("Error> JR instruction: no flags should have changed\n")
+		t.Errorf("[JP_TC2_CHK_2] Error> JR instruction: no flags should have changed\n")
 	}
 
 	// postconditions
@@ -681,7 +688,7 @@ func TestCALL(t *testing.T) {
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
 	if !cpu.Stopped {
-		t.Errorf("Error> STOP instruction should stop the gameboy\n")
+		t.Errorf("[CALL_TC1_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
 	// check the final state of the cpu
@@ -689,12 +696,12 @@ func TestCALL(t *testing.T) {
 
 	// check if the last PC = 0x00B0, position of the STOP instruction in the test data program
 	if finalState.PC != 0x0060 {
-		t.Errorf("Error> CALL instruction: the program counter should have stopped at the STOP instruction @0x0060, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[CALL_TC1_CHK_2] Error> CALL instruction: the program counter should have stopped at the STOP instruction @0x0060, got @0x%X4 \n", finalState.PC)
 	}
 
 	// no flags should have changed
 	if finalState.F != saveFlags {
-		t.Errorf("Error> CALL instruction: no flags should have changed\n")
+		t.Errorf("[CALL_TC1_CHK_3] Error> CALL instruction: no flags should have changed\n")
 	}
 
 	// postconditions
@@ -741,7 +748,7 @@ func TestCALL(t *testing.T) {
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
 	if !cpu.Stopped {
-		t.Errorf("Error> STOP instruction should stop the gameboy\n")
+		t.Errorf("[CALL_TC2_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
 	// check the final state of the cpu
@@ -749,12 +756,12 @@ func TestCALL(t *testing.T) {
 
 	// check if the last PC = 0x00B0, position of the STOP instruction in the test data program
 	if finalState.PC != 0x0060 {
-		t.Errorf("Error> CALL instruction: the program counter should have stopped at the STOP instruction @0x0060, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[CALL_TC2_CHK_2] Error> CALL instruction: the program counter should have stopped at the STOP instruction @0x0060, got @0x%X4 \n", finalState.PC)
 	}
 
 	// no flags should have changed
 	if finalState.F != saveFlags {
-		t.Errorf("Error> CALL instruction: no flags should have changed\n")
+		t.Errorf("[CALL_TC2_CHK_3] Error> CALL instruction: no flags should have changed\n")
 	}
 
 	// postconditions
@@ -808,12 +815,12 @@ func TestRET(t *testing.T) {
 
 	// check if the last PC = 0x0008, position of the RET instruction in the test data program
 	if finalState.PC != 0x0008 {
-		t.Errorf("Error> RET instruction: the program counter should have stopped at the RET instruction @0x0008, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[RET_TC1_CHK_1] Error> RET instruction: the program counter should have stopped at the STOP instruction @0x0008, got @0x%X4 \n", finalState.PC)
 	}
 
 	// check if the SP = 0xFFFE
 	if finalState.SP != 0xFFFE {
-		t.Errorf("Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
+		t.Errorf("[RET_TC1_CHK_2] Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
 	}
 
 	// postconditions
@@ -857,12 +864,12 @@ func TestRET(t *testing.T) {
 
 	// check if the last PC = 0x0008, position of the RET instruction in the test data program
 	if finalState.PC != 0x0008 {
-		t.Errorf("Error> RET instruction: the program counter should have stopped at the RET instruction @0x0008, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[RET_TC2_CHK_1] Error> RET instruction: the program counter should have stopped at the STOP instruction @0x0008, got @0x%X4 \n", finalState.PC)
 	}
 
 	// check if the SP = 0xFFFE
 	if finalState.SP != 0xFFFE {
-		t.Errorf("Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
+		t.Errorf("[RET_TC2_CHK_2] Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
 	}
 
 	// postconditions
@@ -906,12 +913,12 @@ func TestRET(t *testing.T) {
 
 	// check if the last PC = 0x0008, position of the RET instruction in the test data program
 	if finalState.PC != 0x0008 {
-		t.Errorf("Error> RET instruction: the program counter should have stopped at the RET instruction @0x0008, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[RET_TC3_CHK_1] Error> RET instruction: the program counter should have stopped at the STOP instruction @0x0008, got @0x%X4 \n", finalState.PC)
 	}
 
 	// check if the SP = 0xFFFE
 	if finalState.SP != 0xFFFE {
-		t.Errorf("Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
+		t.Errorf("[RET_TC3_CHK_2] Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
 	}
 
 	// postconditions
@@ -955,12 +962,12 @@ func TestRET(t *testing.T) {
 
 	// check if the last PC = 0x0008, position of the RET instruction in the test data program
 	if finalState.PC != 0x0008 {
-		t.Errorf("Error> RET instruction: the program counter should have stopped at the RET instruction @0x0008, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[RET_TC4_CHK_1] Error> RET instruction: the program counter should have stopped at the STOP instruction @0x0008, got @0x%X4 \n", finalState.PC)
 	}
 
 	// check if the SP = 0xFFFE
 	if finalState.SP != 0xFFFE {
-		t.Errorf("Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
+		t.Errorf("[RET_TC4_CHK_2] Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
 	}
 
 	// postconditions
@@ -1004,12 +1011,12 @@ func TestRET(t *testing.T) {
 
 	// check if the last PC = 0x0008, position of the RET instruction in the test data program
 	if finalState.PC != 0x0008 {
-		t.Errorf("Error> RET instruction: the program counter should have stopped at the RET instruction @0x0008, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[RET_TC5_CHK_1] Error> RET instruction: the program counter should have stopped at the STOP instruction @0x0008, got @0x%X4 \n", finalState.PC)
 	}
 
 	// check if the SP = 0xFFFE
 	if finalState.SP != 0xFFFE {
-		t.Errorf("Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
+		t.Errorf("[RET_TC5_CHK_2] Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
 	}
 
 	// postconditions
@@ -1055,26 +1062,86 @@ func TestRETI(t *testing.T) {
 
 	// check if the last PC = 0x0008, position of the RET instruction in the test data program
 	if finalState.PC != 0x0008 {
-		t.Errorf("Error> RET instruction: the program counter should have stopped at the RET instruction @0x0008, got @0x%X4 \n", finalState.PC)
+		t.Errorf("[RETI_TC1_CHK_1] Error> RETI instruction: the program counter should have stopped at the STOP instruction @0x0008, got @0x%X4 \n", finalState.PC)
 	}
 
 	// check if the SP = 0xFFFE
 	if finalState.SP != 0xFFFE {
-		t.Errorf("Error> RET instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
+		t.Errorf("[RETI_TC1_CHK_2] Error> RETI instruction: the stack pointer should have stopped at 0xFFFE, got @0x%X4 \n", finalState.SP)
 	}
 
 	// check if the IME = 1
 	if !finalState.IME {
-		t.Errorf("Error> RETI instruction: the interrupt master enable flag should have been set\n")
+		t.Errorf("[RETI_TC1_CHK_3] Error> RETI instruction: the interrupt master enable flag should have been set\n")
 	}
 
 	// postconditions
 	postconditions()
 }
 
-/* TC11: should call the address specified in the instruction */
+// TC11: should call the address specified in the instruction
+// opcodes:
+//   - 0xC7 = RST $00
+//   - 0xCF = RST $08
+//   - 0xD7 = RST $10
+//   - 0xDF = RST $18
+//   - 0xE7 = RST $20
+//   - 0xEF = RST $28
+//   - 0xF7 = RST $30
+//   - 0xFF = RST $38
+//   - flags: - - - -
 func TestRST(t *testing.T) {
-	t.Error("not implemented yet")
+
+	/* TC1: RST - we start @0x00F0 and execute:
+	 * - @0xF0 RST $38
+	 */
+
+	// preconditions
+	preconditions()
+	cpu.Offset = 0x00F0
+
+	// prepare the test data
+	testData := []uint8{
+		//X0	0xX1	0xX2	0xX3	0xX4	0xX5	0xX6	0xX7 *0xX8	0xX9	0xXA	0xXB	0xXC	0xXD	0xXE	0xXF
+		0x00, 0x00, 0x00, 0xC9, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00, 0xC9, 0x00, // @000X	; 				; RET ; RST $00 ; RET
+		0x00, 0xCF, 0x00, 0xC9, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD7, 0x00, 0x00, 0x00, 0x00, 0xC9, 0x00, // @001X	; RST $00 ; RET ; RST $10	; RET
+		0x00, 0xDF, 0x00, 0xC9, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE7, 0x00, 0x00, 0x00, 0x00, 0xC9, 0x00, // @002X	; RST $18 ; RET ; RST $20	; RET
+		0x00, 0xEF, 0x00, 0xC9, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF7, 0x00, 0x00, 0x00, 0x00, 0xC9, 0x00, // @003X	; RST $28 ; RET ; RST $30	; RET
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @004X	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @005X	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @006X	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @007X	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @008X	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @009X	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00AX	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00BX	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00CX	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00DX	;
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // @00EX	;
+		0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, // @00FX	; RST $38 ; STOP
+	}
+
+	// load the program into the memory
+	loadProgramIntoMemory(memory1, testData)
+
+	// run the program
+	cpu.Run()
+
+	// check the final state of the cpu
+	finalState := getCpuState()
+
+	// check if the last PC = 0x0008, position of the RET instruction in the test data program
+	if finalState.PC != 0x00FE {
+		t.Errorf("[RST_TC1_CHK_1] Error> RST instruction: the program counter should have stopped at the STOP instruction @0x00FE, got @0x%04X \n", finalState.PC)
+	}
+
+	// check if the SP = 0xFFFE
+	if finalState.SP != 0xFFFE {
+		t.Errorf("[RST_TC1_CHK_2] Error> RST instruction: the stack pointer should have stopped at 0xFFFE, got @0x%04X \n", finalState.SP)
+	}
+
+	// postconditions
+	postconditions()
 }
 
 /* TC12: should load the value from the source into the destination */
