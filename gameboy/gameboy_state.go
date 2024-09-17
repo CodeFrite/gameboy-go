@@ -7,14 +7,15 @@ import (
 
 type CpuState struct {
 	// Special registers
-	PC uint16 `json:"PC"` // Program Counter
-	SP uint16 `json:"SP"` // Stack Pointer
-	A  uint8  `json:"A"`  // Accumulator
-	F  uint8  `json:"F"`  // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
-	Z  bool   `json:"Z"`  // Zero flag
-	N  bool   `json:"N"`  // Subtraction flag
-	H  bool   `json:"H"`  // Half Carry flag
-	C  bool   `json:"C"`  // Carry flag
+	CpuCycles int    `json:"cpuCycles"` // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
+	PC        uint16 `json:"PC"`        // Program Counter
+	SP        uint16 `json:"SP"`        // Stack Pointer
+	A         uint8  `json:"A"`         // Accumulator
+	F         uint8  `json:"F"`         // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
+	Z         bool   `json:"Z"`         // Zero flag
+	N         bool   `json:"N"`         // Subtraction flag
+	H         bool   `json:"H"`         // Half Carry flag
+	C         bool   `json:"C"`         // Carry flag
 	// 16-bits general purpose registers
 	BC uint16 `json:"BC"`
 	DE uint16 `json:"DE"`
@@ -119,6 +120,7 @@ func (gbs *GameboyState) printInstruction() {
 // get the memories current content
 func (gb *Gameboy) currCpuState() *CpuState {
 	return &CpuState{
+		CpuCycles:     gb.cpu.CpuCycles,
 		PC:            gb.cpu.PC,
 		SP:            gb.cpu.SP,
 		A:             gb.cpu.A,

@@ -18,10 +18,11 @@ type CPU struct {
 	B, C, D, E, H, L uint8  // 16-bit general purpose registers
 
 	// Instruction
-	IR       uint8  // Instruction Register
-	Prefixed bool   // Is the current instruction prefixed with 0xCB
-	Operand  uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
-	offset   uint16 // offset used in some instructions
+	IR        uint8  // Instruction Register
+	Prefixed  bool   // Is the current instruction prefixed with 0xCB
+	Operand   uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+	Offset    uint16 // offset used in some instructions
+	CpuCycles int    // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
 
 	// Interrupts
 	IME                    bool    // interrupt master enable
@@ -55,8 +56,8 @@ func NewCPU(bus *Bus) *CPU {
 }
 
 // Increment the Program Counter by the given offset
-func (c *CPU) incrementPC() {
-	c.PC = c.offset
+func (c *CPU) updatePC() {
+	c.PC = c.Offset
 }
 
 // Stack operations
@@ -232,10 +233,9 @@ func (c *CPU) Step() error {
 		return nil
 	}
 
-	// update the pc
-	c.incrementPC()
-	// reset the offset
-	c.offset = 0
+	// update the pc and reset the offset
+	c.updatePC()
+	c.Offset = 0
 
 	// reset the prefixed flag
 	c.Prefixed = false
@@ -286,11 +286,6 @@ func (c *CPU) Step() error {
 		} else {
 			c.executeCBInstruction(instruction)
 		}
-	}
-
-	// 4. Handle the offset for the PC to be updated on the next cycle
-	if c.offset == 0 {
-		c.offset = c.PC + uint16(instruction.Bytes)
 	}
 
 	return nil

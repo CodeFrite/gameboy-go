@@ -99,6 +99,10 @@ flags: -
 func (c *CPU) DI(instruction *Instruction) {
 	// ask the CPU to disable interrupts after the next instruction
 	c.IME_DISABLE_NEXT_CYCLE = true
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
 }
 
 /*
@@ -111,6 +115,10 @@ flags: -
 func (c *CPU) EI(instruction *Instruction) {
 	// ask the CPU to enable interrupts after the next instruction
 	c.IME_ENABLE_NEXT_CYCLE = true
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
 }
 
 /*
@@ -120,6 +128,10 @@ func (c *CPU) EI(instruction *Instruction) {
  */
 func (c *CPU) HALT(instruction *Instruction) {
 	c.Halted = true
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
 }
 
 /*
@@ -128,11 +140,19 @@ opcodes: 0x00=NOP
 flags impacted: -
 */
 func (c *CPU) NOP(instruction *Instruction) {
-	// do nothing
+	// do nothing (no business logic)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
 }
 func (c *CPU) STOP(instruction *Instruction) {
 	// stop the CPU
 	c.Stopped = true
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
 }
 
 // Jump / Call instructions
@@ -153,26 +173,48 @@ func (c *CPU) CALL(instruction *Instruction) {
 	case "Z":
 		if c.getZFlag() {
 			c.push(c.PC + uint16(instruction.Bytes)) // push the address of the next instruction onto the stack
-			c.offset = c.Operand
+			c.Offset = c.Operand
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "NZ":
 		if !c.getZFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.offset = c.Operand
+			c.Offset = c.Operand
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "C":
 		if c.getCFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.offset = c.Operand
+			c.Offset = c.Operand
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "NC":
 		if !c.getCFlag() {
 			c.push(c.PC + uint16(instruction.Bytes))
-			c.offset = c.Operand
+			c.Offset = c.Operand
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "a16":
 		c.push(c.PC + uint16(instruction.Bytes))
-		c.offset = c.Operand
+		c.Offset = c.Operand
+		// update the number of cycles executed by the CPU
+		c.CpuCycles += instruction.Cycles[0]
 	default:
 		panic("CALL: unknown operand")
 	}
@@ -194,24 +236,48 @@ func (c *CPU) JP(instruction *Instruction) {
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.offset = c.Operand
+			c.Offset = c.Operand
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.offset = c.Operand
+			c.Offset = c.Operand
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "C":
 		if c.getCFlag() {
-			c.offset = c.Operand
+			c.Offset = c.Operand
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.offset = c.Operand
+			c.Offset = c.Operand
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "a16":
-		c.offset = c.Operand
+		c.Offset = c.Operand
+		// update the number of cycles executed by the CPU
+		c.CpuCycles += instruction.Cycles[0]
 	case "HL":
-		c.offset = c.Operand
+		c.Offset = c.Operand
+		// update the number of cycles executed by the CPU
+		c.CpuCycles += instruction.Cycles[0]
 	default:
 		panic("JP: unknown operand")
 	}
@@ -232,25 +298,52 @@ flags: -
 ! by converting for -1 to 0xFF, -2 to 0xFE, etc which is the expected behavior
 */
 func (c *CPU) JR(instruction *Instruction) {
+	offset := uint16(int(c.PC) + int(int8(c.Operand)) + int(instruction.Bytes))
 	switch instruction.Operands[0].Name {
 	case "Z":
 		if c.getZFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand))) // we do not need to add the Bytes size of the instruction since the offset is relative
+			// update the program counter offset
+			c.Offset = offset
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "NZ":
 		if !c.getZFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
+			// update the program counter offset
+			c.Offset = offset
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "C":
 		if c.getCFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
+			// update the program counter offset
+			c.Offset = offset
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "NC":
 		if !c.getCFlag() {
-			c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
+			// update the program counter offset
+			c.Offset = offset
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[0]
+		} else {
+			// update the number of cycles executed by the CPU
+			c.CpuCycles += instruction.Cycles[1]
 		}
 	case "e8":
-		c.offset = uint16(int(c.PC) + int(int8(c.Operand)))
+		c.CpuCycles += instruction.Cycles[0]
+		// update the program counter offset
+		c.Offset = offset
 	default:
 		errMessage := fmt.Sprint("JR: unknown operand, got ", instruction.Operands[0].Name)
 		panic(errMessage)
@@ -271,24 +364,44 @@ flags: -
 */
 func (c *CPU) RET(instruction *Instruction) {
 	if len(instruction.Operands) == 0 {
-		c.offset = c.pop()
+		c.Offset = c.pop()
 	} else {
 		switch instruction.Operands[0].Name {
 		case "Z":
 			if c.getZFlag() {
-				c.offset = c.pop()
+				c.Offset = c.pop()
+				// update the number of cycles executed by the CPU
+				c.CpuCycles += instruction.Cycles[0]
+			} else {
+				// update the number of cycles executed by the CPU
+				c.CpuCycles += instruction.Cycles[1]
 			}
 		case "NZ":
 			if !c.getZFlag() {
-				c.offset = c.pop()
+				c.Offset = c.pop()
+				// update the number of cycles executed by the CPU
+				c.CpuCycles += instruction.Cycles[0]
+			} else {
+				// update the number of cycles executed by the CPU
+				c.CpuCycles += instruction.Cycles[1]
 			}
 		case "C":
 			if c.getCFlag() {
-				c.offset = c.pop()
+				c.Offset = c.pop()
+				// update the number of cycles executed by the CPU
+				c.CpuCycles += instruction.Cycles[0]
+			} else {
+				// update the number of cycles executed by the CPU
+				c.CpuCycles += instruction.Cycles[1]
 			}
 		case "NC":
 			if !c.getCFlag() {
-				c.offset = c.pop()
+				c.Offset = c.pop()
+				// update the number of cycles executed by the CPU
+				c.CpuCycles += instruction.Cycles[0]
+			} else {
+				// update the number of cycles executed by the CPU
+				c.CpuCycles += instruction.Cycles[1]
 			}
 		default:
 			panic("RET: unknown operand")
@@ -304,8 +417,10 @@ opcodes: 0xD9
 flags: -
 */
 func (c *CPU) RETI(instruction *Instruction) {
-	c.offset = c.pop()
+	c.Offset = c.pop()
 	c.IME = true
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -324,8 +439,11 @@ opcodes:
 flags: -
 */
 func (c *CPU) RST(instruction *Instruction) {
-	c.push(c.PC)
-	c.offset = c.Operand
+	c.push(c.PC + uint16(instruction.Bytes))
+	c.Offset = c.Operand
+
+	// Update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 // Load / Store instructions
@@ -465,6 +583,12 @@ func (c *CPU) LD(instruction *Instruction) {
 		panic("LD: unknown operand")
 	}
 
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
+
 }
 
 /*
@@ -491,6 +615,10 @@ func (c *CPU) LDH(instruction *Instruction) {
 	default:
 		panic("LDH: unknown operand")
 	}
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -557,6 +685,10 @@ func (c *CPU) PUSH(instruction *Instruction) {
 	default:
 		panic("PUSH: unknown operand")
 	}
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -590,6 +722,10 @@ func (c *CPU) POP(instruction *Instruction) {
 	default:
 		panic("POP: unknown operand")
 	}
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 // Arithmetic / Logical instructions
@@ -613,6 +749,10 @@ func (c *CPU) CCF(instruction *Instruction) {
 	// reset N and H flags
 	c.resetNFlag()
 	c.resetHFlag()
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -648,6 +788,10 @@ func (c *CPU) CP(instruction *Instruction) {
 	} else {
 		c.resetCFlag()
 	}
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -661,6 +805,10 @@ func (c *CPU) CPL(instruction *Instruction) {
 	// update flags
 	c.setNFlag()
 	c.setHFlag()
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -710,6 +858,11 @@ func (c *CPU) DAA(instruction *Instruction) {
 	// reset the H flag
 	c.resetHFlag()
 	// N flag is not modified
+
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -819,6 +972,11 @@ func (c *CPU) DEC(instruction *Instruction) {
 	default:
 		panic("DEC: unknown operand")
 	}
+
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -972,6 +1130,11 @@ func (c *CPU) INC(instruction *Instruction) {
 	}
 	// reset the N flag
 	c.resetNFlag()
+
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 func (c *CPU) SUB(instruction *Instruction) {
 	panic("SUB not implemented")
@@ -991,6 +1154,11 @@ func (c *CPU) SCF(instruction *Instruction) {
 	// reset the N and H flags and leave the Z flag unchanged
 	c.resetNFlag()
 	c.resetHFlag()
+
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 func (c *CPU) OR(instruction *Instruction) {
 	panic("OR not implemented")
@@ -1024,6 +1192,11 @@ func (c *CPU) XOR(instruction *Instruction) {
 	c.resetNFlag()
 	c.resetHFlag()
 	c.resetCFlag()
+
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 // Shift / Rotate and Bit instructions
@@ -1056,6 +1229,10 @@ func (c *CPU) RLA(instruction *Instruction) {
 	c.resetNFlag()
 	c.resetHFlag()
 
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -1078,6 +1255,10 @@ func (c *CPU) RLCA(instruction *Instruction) {
 	c.resetNFlag()
 	c.resetHFlag()
 
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -1108,6 +1289,10 @@ func (c *CPU) RRA(instruction *Instruction) {
 	c.resetNFlag()
 	c.resetHFlag()
 
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 /*
@@ -1128,6 +1313,11 @@ func (c *CPU) RRCA(instruction *Instruction) {
 	c.resetZFlag()
 	c.resetNFlag()
 	c.resetHFlag()
+
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 
 // Illegal instructions
