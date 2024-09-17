@@ -7,7 +7,7 @@ import (
 
 type CpuState struct {
 	// Special registers
-	CpuCycles int    `json:"cpuCycles"` // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
+	CpuCycles uint16 `json:"cpuCycles"` // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
 	PC        uint16 `json:"PC"`        // Program Counter
 	SP        uint16 `json:"SP"`        // Stack Pointer
 	A         uint8  `json:"A"`         // Accumulator

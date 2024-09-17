@@ -167,6 +167,10 @@ func (c *CPU) RL(instruction *Instruction) {
 	}
 	c.resetNFlag()
 	c.resetHFlag()
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 func (c *CPU) RR(instruction *Instruction) {
 	panic("RR not implemented")
@@ -202,6 +206,10 @@ func (c *CPU) BIT(instruction *Instruction) {
 	}
 	c.resetNFlag()
 	c.setHFlag()
+	// update the program counter offset
+	c.Offset = c.PC + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.CpuCycles += instruction.Cycles[0]
 }
 func (c *CPU) RES(instruction *Instruction) {
 	panic("RES not implemented")

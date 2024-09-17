@@ -15,7 +15,7 @@ type Opcode string                                     // instruction opcode in 
 type Instruction struct {
 	Mnemonic  string    `json:"mnemonic"`  // instruction mnemonic
 	Bytes     int       `json:"bytes"`     // number of bytes the instruction takes
-	Cycles    []int     `json:"cycles"`    // number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
+	Cycles    []uint16  `json:"cycles"`    // number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
 	Operands  []Operand `json:"operands"`  // instruction operands used as function arguments
 	Immediate bool      `json:"immediate"` // is the operand an immediate value or should it be fetched from memory
 	Flags     Flags     `json:"flags"`     // cpu flags affected by the instruction

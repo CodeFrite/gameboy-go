@@ -22,7 +22,7 @@ type CPU struct {
 	Prefixed  bool   // Is the current instruction prefixed with 0xCB
 	Operand   uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
 	Offset    uint16 // offset used in some instructions
-	CpuCycles int    // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
+	CpuCycles uint16 // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
 
 	// Interrupts
 	IME                    bool    // interrupt master enable

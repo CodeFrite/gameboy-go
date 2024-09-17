@@ -84,6 +84,7 @@ func main() {
 		// - print the current state (state/X/x)
 		if action == "state" || action == "X" || action == "x" {
 			db.PrintCPUState()
+			db.PrintInstruction()
 			db.PrintMemoryProperties()
 		}
 		// - exit the debugger (exit/E/e)
