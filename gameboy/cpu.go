@@ -108,18 +108,25 @@ func (c *CPU) fetchOpcode() (opcode uint8, prefixed bool) {
 func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 	var value, addr uint16
 	switch operand.Name {
-	case "n8": // always immediate
+
+	// n8: immediate 8-bit data
+	case "n8":
 		value = uint16(c.bus.Read(c.PC + 1))
-	case "n16": // always immediate
-		// little-endian
+
+	// n16: immediate little-endian 16-bit data
+	case "n16":
 		value = c.bus.Read16(c.PC + 1)
+
+	// a8: 8-bit unsigned data, which is added to $FF00 in certain instructions to create a 16-bit address in HRAM (High RAM)
 	case "a8": // not always immediate
 		if operand.Immediate {
 			value = uint16(c.bus.Read(c.PC + 1))
 		} else {
-			addr = 0xFF00 + c.bus.Read16(c.PC+1)
+			//addr = 0xFF00 + c.bus.Read16(c.PC+1)
+			addr = 0xFF00 + uint16(c.bus.Read(c.PC+1))
 			value = uint16(c.bus.Read(addr))
 		}
+	// a16: little-endian 16-bit address
 	case "a16": // not always immediate
 		if operand.Immediate {
 			value = c.bus.Read16(c.PC + 1)
@@ -127,6 +134,7 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 			addr := c.bus.Read16(c.PC + 1)
 			value = c.bus.Read16(addr)
 		}
+	// e8 means 8-bit signed data
 	case "e8": // not always immediate
 		if operand.Immediate {
 			value = uint16(c.bus.Read(c.PC + 1))

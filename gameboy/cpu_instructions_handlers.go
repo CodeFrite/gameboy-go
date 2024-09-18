@@ -620,7 +620,7 @@ func (c *CPU) LDH(instruction *Instruction) {
 	case "A":
 		c.A = uint8(c.Operand)
 	case "a8":
-		a8 := 0xFF00 + uint16(c.bus.Read(c.PC+1))
+		a8 := 0xFF00 + c.Operand
 		err = c.bus.Write(a8, c.A)
 		if err != nil {
 			fmt.Printf("\n> Panic @0x%04X\n", c.PC)
