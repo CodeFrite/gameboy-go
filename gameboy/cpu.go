@@ -117,7 +117,7 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 		if operand.Immediate {
 			value = uint16(c.bus.Read(c.PC + 1))
 		} else {
-			addr = 0xFF00 + uint16(c.bus.Read(c.PC+1))
+			addr = 0xFF00 + c.bus.Read16(c.PC+1)
 			value = uint16(c.bus.Read(addr))
 		}
 	case "a16": // not always immediate
