@@ -1,6 +1,9 @@
 package gameboy
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 /**
  * debugger struct: combination of a gameboy, its internal state and a list of breakpoints set by the user
@@ -89,6 +92,52 @@ func (d *Debugger) shiftState() {
 /**
  * saves the current state of the gameboy into the debugger state.
  */
+func (d *Debugger) testInstructionExecution() {
+	instr := d.gameboy.currInstruction()
+	curr := d.state.CURR_CPU_STATE
+	prev := d.state.PREV_CPU_STATE
+
+	if (curr == nil) || (prev == nil) {
+		return
+	}
+
+	// check the flags
+	v := reflect.ValueOf(instr.Flags)
+	typeOfS := v.Type()
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		key := typeOfS.Field(i).Name
+		flagValue := field.String()
+
+		// Use reflection to get the value of the field from curr
+		currValue := reflect.ValueOf(curr).Elem().FieldByName(key)
+		prevValue := reflect.ValueOf(prev).Elem().FieldByName(key)
+
+		if flagValue == "0" {
+			if currValue.Bool() {
+				fmt.Printf("Debugger@0x%04X> 'testInstructionExecution' failed: flag should be 0 (%v)\n", d.gameboy.cpu.PC, instr.Mnemonic)
+			}
+		} else if flagValue == "1" {
+			if !currValue.Bool() {
+				fmt.Printf("Debugger@0x%04X> 'testInstructionExecution' failed: flag should be 1 (%v)\n", d.gameboy.cpu.PC, instr.Mnemonic)
+			}
+		} else if flagValue == "-" {
+			// '-' means the flag is not relevant for this instruction, so we skip the check
+			if currValue.Bool() != prevValue.Bool() {
+				fmt.Printf("Debugger@0x%04X> 'testInstructionExecution' failed: flag should stay the same (%v) : %v(%v)=%v->%v\n", d.gameboy.cpu.PC, instr.Mnemonic, key, flagValue, currValue.Bool(), prevValue.Bool())
+
+			}
+		} else {
+			//fmt.Printf("\nDebugger> 'testInstructionExecution' flag value %v unsupported", key)
+		}
+	}
+
+	// check the registers
+	// check the memory reads
+	// check the memory writes
+}
+
 func (d *Debugger) saveState() {
 	d.state.CURR_CPU_STATE = d.gameboy.currCpuState()
 	d.state.INSTR = d.gameboy.currInstruction()
@@ -107,6 +156,14 @@ func (d *Debugger) Step() *GameboyState {
 	d.gameboy.Step()
 	// save the current state
 	d.saveState()
+
+	// TODO: we could add a func that would test that the current instruction did only:
+	// - read from memory locations named in the instruction operands
+	// - write to memory locations named in the instruction operands
+	// - changed the correct CPU registers, everytime or when the condition is met
+	// - changed the correct flags, everytime or when the condition is met
+	d.testInstructionExecution()
+
 	// return the current state
 	return d.state
 }
@@ -127,6 +184,7 @@ func (d *Debugger) Run() *GameboyState {
 		d.state.CURR_CPU_STATE = d.gameboy.currCpuState()
 		d.state.INSTR = d.gameboy.currInstruction()
 		d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
+		d.testInstructionExecution()
 		// check if the current PC is a breakpoint or if the gameboy is halted
 		if contains(d.breakpoints, d.gameboy.cpu.PC) || d.gameboy.cpu.Halted || d.gameboy.cpu.Stopped {
 			// we do not halt the processor which is a feature used by the gameboy to save power, we just stop the execution from the debugger point of view by not executing any more instructions
