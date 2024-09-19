@@ -1021,6 +1021,8 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
+		// reset the N flag
+		c.resetNFlag()
 	case "B":
 		c.B++
 		if c.B == 0x00 {
@@ -1033,6 +1035,8 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
+		// reset the N flag
+		c.resetNFlag()
 	case "C":
 		c.C++
 		if c.C == 0x00 {
@@ -1045,6 +1049,8 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
+		// reset the N flag
+		c.resetNFlag()
 	case "D":
 		c.D++
 		if c.D == 0x00 {
@@ -1057,6 +1063,8 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
+		// reset the N flag
+		c.resetNFlag()
 	case "E":
 		c.E++
 		if c.E == 0x00 {
@@ -1069,6 +1077,8 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
+		// reset the N flag
+		c.resetNFlag()
 	case "H":
 		c.H++
 		if c.H == 0x00 {
@@ -1081,6 +1091,8 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
+		// reset the N flag
+		c.resetNFlag()
 	case "L":
 		c.L++
 		if c.L == 0x00 {
@@ -1093,6 +1105,8 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
+		// reset the N flag
+		c.resetNFlag()
 	case "HL":
 		if instruction.Operands[0].Immediate {
 			c.setHL(c.getHL() + 1)
@@ -1115,6 +1129,8 @@ func (c *CPU) INC(instruction *Instruction) {
 			} else {
 				c.resetHFlag()
 			}
+			// reset the N flag
+			c.resetNFlag()
 		}
 	case "DE":
 		if instruction.Operands[0].Immediate {
@@ -1127,23 +1143,10 @@ func (c *CPU) INC(instruction *Instruction) {
 				fmt.Printf("\n> Panic @0x%04X\n", c.PC)
 				panic(err)
 			}
-
-			if val == 0x00 {
-				c.setZFlag()
-			} else {
-				c.resetZFlag()
-			}
-			if (val & 0x0F) == 0x00 {
-				c.setHFlag()
-			} else {
-				c.resetHFlag()
-			}
 		}
 	default:
 		panic(fmt.Sprintf(">> PANIC >> INC instruction: unknown operand %s", instruction.Operands[0].Name))
 	}
-	// reset the N flag
-	c.resetNFlag()
 
 	// update the program counter offset
 	c.Offset = c.PC + uint16(instruction.Bytes)
