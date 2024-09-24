@@ -1,76 +1,86 @@
 package gameboy
 
-// Registers
-// * DIV - Divider Register (R/W)
-// This register is incremented at rate of 16384Hz (~16779Hz on SGB). Writing any value to this register resets it to 0x00.
-// Additionally, this register is reset when executing the stop instruction, and only begins ticking again once stop mode ends.
-// TODO: check that the stop instruction is reseting the DIV register correctly
-// * TIMA - Timer Counter (R/W)
-// This timer is incremented at the clock frequency specified by the TAC register ($FF07).
-// When the value overflows (exceeds $FF) it is reset to the value specified in TMA (FF06) and an interrupt is requested.
-// * TMA - Timer Modulo (R/W)
-// When TIMA overflows, it is reset to the value in this register and an interrupt is requested.
-// Example of use: if TMA is set to $FF, an interrupt is requested at the clock frequency selected in TAC
-// (because every increment is an overflow).
-// However, if TMA is set to $FE, an interrupt is only requested every two increments,
-// which effectively divides the selected clock by two. Setting TMA to $FD would divide the clock by three, and so on.
-// If a TMA write is executed on the same M-cycle as the content of TMA is transferred to TIMA due to a timer overflow,
-// the old value is transferred to TIMA.
-//   - TAC - Timer Control (R/W)
-//     |	7	6	5	4	3	2				1			0
-//
-// TAC	|						Enable	Clock select
-// + Enable: Controls whether TIMA is incremented. Note that DIV is always counting, regardless of this bit.
-// + Clock select: Controls the frequency at which TIMA is incremented, as follows:
-//
-//	Clock select		Increment every		DMG, SGB2, CGB in single-speed mode		SGB1 Frequency (Hz) 	CGB in double-speed mode
-//						00			 256 M-cycles			 														 4096		  						~4194												8192
-//						01				 4 M-cycles																 262144								~268400											524288
-//						10				16 M-cycles																	65536		 						 ~67110											131072
-//						11				64 M-cycles																	16384								 ~16780											 32768
-var TIMER_REGISTERS map[string]uint16 = map[string]uint16{
-	"DIV":  0xFF04,
-	"TIMA": 0xFF05,
-	"TMA":  0xFF06,
-	"TAC":  0xFF07,
+import (
+	"fmt"
+	"time"
+)
+
+type Synchronizable interface {
+	onTick()
 }
 
+// timer registers
+var TIMER_REGISTERS map[string]uint16 = map[string]uint16{
+	"DIV":  0xFF04, // divider register: incremented at a rate of 16384 Hz
+	"TIMA": 0xFF05, // timer counter: incremented at a rate of 16384 Hz
+	"TMA":  0xFF06, // timer modulo: when TIMA overflows, it is reset to TMA
+	"TAC":  0xFF07, // timer control register: used to start/stop the timer
+}
+
+// generates a tick at a given frequency
 type Timer struct {
 	// state
-	Enabled bool   `json:"enabled"`
-	count   uint16 `json:"count"`
+	Frequency uint32 `json:"frequency"` // freq in Hz
 
-	// registers
-	Div   uint16 `json:"div"`   // Divider Register
-	Tima  uint8  `json:"tima"`  // Timer Counter
-	Tma   uint8  `json:"tma"`   // Timer Modulo
-	Tac   uint8  `json:"tac"`   // Timer Control
-	Timer uint16 `json:"timer"` // Timer
+	// communication
+	DoneChan    chan bool        `json:"channel"`     // boolean channel used to stop the timer
+	TickChan    <-chan time.Time `json:"tickChannel"` // boolean channel used to signal a tick
+	Subscribers []Synchronizable `json:"subscribers"` // subscribers to the timer
 }
 
-func NewTimer() *Timer {
-	return &Timer{}
-}
-
-func (t *Timer) Increment() {
-	t.count++
-}
-
-func (t *Timer) Run() {
-	for t.Enabled {
-		t.count++
+func NewTimer(frequency uint32) *Timer {
+	if frequency == 0 {
+		frequency = 1
+		fmt.Println("Timer> invalid frequency, reverting to default value of 1000 ms (1 Hz)")
+	}
+	return &Timer{
+		Frequency:   frequency,
+		DoneChan:    make(chan bool),
+		Subscribers: make([]Synchronizable, 0),
 	}
 }
 
-func (t *Timer) Reset() {
-	t.count = 0
+// add a subscriber
+func (t *Timer) Subscribe(subscriber Synchronizable) {
+	t.Subscribers = append(t.Subscribers, subscriber)
 }
 
-func (t *Timer) Enable() {
-	t.Enabled = true
-	t.Run()
+// start the timer
+func (t *Timer) Start() chan bool {
+	// compute and convert the period to a time.Duration
+	period := 1.0 / float64(t.Frequency)
+	tickRate := time.Duration(period) * time.Millisecond
+	t.TickChan = time.NewTicker(tickRate).C
+
+	go func() {
+	loop:
+		for {
+			select {
+			case <-t.DoneChan:
+				return
+			case <-t.TickChan:
+				t.Tick()
+				break loop
+			}
+		}
+	}()
+
+	// mark the timer as running
+	return t.DoneChan
 }
 
-func (t *Timer) Disable() {
-	t.Enabled = false
+// stop the timer
+func (t *Timer) Stop() {
+	// send a signal to the timer to stop
+	t.DoneChan <- true
+}
+
+// on tick, increment the count and notify all subscribers
+func (t *Timer) Tick() {
+	fmt.Println("Timer> tick ...")
+
+	for _, subscriber := range t.Subscribers {
+		subscriber.onTick()
+	}
+
 }
