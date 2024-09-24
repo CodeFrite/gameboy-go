@@ -149,6 +149,8 @@ func (c *CPU) NOP(instruction *Instruction) {
 func (c *CPU) STOP(instruction *Instruction) {
 	// stop the CPU
 	c.Stopped = true
+	// TODO: update the 0xFF04 register (DIV) to 0
+
 	// update the number of cycles executed by the CPU
 	c.CpuCycles += instruction.Cycles[0]
 	// update the program counter offset

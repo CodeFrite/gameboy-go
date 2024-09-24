@@ -25,7 +25,7 @@ type CPU struct {
 	CpuCycles uint16 // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
 
 	// Interrupts
-	IME                    bool    // interrupt master enable
+	IME                    bool    // interrupt master enable (internal cpu flag register this is why it is not mapped as a memory)
 	IME_ENABLE_NEXT_CYCLE  bool    // enable the IME on the next cycle
 	IME_DISABLE_NEXT_CYCLE bool    // disable the IME on the next cycle
 	IE                     *Memory // Interrupt Enable
