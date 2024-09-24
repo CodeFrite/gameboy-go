@@ -154,7 +154,7 @@ func (gb *Gameboy) currInstruction() *Instruction {
  * clear memory writes
  */
 func (gb *Gameboy) clearMemoryWrites() {
-	gb.bus.mmu.clearMemoryWrites()
+	gb.cpuBus.mmu.clearMemoryWrites()
 }
 
 /**
@@ -162,5 +162,5 @@ func (gb *Gameboy) clearMemoryWrites() {
  *  TODO:
  */
 func (gb *Gameboy) currMemoryWrites() []MemoryWrite {
-	return gb.bus.mmu.memoryWrites
+	return gb.cpuBus.mmu.memoryWrites
 }

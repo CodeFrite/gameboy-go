@@ -172,6 +172,7 @@ func (d *Debugger) Step() *GameboyState {
  * run the gameboy until a breakpoint is reached or the gameboy is halted
  */
 func (d *Debugger) Run() *GameboyState {
+	// TODO: I think that i can simply start the timer and the CPU will run until it is halted or stopped by a breakpoint but where ???
 	// reset memory writes
 	d.gameboy.clearMemoryWrites()
 
@@ -212,7 +213,7 @@ func (d *Debugger) PrintInstruction() {
  * print the properties of the memories attached to the bus
  */
 func (d *Debugger) PrintMemoryProperties() {
-	memoryMaps := d.gameboy.bus.mmu.GetMemoryMaps()
+	memoryMaps := d.gameboy.cpuBus.mmu.GetMemoryMaps()
 	fmt.Println("")
 	fmt.Println("\n> Memory Mapping:")
 	fmt.Println("-----------------")
@@ -223,5 +224,5 @@ func (d *Debugger) PrintMemoryProperties() {
 
 // return the list of memories attached to the mmu including their name, address and data
 func (d *Debugger) GetAttachedMemories() []MemoryWrite {
-	return d.gameboy.bus.mmu.GetMemoryMaps()
+	return d.gameboy.cpuBus.mmu.GetMemoryMaps()
 }
