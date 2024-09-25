@@ -67,7 +67,7 @@ func (cpu *CPU) TriggerInterrupt(interrupt Interrupt) {
 
 func (cpu *CPU) onVBlankInterrupt(interrupt Interrupt) {
 	// set the interrupt flag
-	cpu.IE.Write(0, 1)
+	cpu.setIEFlag(0x01)
 	// trigger the interrupt handler
 	//cpu.onInterruptHandler(interrupt)
 }
