@@ -6,7 +6,7 @@ import (
 	"github.com/codefrite/gameboy-go/gameboy"
 )
 
-func TestInstantiation(t *testing.T) {
+func TestInstantiation8(t *testing.T) {
 	var r8 gameboy.Register8 = gameboy.Register8(0x01)
 	if r8 != 0x01 {
 		t.Errorf("Expected r8 to be 0x00, got %02X", r8)
@@ -17,11 +17,11 @@ func TestInstantiation(t *testing.T) {
 	}
 	r8 = gameboy.Register8(0x1A)
 	if r8.Get() != 0x1A {
-		t.Errorf("Expected r8 to be 0xE7, got %02X", r8)
+		t.Errorf("Expected r8 to be 0x1A, got %02X", r8)
 	}
 }
 
-func TestGetterSetter(t *testing.T) {
+func TestGetterSetter8(t *testing.T) {
 	var r8 gameboy.Register8 = gameboy.Register8(0)
 	// set the value to 0xE7
 	r8.Set(0xE7)
@@ -34,7 +34,7 @@ func TestGetterSetter(t *testing.T) {
 	}
 }
 
-func TestGetBit(t *testing.T) {
+func TestGetBit8(t *testing.T) {
 	// 0x00 = b0000 0000
 	var r8 gameboy.Register8 = gameboy.Register8(0x00)
 	for i := uint8(0); i < 8; i++ {
@@ -80,7 +80,7 @@ func TestGetBit(t *testing.T) {
 	}
 }
 
-func TestSetBit(t *testing.T) {
+func TestSetBit8(t *testing.T) {
 	// 0xFF = b1111 1111
 	var r8 gameboy.Register8 = gameboy.Register8(0x00)
 	for i := uint8(0); i < 8; i++ {
@@ -93,17 +93,15 @@ func TestSetBit(t *testing.T) {
 	// 0xAA = b1010 1010
 	r8 = gameboy.Register8(0x00)
 	for i := uint8(0); i < 8; i++ {
-		if i%2 == 0 {
-			r8.SetBit(i)
-			if !r8.GetBit(i) {
-				t.Errorf("Expected r8 to have bit %d set, got %v", i, r8.GetBit(i))
-			}
-		} else {
+		if i%2 != 0 {
 			r8.SetBit(i)
 			if !r8.GetBit(i) {
 				t.Errorf("Expected r8 to have bit %d set, got %v", i, r8.GetBit(i))
 			}
 		}
+	}
+	if r8 != 0xAA {
+		t.Errorf("Expected r8 to be 0xAA, got %02X", r8)
 	}
 
 	// 0x55 = b0101 0101
@@ -114,16 +112,14 @@ func TestSetBit(t *testing.T) {
 			if !r8.GetBit(i) {
 				t.Errorf("Expected r8 to have bit %d set, got %v", i, r8.GetBit(i))
 			}
-		} else {
-			r8.SetBit(i)
-			if !r8.GetBit(i) {
-				t.Errorf("Expected r8 to have bit %d set, got %v", i, r8.GetBit(i))
-			}
 		}
+	}
+	if r8 != 0x55 {
+		t.Errorf("Expected r8 to be 0x55, got %02X", r8)
 	}
 }
 
-func TestResetBit(t *testing.T) {
+func TestResetBit8(t *testing.T) {
 	// 0xFF = b1111 1111
 	var r8 gameboy.Register8 = gameboy.Register8(0xFF)
 	for i := uint8(0); i < 8; i++ {

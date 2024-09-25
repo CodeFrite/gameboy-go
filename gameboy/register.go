@@ -49,21 +49,22 @@ func (r16 *Register16) Get() uint16 {
 	return uint16(*r16)
 }
 
-func (r16 *Register16) GetBit(bit uint16) uint16 {
+func (r16 *Register16) GetBit(bit uint8) bool {
 	if bit > 15 {
 		panic(fmt.Sprintf("Register16> getBit: bit out of range: %v", bit))
 	}
-	return r16.Get() & (1 << bit)
+	op := uint16(1 << bit)
+	return (r16.Get() & op) == op
 }
 
-func (r16 *Register16) SetBit(bit uint16) {
+func (r16 *Register16) SetBit(bit uint8) {
 	if bit > 15 {
 		panic(fmt.Sprintf("Register16> setBit: bit out of range: %v", bit))
 	}
 	*r16 = Register16(r16.Get() | (1 << bit))
 }
 
-func (r16 *Register16) ResetBit(bit uint16) {
+func (r16 *Register16) ResetBit(bit uint8) {
 	if bit > 15 {
 		panic(fmt.Sprintf("Register16> resetBit: bit out of range: %v", bit))
 	}
