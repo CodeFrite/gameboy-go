@@ -9,15 +9,18 @@
 // + scanlines 145-153 are spent in the VBlank period during which the PPU is idle and the CPU can access all the memory
 package gameboy
 
-var (
-	OAM_SIZE uint8 = 80
+const (
+	OAM_START uint16 = 0xFE00
+	OAM_SIZE  uint8  = 0xA0
 
 	LINES_PER_FRAME uint16 = 154
 	DOTS_PER_LINE   uint16 = 456
 
 	YRES uint8 = 144
 	XRES uint8 = 160
+)
 
+var (
 	STATE = map[byte]string{
 		0: "TILE",
 		1: "DATA0",
@@ -39,8 +42,7 @@ type PPU struct {
 	tile  uint8  // tile number
 
 	// Memory
-	vram [0x2000]uint8
-	oam  [0xA0]uint8
+	oam *Memory // Object Attribute Memory (0xFE00-0xFE9F) - 40 4-byte entries
 
 	// Registers
 	lcdc uint8 // lcd control
@@ -61,7 +63,11 @@ type PPU struct {
 }
 
 func NewPPU(cpu *CPU, bus *Bus) *PPU {
-	return &PPU{cpu: cpu, bus: bus}
+	ppu := &PPU{cpu: cpu, bus: bus}
+	// initialize memory
+	ppu.oam = NewMemory(uint16(OAM_SIZE))
+	ppu.bus.AttachMemory("OAM", OAM_START, ppu.oam)
+	return ppu
 }
 
 func (p *PPU) updateLy() {
@@ -81,7 +87,7 @@ func (p *PPU) onTick() {
 	// reset ticks if we reach the end of the frame
 	if p.ticks%uint64(DOTS_PER_LINE) == 0 {
 		p.updateLy()
-	} else if p.ticks%uint64(DOTS_PER_LINE*LINES_PER_FRAME) == 0 {
+	} else if p.ticks%uint64(DOTS_PER_LINE)*uint64(LINES_PER_FRAME) == 0 {
 		p.ticks = 0
 		p.y = 0
 		p.x = 0

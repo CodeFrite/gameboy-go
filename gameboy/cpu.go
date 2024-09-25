@@ -3,7 +3,21 @@ package gameboy
 
 import (
 	"fmt"
+	"log"
+	"math"
 	"math/rand"
+)
+
+const (
+	// start and length of the cpu internal memory regions
+	BOOT_ROM_START     uint16 = 0x0000
+	BOOT_ROM_LEN       uint16 = 0x0100
+	IO_REGISTERS_START uint16 = 0xFF00
+	IO_REGISTERS_LEN   uint16 = 0x0080
+	HRAM_START         uint16 = 0xFF80
+	HRAM_LEN           uint16 = 0x007F
+	IE_FLAG_START      uint16 = 0xFFFF
+	IE_FLAG_LEN        uint16 = 0x0001
 )
 
 /*
@@ -11,53 +25,100 @@ import (
  */
 type CPU struct {
 	// Registers
-	PC               uint16 // Program Counter
-	SP               uint16 // Stack Pointer
-	A                uint8  // Accumulator
-	F                uint8  // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
-	B, C, D, E, H, L uint8  // 16-bit general purpose registers
+	PC               Register16 // Program Counter
+	SP               Register16 // Stack Pointer
+	A                Register8  // Accumulator
+	F                Register8  // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
+	B, C, D, E, H, L Register8  // 16-bit general purpose registers
 
 	// Instruction
-	IR        uint8  // Instruction Register
-	Prefixed  bool   // Is the current instruction prefixed with 0xCB
-	Operand   uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
-	Offset    uint16 // offset used in some instructions
-	CpuCycles uint16 // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
+	IR        Register8 // Instruction Register
+	Prefixed  bool      // Is the current instruction prefixed with 0xCB
+	Operand   uint16    // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+	Offset    uint16    // offset used in some instructions
+	CpuCycles uint16    // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
 
 	// Interrupts
-	IME                    bool    // interrupt master enable (internal cpu flag register this is why it is not mapped as a memory)
-	IME_ENABLE_NEXT_CYCLE  bool    // enable the IME on the next cycle
-	IME_DISABLE_NEXT_CYCLE bool    // disable the IME on the next cycle
-	IE                     *Memory // Interrupt Enable
-	Halted                 bool    // is the CPU halted (waiting for an interrupt to wake up)
-	Stopped                bool    // is the CPU stopped (waiting for an interrupt from the joypad)
+	IME                    bool // interrupt master enable
+	IME_ENABLE_NEXT_CYCLE  bool // enable the IME on the next cycle
+	IME_DISABLE_NEXT_CYCLE bool // disable the IME on the next cycle
+	Halted                 bool // is the CPU halted (waiting for an interrupt to wake up)
+	Stopped                bool // is the CPU stopped (waiting for an interrupt from the joypad)
 
-	// Memory
-	bus *Bus // reference to the bus
+	// CPU SoC Internal Memories
+	bus          *Bus    // reference to the bus
+	bootrom      *Memory // 0x0000-0x00FF: (256 bytes) - Boot ROM
+	io_registers *Memory // 0xFF00-0xFF7F: (128 bytes) - I/O Registers
+	hram         *Memory // 0xFF80-0xFFFE: (127 bytes) - High RAM
+	IE           *Memory // 0xFFFF: Interrupt Enable
 }
 
 // Create a new CPU
 func NewCPU(bus *Bus) *CPU {
-	return &CPU{
+
+	randValue := func(base int, exponent int) int {
+		return rand.Intn(int(math.Pow(float64(base), float64(exponent))))
+	}
+
+	cpu := &CPU{
 		bus: bus,
 		// on startup, simulate the CPU registers being in an unknown state
-		PC: uint16(rand.Intn((2 ^ 1) - 1)),
-		SP: uint16(rand.Intn((2 ^ 16) - 1)),
-		A:  uint8(rand.Intn((2 ^ 8) - 1)),
-		F:  uint8(rand.Intn((2 ^ 8) - 1)),
-		B:  uint8(rand.Intn((2 ^ 8) - 1)),
-		C:  uint8(rand.Intn((2 ^ 8) - 1)),
-		D:  uint8(rand.Intn((2 ^ 8) - 1)),
-		E:  uint8(rand.Intn((2 ^ 8) - 1)),
-		H:  uint8(rand.Intn((2 ^ 8) - 1)),
-		L:  uint8(rand.Intn((2 ^ 8) - 1)),
-		IE: NewMemory(1),
+		PC: 0x0000, // only value set by the cpu on startup
+		SP: Register16(randValue(2, 16)),
+		A:  Register8(randValue(2, 8)),
+		F:  Register8(randValue(2, 8)),
+		B:  Register8(randValue(2, 8)),
+		C:  Register8(randValue(2, 8)),
+		D:  Register8(randValue(2, 8)),
+		E:  Register8(randValue(2, 8)),
+		H:  Register8(randValue(2, 8)),
+		L:  Register8(randValue(2, 8)),
 	}
+
+	return cpu
+}
+
+// initialize the bootrom & memories
+func (c *CPU) Init() {
+	c.initBootRom()
+	c.initMemory()
+}
+
+/**
+ * initializes the bootrom @ 0x0000
+ */
+func (c *CPU) initBootRom() {
+	bootRomData, err := LoadRom("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms/dmg_boot.bin")
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.bootrom = NewMemory(BOOT_ROM_LEN)
+	c.bus.AttachMemory("Boot ROM", BOOT_ROM_START, c.bootrom)
+	c.bus.WriteBlob(BOOT_ROM_START, bootRomData)
+}
+
+/**
+ * initializes the memories and attaches them to the bus
+ * HRAM: 127 bytes @ 0xFF80
+ * VRAM: 8KB bytes @ 0x8000
+ * WRAM: 8KB @ 0xC000
+ * I/O Registers: 128 bytes @ 0xFF00
+ */
+func (c *CPU) initMemory() {
+	// initialize memories
+	c.hram = NewMemory(HRAM_LEN)                 // High RAM (127 bytes)
+	c.io_registers = NewMemory(IO_REGISTERS_LEN) // I/O Registers (128 bytes)
+	c.IE = NewMemory(IE_FLAG_LEN)                // Interrupt Enable Register (1 byte)
+
+	// attach memories to the bus
+	c.bus.AttachMemory("High RAM (HRAM)", HRAM_START, c.hram)
+	c.bus.AttachMemory("I/O Registers", IO_REGISTERS_START, c.io_registers)
+	c.bus.AttachMemory("Interrupt Enable Register", IE_FLAG_START, c.IE)
 }
 
 // Increment the Program Counter by the given offset
 func (c *CPU) updatePC() {
-	c.PC = c.Offset
+	c.PC.Set(c.Offset)
 }
 
 // Stack operations
@@ -67,21 +128,21 @@ func (c *CPU) push(value uint16) {
 	// decrement the stack pointer
 	c.SP -= 1
 	// write the high byte to the stack
-	c.bus.Write(c.SP, byte(value>>8))
+	c.bus.Write(c.SP.Get(), byte(value>>8))
 	// decrement the stack pointer
 	c.SP -= 1
 	// write the low byte to the stack
-	c.bus.Write(c.SP, byte(value))
+	c.bus.Write(c.SP.Get(), byte(value))
 }
 
 // Pop a value from the stack
 func (c *CPU) pop() uint16 {
 	// read the low byte from the stack
-	low := c.bus.Read(c.SP)
+	low := c.bus.Read(c.SP.Get())
 	// increment the stack pointer
 	c.SP += 1
 	// read the high byte from the stack
-	high := c.bus.Read(c.SP)
+	high := c.bus.Read(c.SP.Get())
 	// increment the stack pointer
 	c.SP += 1
 	return uint16(high)<<8 | uint16(low)
@@ -90,13 +151,13 @@ func (c *CPU) pop() uint16 {
 // Fetch the opcode from bus at address PC and store it in the instruction register
 func (c *CPU) fetchOpcode() (opcode uint8, prefixed bool) {
 	// Fetch the opcode from memory at the address in the program counter
-	opcode = c.bus.Read(c.PC)
+	opcode = c.bus.Read(c.PC.Get())
 
 	// is it a prefixed instruction?
 	if opcode == 0xCB {
 		prefixed = true
 		// fetch the next opcode
-		opcode = c.bus.Read(c.PC + 1)
+		opcode = c.bus.Read(c.PC.Get() + 1)
 	}
 	return opcode, prefixed
 }
@@ -111,33 +172,33 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 
 	// n8: immediate 8-bit data
 	case "n8":
-		value = uint16(c.bus.Read(c.PC + 1))
+		value = uint16(c.bus.Read(c.PC.Get() + 1))
 
 	// n16: immediate little-endian 16-bit data
 	case "n16":
-		value = c.bus.Read16(c.PC + 1)
+		value = c.bus.Read16(c.PC.Get() + 1)
 
 	// a8: 8-bit unsigned data, which is added to $FF00 in certain instructions to create a 16-bit address in HRAM (High RAM)
 	case "a8": // not always immediate
 		if operand.Immediate {
-			value = uint16(c.bus.Read(c.PC + 1))
+			value = uint16(c.bus.Read(c.PC.Get() + 1))
 		} else {
 			//addr = 0xFF00 + c.bus.Read16(c.PC+1)
-			addr = 0xFF00 + uint16(c.bus.Read(c.PC+1))
+			addr = 0xFF00 + uint16(c.bus.Read(c.PC.Get()+1))
 			value = uint16(c.bus.Read(addr))
 		}
 	// a16: little-endian 16-bit address
 	case "a16": // not always immediate
 		if operand.Immediate {
-			value = c.bus.Read16(c.PC + 1)
+			value = c.bus.Read16(c.PC.Get() + 1)
 		} else {
-			addr := c.bus.Read16(c.PC + 1)
+			addr := c.bus.Read16(c.PC.Get() + 1)
 			value = c.bus.Read16(addr)
 		}
 	// e8 means 8-bit signed data
 	case "e8": // not always immediate
 		if operand.Immediate {
-			value = uint16(c.bus.Read(c.PC + 1))
+			value = uint16(c.bus.Read(c.PC.Get() + 1))
 		} else {
 			panic("e8 non immediate operand not implemented yet")
 		}
@@ -203,7 +264,7 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 			value = c.bus.Read16(c.getHL())
 		}
 	case "SP": // always immediate
-		value = c.SP
+		value = c.SP.Get()
 	case "$00": // RST $00
 		value = 0x00
 	case "$08": // RST $08
@@ -251,7 +312,7 @@ func (c *CPU) Step() error {
 	// Store the opcode in the instruction register & prefix flag
 	opCode, prefixed := c.fetchOpcode()
 	c.Prefixed = prefixed
-	c.IR = opCode
+	c.IR.Set(opCode)
 
 	// Decode the instruction
 	// get instruction from opcodes.json file with IR used as key
