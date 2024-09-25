@@ -6,15 +6,15 @@ import "fmt"
 
 type Register8 uint8
 
-func (r8 Register8) Get() uint8 {
-	return uint8(r8)
+func (r8 *Register8) Get() uint8 {
+	return uint8(*r8)
 }
 
 func (r8 *Register8) Set(value uint8) {
 	*r8 = Register8(value)
 }
 
-func (r8 Register8) GetBit(bit uint8) bool {
+func (r8 *Register8) GetBit(bit uint8) bool {
 	if bit > 7 {
 		panic(fmt.Sprintf("Register8> getBit: bit out of range: %v", bit))
 	}
@@ -22,12 +22,12 @@ func (r8 Register8) GetBit(bit uint8) bool {
 	return (r8.Get() & op) == op
 }
 
-func (r8 Register8) SetBit(bit uint8) {
+func (r8 *Register8) SetBit(bit uint8) {
 	if bit > 7 {
 		panic(fmt.Sprintf("Register8> setBit: bit out of range: %v", bit))
 	}
 	op := uint8(1 << bit)
-	r8 = Register8(r8.Get() | op)
+	*r8 = Register8(r8.Get() | op)
 }
 
 func (r8 *Register8) ResetBit(bit uint8) {

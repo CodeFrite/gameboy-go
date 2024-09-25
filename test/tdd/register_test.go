@@ -122,3 +122,14 @@ func TestSetBit(t *testing.T) {
 		}
 	}
 }
+
+func TestResetBit(t *testing.T) {
+	// 0xFF = b1111 1111
+	var r8 gameboy.Register8 = gameboy.Register8(0xFF)
+	for i := uint8(0); i < 8; i++ {
+		r8.ResetBit(i)
+		if r8.GetBit(i) {
+			t.Errorf("Expected r8 to have bit %d unset, got %v", i, r8.GetBit(i))
+		}
+	}
+}
