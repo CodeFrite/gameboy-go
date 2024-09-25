@@ -1,4 +1,4 @@
-package gameboy
+package test
 
 import (
 	"testing"
