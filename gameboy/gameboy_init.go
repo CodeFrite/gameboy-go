@@ -16,6 +16,7 @@ func (gb *Gameboy) init(romName string) {
 	gb.ppu = NewPPU(gb.cpu, gb.ppuBus)
 	// cartridge
 	gb.cartridge = NewCartridge("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms", romName)
+	gb.cpuBus.AttachMemory("Cartridge ROM", 0x0000, gb.cartridge.rom)
 	// vram & wram
 	gb.initMemory()
 	gb.initTimer()
