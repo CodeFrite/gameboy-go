@@ -117,10 +117,10 @@ func postconditions() {
 // save the state of the cpu
 func getCpuState() *gameboy.CpuState {
 	return &gameboy.CpuState{
-		PC:            cpu.PC.Get(),
-		SP:            cpu.SP.Get(),
-		A:             cpu.A.Get(),
-		F:             cpu.F.Get(),
+		PC:            cpu.PC,
+		SP:            cpu.SP,
+		A:             cpu.A,
+		F:             cpu.F,
 		Z:             cpu.F&0x80 != 0,
 		N:             cpu.F&0x40 != 0,
 		H:             cpu.F&0x20 != 0,
@@ -129,7 +129,7 @@ func getCpuState() *gameboy.CpuState {
 		DE:            uint16(cpu.D)<<8 | uint16(cpu.E),
 		HL:            uint16(cpu.H)<<8 | uint16(cpu.L),
 		PREFIXED:      cpu.Prefixed,
-		IR:            cpu.IR.Get(),
+		IR:            cpu.IR,
 		OPERAND_VALUE: cpu.Operand,
 		IE:            cpu.GetIEFlag(),
 		IME:           cpu.IME,
@@ -396,7 +396,7 @@ func TestJP(t *testing.T) {
 	cpu.H = 0x00
 	cpu.L = 0xD0
 	cpu.F = 0xFF // Z = 1 / C = 1 / H = 1 / N = 1
-	saveFlags := cpu.F.Get()
+	saveFlags := cpu.F
 
 	// test data
 	testData1 := []uint8{
@@ -456,7 +456,7 @@ func TestJP(t *testing.T) {
 	cpu.H = 0x00
 	cpu.L = 0xD0
 	cpu.F = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
-	saveFlags = cpu.F.Get()
+	saveFlags = cpu.F
 
 	// test data
 	testData2 := []uint8{
@@ -529,7 +529,7 @@ func TestJR(t *testing.T) {
 	cpu.H = 0x00
 	cpu.L = 0xD0
 	cpu.F = 0xFF // Z = 1 / C = 1 / H = 1 / N = 1
-	saveFlags := cpu.F.Get()
+	saveFlags := cpu.F
 
 	// test data
 	testData1 := []uint8{
@@ -589,7 +589,7 @@ func TestJR(t *testing.T) {
 	cpu.H = 0x00
 	cpu.L = 0xD0
 	cpu.F = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
-	saveFlags = cpu.F.Get()
+	saveFlags = cpu.F
 
 	// test data
 	testData2 := []uint8{
@@ -659,7 +659,7 @@ func TestCALL(t *testing.T) {
 	cpu.H = 0x00
 	cpu.L = 0xD0
 	cpu.F = 0xFF // Z = 1 / C = 1 / H = 1 / N = 1
-	saveFlags := cpu.F.Get()
+	saveFlags := cpu.F
 
 	// test data
 	testData1 := []uint8{
@@ -719,7 +719,7 @@ func TestCALL(t *testing.T) {
 	cpu.H = 0x00
 	cpu.L = 0xD0
 	cpu.F = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
-	saveFlags = cpu.F.Get()
+	saveFlags = cpu.F
 
 	// test data
 	testData2 := []uint8{
