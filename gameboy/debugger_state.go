@@ -120,25 +120,25 @@ func (gbs *GameboyState) printInstruction() {
 // get the memories current content
 func (gb *Gameboy) currCpuState() *CpuState {
 	return &CpuState{
-		CpuCycles:     gb.cpu.CpuCycles,
-		PC:            gb.cpu.PC,
-		SP:            gb.cpu.SP,
-		A:             gb.cpu.A,
-		F:             gb.cpu.F,
-		Z:             gb.cpu.F&0x80 != 0,
-		N:             gb.cpu.F&0x40 != 0,
-		H:             gb.cpu.F&0x20 != 0,
-		C:             gb.cpu.F&0x10 != 0,
-		BC:            uint16(gb.cpu.B)<<8 | uint16(gb.cpu.C),
-		DE:            uint16(gb.cpu.D)<<8 | uint16(gb.cpu.E),
-		HL:            uint16(gb.cpu.H)<<8 | uint16(gb.cpu.L),
-		PREFIXED:      gb.cpu.Prefixed,
-		IR:            gb.cpu.IR,
-		OPERAND_VALUE: gb.cpu.Operand,
+		CpuCycles:     gb.cpu.cpuCycles,
+		PC:            gb.cpu.pc,
+		SP:            gb.cpu.sp,
+		A:             gb.cpu.a,
+		F:             gb.cpu.f,
+		Z:             gb.cpu.f&0x80 != 0,
+		N:             gb.cpu.f&0x40 != 0,
+		H:             gb.cpu.f&0x20 != 0,
+		C:             gb.cpu.f&0x10 != 0,
+		BC:            uint16(gb.cpu.b)<<8 | uint16(gb.cpu.c),
+		DE:            uint16(gb.cpu.d)<<8 | uint16(gb.cpu.e),
+		HL:            uint16(gb.cpu.h)<<8 | uint16(gb.cpu.l),
+		PREFIXED:      gb.cpu.prefixed,
+		IR:            gb.cpu.ir,
+		OPERAND_VALUE: gb.cpu.operand,
 		IE:            gb.cpu.bus.Read(0xFFFF),
-		IME:           gb.cpu.IME,
-		HALTED:        gb.cpu.Halted,
-		STOPPED:       gb.cpu.Stopped,
+		IME:           gb.cpu.ime,
+		HALTED:        gb.cpu.halted,
+		STOPPED:       gb.cpu.stopped,
 	}
 }
 
@@ -146,7 +146,7 @@ func (gb *Gameboy) currCpuState() *CpuState {
  * currInstruction: returns the current instruction being processed based on cpu IR and prefix values
  */
 func (gb *Gameboy) currInstruction() *Instruction {
-	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.IR)), gb.cpu.Prefixed)
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.ir)), gb.cpu.prefixed)
 	return &instruction
 }
 
