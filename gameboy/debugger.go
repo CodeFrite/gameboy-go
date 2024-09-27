@@ -157,7 +157,7 @@ func (d *Debugger) Step() *GameboyState {
 	// save the current state
 	d.saveState()
 
-	// TODO: we could add a func that would test that the current instruction did only:
+	// test the instruction execution
 	// - read from memory locations named in the instruction operands
 	// - write to memory locations named in the instruction operands
 	// - changed the correct CPU registers, everytime or when the condition is met
@@ -187,7 +187,7 @@ func (d *Debugger) Run() *GameboyState {
 		d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
 		d.testInstructionExecution()
 		// check if the current PC is a breakpoint or if the gameboy is halted
-		if contains(d.breakpoints, d.gameboy.cpu.PC.Get()) || d.gameboy.cpu.Halted || d.gameboy.cpu.Stopped {
+		if contains(d.breakpoints, d.gameboy.cpu.PC) || d.gameboy.cpu.Halted || d.gameboy.cpu.Stopped {
 			// we do not halt the processor which is a feature used by the gameboy to save power, we just stop the execution from the debugger point of view by not executing any more instructions
 			break
 		}

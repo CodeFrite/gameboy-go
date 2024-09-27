@@ -7,7 +7,7 @@ import (
 
 type CpuState struct {
 	// Special registers
-	CpuCycles uint16 `json:"cpuCycles"` // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
+	CpuCycles uint64 `json:"cpuCycles"` // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
 	PC        uint16 `json:"PC"`        // Program Counter
 	SP        uint16 `json:"SP"`        // Stack Pointer
 	A         uint8  `json:"A"`         // Accumulator
@@ -121,10 +121,10 @@ func (gbs *GameboyState) printInstruction() {
 func (gb *Gameboy) currCpuState() *CpuState {
 	return &CpuState{
 		CpuCycles:     gb.cpu.CpuCycles,
-		PC:            gb.cpu.PC.Get(),
-		SP:            gb.cpu.SP.Get(),
-		A:             gb.cpu.A.Get(),
-		F:             gb.cpu.F.Get(),
+		PC:            gb.cpu.PC,
+		SP:            gb.cpu.SP,
+		A:             gb.cpu.A,
+		F:             gb.cpu.F,
 		Z:             gb.cpu.F&0x80 != 0,
 		N:             gb.cpu.F&0x40 != 0,
 		H:             gb.cpu.F&0x20 != 0,
@@ -133,7 +133,7 @@ func (gb *Gameboy) currCpuState() *CpuState {
 		DE:            uint16(gb.cpu.D)<<8 | uint16(gb.cpu.E),
 		HL:            uint16(gb.cpu.H)<<8 | uint16(gb.cpu.L),
 		PREFIXED:      gb.cpu.Prefixed,
-		IR:            gb.cpu.IR.Get(),
+		IR:            gb.cpu.IR,
 		OPERAND_VALUE: gb.cpu.Operand,
 		IE:            gb.cpu.bus.Read(0xFFFF),
 		IME:           gb.cpu.IME,

@@ -2,9 +2,7 @@ package gameboy
 
 import "log"
 
-/**
- * the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
- */
+// the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
 type Gameboy struct {
 	cpu       *CPU
 	ppu       *PPU
@@ -16,9 +14,7 @@ type Gameboy struct {
 	crystal   *Timer // crystal oscillator running at 4.194304MHz
 }
 
-/**
- * creates a new gameboy empty struct
- */
+// creates a new gameboy empty struct
 func NewGameboy() *Gameboy {
 	gb := &Gameboy{}
 	return gb
@@ -26,9 +22,7 @@ func NewGameboy() *Gameboy {
 
 //! Public interface
 
-/**
- * runs the bootrom and then the game
- */
+// runs the bootrom and then the game
 func (gb *Gameboy) Run() {
 	for {
 		if gb.cpu.Halted || gb.cpu.Stopped {
@@ -38,9 +32,7 @@ func (gb *Gameboy) Run() {
 	}
 }
 
-/**
- * executes the next instruction
- */
+// executes the next instruction
 func (gb *Gameboy) Step() {
 	// check if the CPU is halted or stopped
 	if gb.cpu.Halted || gb.cpu.Stopped {

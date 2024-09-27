@@ -10,12 +10,29 @@
 package gameboy
 
 const (
+	// memory
 	OAM_START uint16 = 0xFE00
 	OAM_SIZE  uint8  = 0xA0
 
+	// registers
+	LCDC_ADDR uint16 = 0xFF40 // LCD Control
+	STAT_ADDR uint16 = 0xFF41 // LCD Status
+	SCY_ADDR  uint16 = 0xFF42 // LCD Scroll Y
+	SCX_ADDR  uint16 = 0xFF43 // LCD Scroll X
+	LY_ADDR   uint16 = 0xFF44 // LCD Y
+	LYC_ADDR  uint16 = 0xFF45 // LCD Y Compare
+	DMA_ADDR  uint16 = 0xFF46 // DMA Transfer
+	BGP_ADDR  uint16 = 0xFF47 // BG Palette
+	OBP0_ADDR uint16 = 0xFF48 // OBP0 Palette
+	OBP1_ADDR uint16 = 0xFF49 // OBP1 Palette
+	WY_ADDR   uint16 = 0xFF4A // Window Y
+	WX_ADDR   uint16 = 0xFF4B // Window X
+
+	// LCD properties
 	LINES_PER_FRAME uint16 = 154
 	DOTS_PER_LINE   uint16 = 456
 
+	// interrupt parameters
 	YRES uint8 = 144
 	XRES uint8 = 160
 )
@@ -36,30 +53,28 @@ type PPU struct {
 	bus *Bus
 
 	// Screen
-	ticks uint64 // should be able to cound up to 4,194,304
+	ticks uint64 // should be able to count up 160 x 144 =
 	x     uint8  // x coordinate of the current pixel being drawn 0-159
 	y     uint8  // y coordinate of the current line being drawn 0-143
 	tile  uint8  // tile number
+	mode  uint8  // current mode
+
+	// Registers
+	lcdc Register8 // lcd control
+	stat Register8 // lcd status
+	scy  Register8 // scroll y
+	scx  Register8 // scroll x
+	ly   Register8 // lcd y
+	lyc  Register8 // lcd y compare
+	dma  Register8 // dma transfer
+	bgp  Register8 // bg palette
+	obp0 Register8 // obj palette 0
+	obp1 Register8 // obj palette 1
+	wx   Register8 // window x
+	wy   Register8 // window y
 
 	// Memory
 	oam *Memory // Object Attribute Memory (0xFE00-0xFE9F) - 40 4-byte entries
-
-	// Registers
-	lcdc uint8 // lcd control
-	stat uint8 // lcd status
-	scy  uint8 // scroll y
-	scx  uint8 // scroll x
-	ly   uint8 // lcd y
-	lyc  uint8 // lcd y compare
-	dma  uint8 // dma transfer
-	bgp  uint8 // bg palette
-	obp0 uint8 // obj palette 0
-	obp1 uint8 // obj palette 1
-	wy   uint8 // window y
-	wx   uint8 // window x
-
-	// Internal registers
-	mode uint8 // current mode
 }
 
 func NewPPU(cpu *CPU, bus *Bus) *PPU {
@@ -74,9 +89,9 @@ func (p *PPU) updateLy() {
 	// increment y line counter
 	p.y++
 	// update LY register
-	p.cpu.bus.Write(0xFF44, p.y)
+	p.cpu.bus.Write(LY_ADDR, p.y)
 	// trigger LYC=LY interrupt
-	if p.y == p.lyc {
+	if p.y == p.lyc.uint8 {
 		p.cpu.TriggerInterrupt(Interrupt{_type: interrupt_types["LCD"]})
 	}
 }

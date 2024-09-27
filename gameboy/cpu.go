@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	// start and length of the cpu internal memory regions
+	// start and length of the memory regions inside memory map
 	BOOT_ROM_START     uint16 = 0x0000
 	BOOT_ROM_LEN       uint16 = 0x0100
 	IO_REGISTERS_START uint16 = 0xFF00
@@ -24,26 +24,26 @@ const (
  * CPU: executes instructions fetched from memory, reads and writes to memory (internal registers, flags & bus)
  */
 type CPU struct {
-	// Registers
-	PC               Register16 // Program Counter
-	SP               Register16 // Stack Pointer
-	A                Register8  // Accumulator
-	F                Register8  // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
-	B, C, D, E, H, L Register8  // 16-bit general purpose registers
+	// Work Registers (not mapped to memory)
+	PC               uint16 // Program Counter
+	SP               uint16 // Stack Pointer
+	A                uint8  // Accumulator
+	F                uint8  // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
+	B, C, D, E, H, L uint8  // 16-bit general purpose registers
+	IR               uint8  // Instruction Register
 
-	// Instruction
-	IR        Register8 // Instruction Register
-	Prefixed  bool      // Is the current instruction prefixed with 0xCB
-	Operand   uint16    // Current operand fetched from memory (this register doesn't physically exist in the CPU)
-	Offset    uint16    // offset used in some instructions
-	CpuCycles uint16    // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
+	// Work variables
+	Prefixed  bool   // Is the current instruction prefixed with 0xCB
+	Operand   uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+	Offset    uint16 // offset used in some instructions
+	CpuCycles uint64 // number of cycles the CPU has executed since the last reset up to uint64 max value (18,446,744,073,709,551,615)
 
 	// Interrupts
 	IME                    bool // interrupt master enable
 	IME_ENABLE_NEXT_CYCLE  bool // enable the IME on the next cycle
 	IME_DISABLE_NEXT_CYCLE bool // disable the IME on the next cycle
 	Halted                 bool // is the CPU halted (waiting for an interrupt to wake up)
-	Stopped                bool // is the CPU stopped (waiting for an interrupt from the joypad)
+	Stopped                bool // is the CPU & LCD stopped (waiting for an interrupt from the joypad)
 
 	// CPU SoC Internal Memories
 	bus          *Bus    // reference to the bus
@@ -63,16 +63,16 @@ func NewCPU(bus *Bus) *CPU {
 	cpu := &CPU{
 		bus: bus,
 		// on startup, simulate the CPU registers being in an unknown state
-		PC: 0x0000, // only value set by the cpu on startup
-		SP: Register16(randValue(2, 16)),
-		A:  Register8(randValue(2, 8)),
-		F:  Register8(randValue(2, 8)),
-		B:  Register8(randValue(2, 8)),
-		C:  Register8(randValue(2, 8)),
-		D:  Register8(randValue(2, 8)),
-		E:  Register8(randValue(2, 8)),
-		H:  Register8(randValue(2, 8)),
-		L:  Register8(randValue(2, 8)),
+		PC: 0x0000, // only value set by the cpu on startup, others are randomized
+		SP: uint16(randValue(2, 16)),
+		A:  uint8(randValue(2, 8)),
+		F:  uint8(randValue(2, 8)),
+		B:  uint8(randValue(2, 8)),
+		C:  uint8(randValue(2, 8)),
+		D:  uint8(randValue(2, 8)),
+		E:  uint8(randValue(2, 8)),
+		H:  uint8(randValue(2, 8)),
+		L:  uint8(randValue(2, 8)),
 	}
 
 	return cpu
@@ -118,7 +118,7 @@ func (c *CPU) initMemory() {
 
 // Increment the Program Counter by the given offset
 func (c *CPU) updatePC() {
-	c.PC.Set(c.Offset)
+	c.PC = c.Offset
 }
 
 // Stack operations
@@ -128,21 +128,21 @@ func (c *CPU) push(value uint16) {
 	// decrement the stack pointer
 	c.SP -= 1
 	// write the high byte to the stack
-	c.bus.Write(c.SP.Get(), byte(value>>8))
+	c.bus.Write(c.SP, byte(value>>8))
 	// decrement the stack pointer
 	c.SP -= 1
 	// write the low byte to the stack
-	c.bus.Write(c.SP.Get(), byte(value))
+	c.bus.Write(c.SP, byte(value))
 }
 
 // Pop a value from the stack
 func (c *CPU) pop() uint16 {
 	// read the low byte from the stack
-	low := c.bus.Read(c.SP.Get())
+	low := c.bus.Read(c.SP)
 	// increment the stack pointer
 	c.SP += 1
 	// read the high byte from the stack
-	high := c.bus.Read(c.SP.Get())
+	high := c.bus.Read(c.SP)
 	// increment the stack pointer
 	c.SP += 1
 	return uint16(high)<<8 | uint16(low)
@@ -151,13 +151,13 @@ func (c *CPU) pop() uint16 {
 // Fetch the opcode from bus at address PC and store it in the instruction register
 func (c *CPU) fetchOpcode() (opcode uint8, prefixed bool) {
 	// Fetch the opcode from memory at the address in the program counter
-	opcode = c.bus.Read(c.PC.Get())
+	opcode = c.bus.Read(c.PC)
 
 	// is it a prefixed instruction?
 	if opcode == 0xCB {
 		prefixed = true
 		// fetch the next opcode
-		opcode = c.bus.Read(c.PC.Get() + 1)
+		opcode = c.bus.Read(c.PC + 1)
 	}
 	return opcode, prefixed
 }
@@ -172,33 +172,33 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 
 	// n8: immediate 8-bit data
 	case "n8":
-		value = uint16(c.bus.Read(c.PC.Get() + 1))
+		value = uint16(c.bus.Read(c.PC + 1))
 
 	// n16: immediate little-endian 16-bit data
 	case "n16":
-		value = c.bus.Read16(c.PC.Get() + 1)
+		value = c.bus.Read16(c.PC + 1)
 
 	// a8: 8-bit unsigned data, which is added to $FF00 in certain instructions to create a 16-bit address in HRAM (High RAM)
 	case "a8": // not always immediate
 		if operand.Immediate {
-			value = uint16(c.bus.Read(c.PC.Get() + 1))
+			value = uint16(c.bus.Read(c.PC + 1))
 		} else {
 			//addr = 0xFF00 + c.bus.Read16(c.PC+1)
-			addr = 0xFF00 + uint16(c.bus.Read(c.PC.Get()+1))
+			addr = 0xFF00 + uint16(c.bus.Read(c.PC+1))
 			value = uint16(c.bus.Read(addr))
 		}
 	// a16: little-endian 16-bit address
 	case "a16": // not always immediate
 		if operand.Immediate {
-			value = c.bus.Read16(c.PC.Get() + 1)
+			value = c.bus.Read16(c.PC + 1)
 		} else {
-			addr := c.bus.Read16(c.PC.Get() + 1)
+			addr := c.bus.Read16(c.PC + 1)
 			value = c.bus.Read16(addr)
 		}
 	// e8 means 8-bit signed data
 	case "e8": // not always immediate
 		if operand.Immediate {
-			value = uint16(c.bus.Read(c.PC.Get() + 1))
+			value = uint16(c.bus.Read(c.PC + 1))
 		} else {
 			panic("e8 non immediate operand not implemented yet")
 		}
@@ -264,7 +264,7 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 			value = c.bus.Read16(c.getHL())
 		}
 	case "SP": // always immediate
-		value = c.SP.Get()
+		value = c.SP
 	case "$00": // RST $00
 		value = 0x00
 	case "$08": // RST $08
@@ -312,7 +312,7 @@ func (c *CPU) Step() error {
 	// Store the opcode in the instruction register & prefix flag
 	opCode, prefixed := c.fetchOpcode()
 	c.Prefixed = prefixed
-	c.IR.Set(opCode)
+	c.IR = opCode
 
 	// Decode the instruction
 	// get instruction from opcodes.json file with IR used as key
@@ -364,7 +364,7 @@ func (c *CPU) Step() error {
 func (c *CPU) Run() {
 	for {
 		if c.Halted {
-			// if the CPU is halted, wiat for an interrupt to wake it up
+			// if the CPU is halted, wait for an interrupt to wake it up
 			// TODO: implement the interrupt handling
 			// ! for the moment, we will break the loop to avoid an infinite loop
 			break

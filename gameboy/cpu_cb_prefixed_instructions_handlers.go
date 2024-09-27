@@ -73,7 +73,7 @@ func (c *CPU) RL(instruction *Instruction) {
 		} else {
 			c.resetCFlag()
 		}
-		c.A.Set(c.A.Get()<<1 | uint8(carry))
+		c.A = c.A<<1 | uint8(carry)
 		if c.A == 0 {
 			c.setZFlag()
 		} else {
@@ -85,7 +85,7 @@ func (c *CPU) RL(instruction *Instruction) {
 		} else {
 			c.resetCFlag()
 		}
-		c.B.Set(c.B.Get()<<1 | uint8(carry))
+		c.B = c.B<<1 | uint8(carry)
 		if c.B == 0 {
 			c.setZFlag()
 		} else {
@@ -97,7 +97,7 @@ func (c *CPU) RL(instruction *Instruction) {
 		} else {
 			c.resetCFlag()
 		}
-		c.C.Set(c.C.Get()<<1 | uint8(carry))
+		c.C = c.C<<1 | uint8(carry)
 		if c.C == 0 {
 			c.setZFlag()
 		} else {
@@ -109,7 +109,7 @@ func (c *CPU) RL(instruction *Instruction) {
 		} else {
 			c.resetCFlag()
 		}
-		c.D.Set(c.D.Get()<<1 | uint8(carry))
+		c.D = c.D<<1 | uint8(carry)
 		if c.D == 0 {
 			c.setZFlag()
 		} else {
@@ -121,7 +121,7 @@ func (c *CPU) RL(instruction *Instruction) {
 		} else {
 			c.resetCFlag()
 		}
-		c.E.Set(c.E.Get()<<1 | uint8(carry))
+		c.E = c.E<<1 | uint8(carry)
 		if c.E == 0 {
 			c.setZFlag()
 		} else {
@@ -133,7 +133,7 @@ func (c *CPU) RL(instruction *Instruction) {
 		} else {
 			c.resetCFlag()
 		}
-		c.H.Set(c.H.Get()<<1 | uint8(carry))
+		c.H = c.H<<1 | uint8(carry)
 		if c.H == 0 {
 			c.setZFlag()
 		} else {
@@ -145,7 +145,7 @@ func (c *CPU) RL(instruction *Instruction) {
 		} else {
 			c.resetCFlag()
 		}
-		c.L.Set(c.L.Get()<<1 | uint8(carry))
+		c.L = c.L<<1 | uint8(carry)
 		if c.L == 0 {
 			c.setZFlag()
 		} else {
@@ -169,9 +169,9 @@ func (c *CPU) RL(instruction *Instruction) {
 	c.resetNFlag()
 	c.resetHFlag()
 	// update the program counter offset
-	c.Offset = c.PC.Get() + uint16(instruction.Bytes)
+	c.Offset = c.PC + uint16(instruction.Bytes)
 	// update the number of cycles executed by the CPU
-	c.CpuCycles += instruction.Cycles[0]
+	c.CpuCycles += uint64(instruction.Cycles[0])
 }
 func (c *CPU) RR(instruction *Instruction) {
 	panic("RR not implemented")
@@ -208,9 +208,9 @@ func (c *CPU) BIT(instruction *Instruction) {
 	c.resetNFlag()
 	c.setHFlag()
 	// update the program counter offset
-	c.Offset = c.PC.Get() + uint16(instruction.Bytes)
+	c.Offset = c.PC + uint16(instruction.Bytes)
 	// update the number of cycles executed by the CPU
-	c.CpuCycles += instruction.Cycles[0]
+	c.CpuCycles += uint64(instruction.Cycles[0])
 }
 func (c *CPU) RES(instruction *Instruction) {
 	panic("RES not implemented")

@@ -1,10 +1,10 @@
 package gameboy
 
 const (
-	Z_FLAG_POSITION = 7
-	N_FLAG_POSITION = 6
-	H_FLAG_POSITION = 5
-	C_FLAG_POSITION = 4
+	Z_FLAG_POSITION uint8 = 0x07
+	N_FLAG_POSITION uint8 = 0x06
+	H_FLAG_POSITION uint8 = 0x05
+	C_FLAG_POSITION uint8 = 0x04
 )
 
 /*
@@ -13,68 +13,80 @@ const (
  * Z N H C 0 0 0 0 (flag)
  */
 
+func getFlag(value uint8, position uint8) bool {
+	return value&(0x01<<position) != 0
+}
+
+func setFlag(value uint8, position uint8) uint8 {
+	return value | (0x01 << position)
+}
+
+func resetFlag(value uint8, position uint8) uint8 {
+	return value & ^(0x01 << position)
+}
+
 // Zero Flag operations
 // Get the Z flag from the F register
 func (c *CPU) getZFlag() bool {
-	return c.F.GetBit(Z_FLAG_POSITION)
+	return getFlag(c.F, Z_FLAG_POSITION)
 }
 
 // Set the Z flag in the F register
 func (c *CPU) setZFlag() {
-	c.F.SetBit(Z_FLAG_POSITION)
+	c.F = setFlag(c.F, Z_FLAG_POSITION)
 }
 
 // Reset the Z flag in the F register
 func (c *CPU) resetZFlag() {
-	c.F.ResetBit(Z_FLAG_POSITION)
+	c.F = resetFlag(c.F, Z_FLAG_POSITION)
 }
 
 // Carry Flag operations
 // Get the N flag from the F register
 func (c *CPU) getNFlag() bool {
-	return c.F.GetBit(N_FLAG_POSITION)
+	return getFlag(c.F, N_FLAG_POSITION)
 }
 
 // Set the N flag in the F register
 func (c *CPU) setNFlag() {
-	c.F.SetBit(N_FLAG_POSITION)
+	c.F = setFlag(c.F, N_FLAG_POSITION)
 }
 
 // Reset the N flag in the F register
 func (c *CPU) resetNFlag() {
-	c.F.ResetBit(N_FLAG_POSITION)
+	c.F = resetFlag(c.F, N_FLAG_POSITION)
 }
 
 // Half Carry Flag operations
 // Get the H flag from the F register
 func (c *CPU) getHFlag() bool {
-	return c.F.GetBit(H_FLAG_POSITION)
+	return getFlag(c.F, H_FLAG_POSITION)
 }
 
 // Set the H flag in the F register
 func (c *CPU) setHFlag() {
-	c.F.SetBit(H_FLAG_POSITION)
+	c.F = setFlag(c.F, H_FLAG_POSITION)
 }
 
 // Reset the H flag in the F register
 func (c *CPU) resetHFlag() {
-	c.F.ResetBit(H_FLAG_POSITION)
+	c.F = resetFlag(c.F, H_FLAG_POSITION)
 }
 
 // Carry Flag operations
 // Get the C flag from the F register
 func (c *CPU) getCFlag() bool {
-	return c.F.GetBit(C_FLAG_POSITION)
+	return getFlag(c.F, C_FLAG_POSITION)
 }
 
 // Set the C flag in the F register
 func (c *CPU) setCFlag() {
-	c.F.SetBit(C_FLAG_POSITION)
+	c.F = setFlag(c.F, C_FLAG_POSITION)
 }
 
 // Reset the C flag in the F register
 func (c *CPU) resetCFlag() {
-	c.F.ResetBit(C_FLAG_POSITION)
+	c.F = resetFlag(c.F, C_FLAG_POSITION)
 }
 
 /*
@@ -87,8 +99,8 @@ func (c *CPU) getBC() uint16 {
 func (c *CPU) setBC(value uint16) {
 	low := uint8(value)
 	high := uint8(value >> 8)
-	c.B.Set(high)
-	c.C.Set(low)
+	c.B = high
+	c.C = low
 }
 
 func (c *CPU) getDE() uint16 {
@@ -98,8 +110,8 @@ func (c *CPU) getDE() uint16 {
 func (c *CPU) setDE(value uint16) {
 	low := uint8(value)
 	high := uint8(value >> 8)
-	c.D.Set(high)
-	c.E.Set(low)
+	c.D = high
+	c.E = low
 }
 
 func (c *CPU) getHL() uint16 {
@@ -109,12 +121,12 @@ func (c *CPU) getHL() uint16 {
 func (c *CPU) setHL(value uint16) {
 	low := uint8(value)
 	high := uint8(value >> 8)
-	c.H.Set(high)
-	c.L.Set(low)
+	c.H = high
+	c.L = low
 }
 
 func (c *CPU) GetIEFlag() uint8 {
-	return c.bus.mmu.Read(IE_FLAG_START)
+	return c.bus.Read(IE_FLAG_START)
 }
 
 func (c *CPU) setIEFlag(value uint16) {

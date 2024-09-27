@@ -2,16 +2,30 @@ package gameboy
 
 import "fmt"
 
-// 8-bit register
+// represents an 8-bit flag register
+// it will allow the user to:
+// - manipulate the register as a whole passing it a uint8 value
+// - manipulate the register bit by bit using the GetBit, SetBit and ResetBit methods
+// - have access to any bit using its shorthand notation (Z, N, H, C)
+type Register8 struct {
+	uint8
+	address uint16
+}
 
-type Register8 uint8
+func NewRegister8(address uint16) *Register8 {
+	return &Register8{address: address}
+}
+
+func (r8 *Register8) GetAddress() uint16 {
+	return r8.address
+}
 
 func (r8 *Register8) Get() uint8 {
-	return uint8(*r8)
+	return r8.uint8
 }
 
 func (r8 *Register8) Set(value uint8) {
-	*r8 = Register8(value)
+	r8.uint8 = value
 }
 
 func (r8 *Register8) GetBit(bit uint8) bool {
@@ -19,7 +33,7 @@ func (r8 *Register8) GetBit(bit uint8) bool {
 		panic(fmt.Sprintf("Register8> getBit: bit out of range: %v", bit))
 	}
 	op := uint8(1 << bit)
-	return (r8.Get() & op) == op
+	return (r8.uint8 & op) == op
 }
 
 func (r8 *Register8) SetBit(bit uint8) {
@@ -27,14 +41,14 @@ func (r8 *Register8) SetBit(bit uint8) {
 		panic(fmt.Sprintf("Register8> setBit: bit out of range: %v", bit))
 	}
 	op := uint8(1 << bit)
-	*r8 = Register8(r8.Get() | op)
+	r8.uint8 |= op
 }
 
 func (r8 *Register8) ResetBit(bit uint8) {
 	if bit > 7 {
 		panic(fmt.Sprintf("Register8> resetBit: bit out of range: %v", bit))
 	}
-	*r8 = Register8(r8.Get() & ^(1 << bit))
+	r8.uint8 ^= 1 << bit
 }
 
 // 16-bit register
