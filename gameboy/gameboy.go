@@ -25,7 +25,7 @@ func NewGameboy() *Gameboy {
 // runs the bootrom and then the game
 func (gb *Gameboy) Run() {
 	for {
-		if gb.cpu.Halted || gb.cpu.Stopped {
+		if gb.cpu.halted || gb.cpu.stopped {
 			break
 		}
 		gb.Step()
@@ -35,7 +35,7 @@ func (gb *Gameboy) Run() {
 // executes the next instruction
 func (gb *Gameboy) Step() {
 	// check if the CPU is halted or stopped
-	if gb.cpu.Halted || gb.cpu.Stopped {
+	if gb.cpu.halted || gb.cpu.stopped {
 		return
 	}
 	// execute the instruction

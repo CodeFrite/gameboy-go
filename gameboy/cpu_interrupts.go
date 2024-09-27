@@ -76,20 +76,20 @@ func (cpu *CPU) onVBlankInterrupt(interrupt Interrupt) {
 func (cpu *CPU) onTick() {
 	// TODO: I will certainly need to %3 the tick since i fetch decode and execute in 1 cycle
 	// increment the CPU cycles
-	cpu.CpuCycles++
+	cpu.cpuCycles++
 	// check if the CPU is halted
-	if cpu.Halted {
+	if cpu.halted {
 		// check if the interrupt master enable flag is set
-		if cpu.IME {
+		if cpu.ime {
 			// wake up the CPU
-			cpu.Halted = false
+			cpu.halted = false
 		}
 	}
 }
 
 func (cpu *CPU) onLCDInterrupt(interrupt Interrupt) {
 	// before handling the interrupt, we need to disable the interrupt master enable flag
-	cpu.IME = false
+	cpu.ime = false
 	// trigger the interrupt handler
 	//cpu.onInterruptHandler(interrupt)
 }

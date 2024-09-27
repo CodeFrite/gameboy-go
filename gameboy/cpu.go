@@ -25,32 +25,32 @@ const (
  */
 type CPU struct {
 	// Work Registers (not mapped to memory)
-	PC               uint16 // Program Counter
-	SP               uint16 // Stack Pointer
-	A                uint8  // Accumulator
-	F                uint8  // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
-	B, C, D, E, H, L uint8  // 16-bit general purpose registers
-	IR               uint8  // Instruction Register
+	pc               uint16 // Program Counter
+	sp               uint16 // Stack Pointer
+	a                uint8  // Accumulator
+	f                uint8  // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
+	b, c, d, e, h, l uint8  // 16-bit general purpose registers
+	ir               uint8  // Instruction Register
 
 	// Work variables
-	Prefixed  bool   // Is the current instruction prefixed with 0xCB
-	Operand   uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
-	Offset    uint16 // offset used in some instructions
-	CpuCycles uint64 // number of cycles the CPU has executed since the last reset up to uint64 max value (18,446,744,073,709,551,615)
+	prefixed  bool   // Is the current instruction prefixed with 0xCB
+	operand   uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+	offset    uint16 // offset used in some instructions
+	cpuCycles uint64 // number of cycles the CPU has executed since the last reset up to uint64 max value (18,446,744,073,709,551,615 =
 
 	// Interrupts
-	IME                    bool // interrupt master enable
-	IME_ENABLE_NEXT_CYCLE  bool // enable the IME on the next cycle
-	IME_DISABLE_NEXT_CYCLE bool // disable the IME on the next cycle
-	Halted                 bool // is the CPU halted (waiting for an interrupt to wake up)
-	Stopped                bool // is the CPU & LCD stopped (waiting for an interrupt from the joypad)
+	ime                    bool // interrupt master enable
+	ime_enable_next_cycle  bool // enable the IME on the next cycle
+	ime_disable_next_cycle bool // disable the IME on the next cycle
+	halted                 bool // is the CPU halted (waiting for an interrupt to wake up)
+	stopped                bool // is the CPU & LCD stopped (waiting for an interrupt from the joypad)
 
-	// CPU SoC Internal Memories
+	// CPU SoC Internal Memories (not exported in json)
 	bus          *Bus    // reference to the bus
 	bootrom      *Memory // 0x0000-0x00FF: (256 bytes) - Boot ROM
 	io_registers *Memory // 0xFF00-0xFF7F: (128 bytes) - I/O Registers
 	hram         *Memory // 0xFF80-0xFFFE: (127 bytes) - High RAM
-	IE           *Memory // 0xFFFF: Interrupt Enable
+	ie           *Memory // 0xFFFF: Interrupt Enable
 }
 
 // Create a new CPU
@@ -63,16 +63,16 @@ func NewCPU(bus *Bus) *CPU {
 	cpu := &CPU{
 		bus: bus,
 		// on startup, simulate the CPU registers being in an unknown state
-		PC: 0x0000, // only value set by the cpu on startup, others are randomized
-		SP: uint16(randValue(2, 16)),
-		A:  uint8(randValue(2, 8)),
-		F:  uint8(randValue(2, 8)),
-		B:  uint8(randValue(2, 8)),
-		C:  uint8(randValue(2, 8)),
-		D:  uint8(randValue(2, 8)),
-		E:  uint8(randValue(2, 8)),
-		H:  uint8(randValue(2, 8)),
-		L:  uint8(randValue(2, 8)),
+		pc: 0x0000, // only value set by the cpu on startup, others are randomized
+		sp: uint16(randValue(2, 16)),
+		a:  uint8(randValue(2, 8)),
+		f:  uint8(randValue(2, 8)),
+		b:  uint8(randValue(2, 8)),
+		c:  uint8(randValue(2, 8)),
+		d:  uint8(randValue(2, 8)),
+		e:  uint8(randValue(2, 8)),
+		h:  uint8(randValue(2, 8)),
+		l:  uint8(randValue(2, 8)),
 	}
 
 	return cpu
@@ -108,17 +108,17 @@ func (c *CPU) initMemory() {
 	// initialize memories
 	c.hram = NewMemory(HRAM_LEN)                 // High RAM (127 bytes)
 	c.io_registers = NewMemory(IO_REGISTERS_LEN) // I/O Registers (128 bytes)
-	c.IE = NewMemory(IE_FLAG_LEN)                // Interrupt Enable Register (1 byte)
+	c.ie = NewMemory(IE_FLAG_LEN)                // Interrupt Enable Register (1 byte)
 
 	// attach memories to the bus
 	c.bus.AttachMemory("High RAM (HRAM)", HRAM_START, c.hram)
 	c.bus.AttachMemory("I/O Registers", IO_REGISTERS_START, c.io_registers)
-	c.bus.AttachMemory("Interrupt Enable Register", IE_FLAG_START, c.IE)
+	c.bus.AttachMemory("Interrupt Enable Register", IE_FLAG_START, c.ie)
 }
 
 // Increment the Program Counter by the given offset
-func (c *CPU) updatePC() {
-	c.PC = c.Offset
+func (c *CPU) updatepc() {
+	c.pc = c.offset
 }
 
 // Stack operations
@@ -126,45 +126,45 @@ func (c *CPU) updatePC() {
 // Push a value to the stack
 func (c *CPU) push(value uint16) {
 	// decrement the stack pointer
-	c.SP -= 1
+	c.sp -= 1
 	// write the high byte to the stack
-	c.bus.Write(c.SP, byte(value>>8))
+	c.bus.Write(c.sp, byte(value>>8))
 	// decrement the stack pointer
-	c.SP -= 1
+	c.sp -= 1
 	// write the low byte to the stack
-	c.bus.Write(c.SP, byte(value))
+	c.bus.Write(c.sp, byte(value))
 }
 
 // Pop a value from the stack
 func (c *CPU) pop() uint16 {
 	// read the low byte from the stack
-	low := c.bus.Read(c.SP)
+	low := c.bus.Read(c.sp)
 	// increment the stack pointer
-	c.SP += 1
+	c.sp += 1
 	// read the high byte from the stack
-	high := c.bus.Read(c.SP)
+	high := c.bus.Read(c.sp)
 	// increment the stack pointer
-	c.SP += 1
+	c.sp += 1
 	return uint16(high)<<8 | uint16(low)
 }
 
-// Fetch the opcode from bus at address PC and store it in the instruction register
+// Fetch the opcode from bus at address pc and store it in the instruction register
 func (c *CPU) fetchOpcode() (opcode uint8, prefixed bool) {
 	// Fetch the opcode from memory at the address in the program counter
-	opcode = c.bus.Read(c.PC)
+	opcode = c.bus.Read(c.pc)
 
 	// is it a prefixed instruction?
 	if opcode == 0xCB {
 		prefixed = true
 		// fetch the next opcode
-		opcode = c.bus.Read(c.PC + 1)
+		opcode = c.bus.Read(c.pc + 1)
 	}
 	return opcode, prefixed
 }
 
 /*
  * Fetch the value of an operand
- * Save the result in cpu.Operand as an uint16 (must be casted to the correct type inside the different instruction handlers)
+ * Save the result in cpu.operand as an uint16 (must be casted to the correct type inside the different instruction handlers)
  */
 func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 	var value, addr uint16
@@ -172,75 +172,75 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 
 	// n8: immediate 8-bit data
 	case "n8":
-		value = uint16(c.bus.Read(c.PC + 1))
+		value = uint16(c.bus.Read(c.pc + 1))
 
 	// n16: immediate little-endian 16-bit data
 	case "n16":
-		value = c.bus.Read16(c.PC + 1)
+		value = c.bus.Read16(c.pc + 1)
 
 	// a8: 8-bit unsigned data, which is added to $FF00 in certain instructions to create a 16-bit address in HRAM (High RAM)
 	case "a8": // not always immediate
 		if operand.Immediate {
-			value = uint16(c.bus.Read(c.PC + 1))
+			value = uint16(c.bus.Read(c.pc + 1))
 		} else {
-			//addr = 0xFF00 + c.bus.Read16(c.PC+1)
-			addr = 0xFF00 + uint16(c.bus.Read(c.PC+1))
+			//addr = 0xFF00 + c.bus.Read16(c.pc+1)
+			addr = 0xFF00 + uint16(c.bus.Read(c.pc+1))
 			value = uint16(c.bus.Read(addr))
 		}
 	// a16: little-endian 16-bit address
 	case "a16": // not always immediate
 		if operand.Immediate {
-			value = c.bus.Read16(c.PC + 1)
+			value = c.bus.Read16(c.pc + 1)
 		} else {
-			addr := c.bus.Read16(c.PC + 1)
+			addr := c.bus.Read16(c.pc + 1)
 			value = c.bus.Read16(addr)
 		}
 	// e8 means 8-bit signed data
 	case "e8": // not always immediate
 		if operand.Immediate {
-			value = uint16(c.bus.Read(c.PC + 1))
+			value = uint16(c.bus.Read(c.pc + 1))
 		} else {
 			panic("e8 non immediate operand not implemented yet")
 		}
 	case "A":
 		if operand.Immediate {
-			value = uint16(c.A)
+			value = uint16(c.a)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "B":
 		if operand.Immediate {
-			value = uint16(c.B)
+			value = uint16(c.b)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "C":
 		if operand.Immediate {
-			value = uint16(c.C)
+			value = uint16(c.c)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "D":
 		if operand.Immediate {
-			value = uint16(c.D)
+			value = uint16(c.d)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "E":
 		if operand.Immediate {
-			value = uint16(c.E)
+			value = uint16(c.e)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "H":
 		if operand.Immediate {
-			value = uint16(c.H)
+			value = uint16(c.h)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
 	case "L":
 		if operand.Immediate {
-			value = uint16(c.L)
+			value = uint16(c.l)
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
@@ -263,8 +263,8 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 		} else {
 			value = c.bus.Read16(c.getHL())
 		}
-	case "SP": // always immediate
-		value = c.SP
+	case "sp": // always immediate
+		value = c.sp
 	case "$00": // RST $00
 		value = 0x00
 	case "$08": // RST $08
@@ -282,13 +282,13 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 	case "$38": // RST $38
 		value = 0x38
 	case "Z":
-		value = uint16(c.F & 0x80)
+		value = uint16(c.f & 0x80)
 	case "NZ":
-		value = uint16(c.F & 0x80)
+		value = uint16(c.f & 0x80)
 	case "NC":
-		value = uint16(c.F & 0x10)
+		value = uint16(c.f & 0x10)
 	default:
-		err := fmt.Sprintf("cpu.fetchOperandValue> Unknown operand name: %s (0x%02X)", operand.Name, c.IR)
+		err := fmt.Sprintf("cpu.fetchOperandValue> Unknown operand name: %s (0x%02X)", operand.Name, c.ir)
 		panic(err)
 	}
 	return value
@@ -298,59 +298,59 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 // TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
 func (c *CPU) Step() error {
 	// return if the CPU is halted or stopped
-	if c.Halted || c.Stopped {
+	if c.halted || c.stopped {
 		return nil
 	}
 
 	// update the pc and reset the offset
-	c.updatePC()
-	c.Offset = 0
+	c.updatepc()
+	c.offset = 0
 
 	// reset the prefixed flag
-	c.Prefixed = false
+	c.prefixed = false
 
 	// Store the opcode in the instruction register & prefix flag
 	opCode, prefixed := c.fetchOpcode()
-	c.Prefixed = prefixed
-	c.IR = opCode
+	c.prefixed = prefixed
+	c.ir = opCode
 
 	// Decode the instruction
 	// get instruction from opcodes.json file with IR used as key
-	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.IR)), c.Prefixed)
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.ir)), c.prefixed)
 	// get the operands of the instruction
 	operands := instruction.Operands
 	// fetch the operand value
 	if len(operands) == 1 {
-		c.Operand = c.fetchOperandValue(operands[0])
+		c.operand = c.fetchOperandValue(operands[0])
 	} else if len(operands) == 2 {
 		// decode operand 2
-		c.Operand = c.fetchOperandValue(operands[1])
+		c.operand = c.fetchOperandValue(operands[1])
 	}
 
 	// Handle the IME
-	if c.IME_ENABLE_NEXT_CYCLE {
+	if c.ime_enable_next_cycle {
 		// Execute the instruction
-		if !c.Prefixed {
+		if !c.prefixed {
 			c.executeInstruction(instruction)
 		} else {
 			c.executeCBInstruction(instruction)
 		}
 		// enable the IME
-		c.IME = true
-		c.IME_ENABLE_NEXT_CYCLE = false
-	} else if c.IME_DISABLE_NEXT_CYCLE {
+		c.ime = true
+		c.ime_enable_next_cycle = false
+	} else if c.ime_disable_next_cycle {
 		// Execute the instruction
-		if !c.Prefixed {
+		if !c.prefixed {
 			c.executeInstruction(instruction)
 		} else {
 			c.executeCBInstruction(instruction)
 		}
 		// disable the IME
-		c.IME = false
-		c.IME_DISABLE_NEXT_CYCLE = false
+		c.ime = false
+		c.ime_disable_next_cycle = false
 	} else {
 		// Execute the instruction
-		if !c.Prefixed {
+		if !c.prefixed {
 			c.executeInstruction(instruction)
 		} else {
 			c.executeCBInstruction(instruction)
@@ -363,13 +363,13 @@ func (c *CPU) Step() error {
 // Run the CPU
 func (c *CPU) Run() {
 	for {
-		if c.Halted {
+		if c.halted {
 			// if the CPU is halted, wait for an interrupt to wake it up
 			// TODO: implement the interrupt handling
 			// ! for the moment, we will break the loop to avoid an infinite loop
 			break
 		}
-		if c.Stopped {
+		if c.stopped {
 			// if the CPU is stopped, wait for an interrupt from the joypad
 			break
 		}
@@ -380,10 +380,10 @@ func (c *CPU) Run() {
 	}
 }
 
-// Boot the CPU and returns when the boot process is done (PC=0x0100)
+// Boot the CPU and returns when the boot process is done (pc=0x0100)
 func (c *CPU) Boot() {
-	c.PC = 0x0000
-	for c.PC != 0x0100 {
+	c.pc = 0x0000
+	for c.pc != 0x0100 {
 		err := c.Step()
 		if err != nil {
 			panic(err)

@@ -116,16 +116,16 @@ func (d *Debugger) testInstructionExecution() {
 
 		if flagValue == "0" {
 			if currValue.Bool() {
-				fmt.Printf("Debugger@0x%04X> 'testInstructionExecution' failed: flag should be 0 (%v)\n", d.gameboy.cpu.PC, instr.Mnemonic)
+				fmt.Printf("Debugger@0x%04X> 'testInstructionExecution' failed: flag should be 0 (%v)\n", d.gameboy.cpu.pc, instr.Mnemonic)
 			}
 		} else if flagValue == "1" {
 			if !currValue.Bool() {
-				fmt.Printf("Debugger@0x%04X> 'testInstructionExecution' failed: flag should be 1 (%v)\n", d.gameboy.cpu.PC, instr.Mnemonic)
+				fmt.Printf("Debugger@0x%04X> 'testInstructionExecution' failed: flag should be 1 (%v)\n", d.gameboy.cpu.pc, instr.Mnemonic)
 			}
 		} else if flagValue == "-" {
 			// '-' means the flag is not relevant for this instruction, so we skip the check
 			if currValue.Bool() != prevValue.Bool() {
-				fmt.Printf("Debugger@0x%04X> 'testInstructionExecution' failed: flag should stay the same (%v) : %v(%v)=%v->%v\n", d.gameboy.cpu.PC, instr.Mnemonic, key, flagValue, currValue.Bool(), prevValue.Bool())
+				fmt.Printf("Debugger@0x%04X> 'testInstructionExecution' failed: flag should stay the same (%v) : %v(%v)=%v->%v\n", d.gameboy.cpu.pc, instr.Mnemonic, key, flagValue, currValue.Bool(), prevValue.Bool())
 
 			}
 		} else {
@@ -187,7 +187,7 @@ func (d *Debugger) Run() *GameboyState {
 		d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
 		d.testInstructionExecution()
 		// check if the current PC is a breakpoint or if the gameboy is halted
-		if contains(d.breakpoints, d.gameboy.cpu.PC) || d.gameboy.cpu.Halted || d.gameboy.cpu.Stopped {
+		if contains(d.breakpoints, d.gameboy.cpu.pc) || d.gameboy.cpu.halted || d.gameboy.cpu.stopped {
 			// we do not halt the processor which is a feature used by the gameboy to save power, we just stop the execution from the debugger point of view by not executing any more instructions
 			break
 		}

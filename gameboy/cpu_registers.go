@@ -28,101 +28,101 @@ func resetFlag(value uint8, position uint8) uint8 {
 // Zero Flag operations
 // Get the Z flag from the F register
 func (c *CPU) getZFlag() bool {
-	return getFlag(c.F, Z_FLAG_POSITION)
+	return getFlag(c.f, Z_FLAG_POSITION)
 }
 
 // Set the Z flag in the F register
 func (c *CPU) setZFlag() {
-	c.F = setFlag(c.F, Z_FLAG_POSITION)
+	c.f = setFlag(c.f, Z_FLAG_POSITION)
 }
 
 // Reset the Z flag in the F register
 func (c *CPU) resetZFlag() {
-	c.F = resetFlag(c.F, Z_FLAG_POSITION)
+	c.f = resetFlag(c.f, Z_FLAG_POSITION)
 }
 
 // Carry Flag operations
 // Get the N flag from the F register
 func (c *CPU) getNFlag() bool {
-	return getFlag(c.F, N_FLAG_POSITION)
+	return getFlag(c.f, N_FLAG_POSITION)
 }
 
 // Set the N flag in the F register
 func (c *CPU) setNFlag() {
-	c.F = setFlag(c.F, N_FLAG_POSITION)
+	c.f = setFlag(c.f, N_FLAG_POSITION)
 }
 
 // Reset the N flag in the F register
 func (c *CPU) resetNFlag() {
-	c.F = resetFlag(c.F, N_FLAG_POSITION)
+	c.f = resetFlag(c.f, N_FLAG_POSITION)
 }
 
 // Half Carry Flag operations
 // Get the H flag from the F register
 func (c *CPU) getHFlag() bool {
-	return getFlag(c.F, H_FLAG_POSITION)
+	return getFlag(c.f, H_FLAG_POSITION)
 }
 
 // Set the H flag in the F register
 func (c *CPU) setHFlag() {
-	c.F = setFlag(c.F, H_FLAG_POSITION)
+	c.f = setFlag(c.f, H_FLAG_POSITION)
 }
 
 // Reset the H flag in the F register
 func (c *CPU) resetHFlag() {
-	c.F = resetFlag(c.F, H_FLAG_POSITION)
+	c.f = resetFlag(c.f, H_FLAG_POSITION)
 }
 
 // Carry Flag operations
 // Get the C flag from the F register
 func (c *CPU) getCFlag() bool {
-	return getFlag(c.F, C_FLAG_POSITION)
+	return getFlag(c.f, C_FLAG_POSITION)
 }
 
 // Set the C flag in the F register
 func (c *CPU) setCFlag() {
-	c.F = setFlag(c.F, C_FLAG_POSITION)
+	c.f = setFlag(c.f, C_FLAG_POSITION)
 }
 
 // Reset the C flag in the F register
 func (c *CPU) resetCFlag() {
-	c.F = resetFlag(c.F, C_FLAG_POSITION)
+	c.f = resetFlag(c.f, C_FLAG_POSITION)
 }
 
 /*
  * 16-bit registers accessors
  */
 func (c *CPU) getBC() uint16 {
-	return uint16(c.B)<<8 | uint16(c.C)
+	return uint16(c.b)<<8 | uint16(c.c)
 }
 
 func (c *CPU) setBC(value uint16) {
 	low := uint8(value)
 	high := uint8(value >> 8)
-	c.B = high
-	c.C = low
+	c.b = high
+	c.c = low
 }
 
 func (c *CPU) getDE() uint16 {
-	return uint16(c.D)<<8 | uint16(c.E)
+	return uint16(c.d)<<8 | uint16(c.e)
 }
 
 func (c *CPU) setDE(value uint16) {
 	low := uint8(value)
 	high := uint8(value >> 8)
-	c.D = high
-	c.E = low
+	c.d = high
+	c.e = low
 }
 
 func (c *CPU) getHL() uint16 {
-	return uint16(c.H)<<8 | uint16(c.L)
+	return uint16(c.h)<<8 | uint16(c.l)
 }
 
 func (c *CPU) setHL(value uint16) {
 	low := uint8(value)
 	high := uint8(value >> 8)
-	c.H = high
-	c.L = low
+	c.h = high
+	c.l = low
 }
 
 func (c *CPU) GetIEFlag() uint8 {

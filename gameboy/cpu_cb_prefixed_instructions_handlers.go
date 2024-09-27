@@ -68,85 +68,85 @@ func (c *CPU) RL(instruction *Instruction) {
 	carry := boolToUint8(c.getCFlag())
 	switch instruction.Operands[0].Name {
 	case "A":
-		if c.A&(1<<7) != 0 {
+		if c.a&(1<<7) != 0 {
 			c.setCFlag()
 		} else {
 			c.resetCFlag()
 		}
-		c.A = c.A<<1 | uint8(carry)
-		if c.A == 0 {
+		c.a = c.a<<1 | uint8(carry)
+		if c.a == 0 {
 			c.setZFlag()
 		} else {
 			c.resetZFlag()
 		}
 	case "B":
-		if c.B&(1<<7) != 0 {
+		if c.b&(1<<7) != 0 {
 			c.setCFlag()
 		} else {
 			c.resetCFlag()
 		}
-		c.B = c.B<<1 | uint8(carry)
-		if c.B == 0 {
+		c.b = c.b<<1 | uint8(carry)
+		if c.b == 0 {
 			c.setZFlag()
 		} else {
 			c.resetZFlag()
 		}
 	case "C":
-		if c.C&(1<<7) != 0 {
+		if c.c&(1<<7) != 0 {
 			c.setCFlag()
 		} else {
 			c.resetCFlag()
 		}
-		c.C = c.C<<1 | uint8(carry)
-		if c.C == 0 {
+		c.c = c.c<<1 | uint8(carry)
+		if c.c == 0 {
 			c.setZFlag()
 		} else {
 			c.resetZFlag()
 		}
 	case "D":
-		if c.D&(1<<7) != 0 {
+		if c.d&(1<<7) != 0 {
 			c.setCFlag()
 		} else {
 			c.resetCFlag()
 		}
-		c.D = c.D<<1 | uint8(carry)
-		if c.D == 0 {
+		c.d = c.d<<1 | uint8(carry)
+		if c.d == 0 {
 			c.setZFlag()
 		} else {
 			c.resetZFlag()
 		}
 	case "E":
-		if c.E&(1<<7) != 0 {
+		if c.e&(1<<7) != 0 {
 			c.setCFlag()
 		} else {
 			c.resetCFlag()
 		}
-		c.E = c.E<<1 | uint8(carry)
-		if c.E == 0 {
+		c.e = c.e<<1 | uint8(carry)
+		if c.e == 0 {
 			c.setZFlag()
 		} else {
 			c.resetZFlag()
 		}
 	case "H":
-		if c.H&(1<<7) != 0 {
+		if c.h&(1<<7) != 0 {
 			c.setCFlag()
 		} else {
 			c.resetCFlag()
 		}
-		c.H = c.H<<1 | uint8(carry)
-		if c.H == 0 {
+		c.h = c.h<<1 | uint8(carry)
+		if c.h == 0 {
 			c.setZFlag()
 		} else {
 			c.resetZFlag()
 		}
 	case "L":
-		if c.L&(1<<7) != 0 {
+		if c.l&(1<<7) != 0 {
 			c.setCFlag()
 		} else {
 			c.resetCFlag()
 		}
-		c.L = c.L<<1 | uint8(carry)
-		if c.L == 0 {
+		c.l = c.l<<1 | uint8(carry)
+		if c.l == 0 {
 			c.setZFlag()
 		} else {
 			c.resetZFlag()
@@ -169,9 +169,9 @@ func (c *CPU) RL(instruction *Instruction) {
 	c.resetNFlag()
 	c.resetHFlag()
 	// update the program counter offset
-	c.Offset = c.PC + uint16(instruction.Bytes)
+	c.offset = c.pc + uint16(instruction.Bytes)
 	// update the number of cycles executed by the CPU
-	c.CpuCycles += uint64(instruction.Cycles[0])
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 func (c *CPU) RR(instruction *Instruction) {
 	panic("RR not implemented")
@@ -200,7 +200,7 @@ func (c *CPU) BIT(instruction *Instruction) {
 	opStr := instruction.Operands[0].Name // the bit position to test is given as a string
 	var b uint16 = uint16(opStr[0] - '0')
 	// check if bit b of operand is 0
-	if c.Operand&uint16(1<<b) == 0 {
+	if c.operand&uint16(1<<b) == 0 {
 		c.setZFlag()
 	} else {
 		c.resetZFlag()
@@ -208,9 +208,9 @@ func (c *CPU) BIT(instruction *Instruction) {
 	c.resetNFlag()
 	c.setHFlag()
 	// update the program counter offset
-	c.Offset = c.PC + uint16(instruction.Bytes)
+	c.offset = c.pc + uint16(instruction.Bytes)
 	// update the number of cycles executed by the CPU
-	c.CpuCycles += uint64(instruction.Cycles[0])
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 func (c *CPU) RES(instruction *Instruction) {
 	panic("RES not implemented")
