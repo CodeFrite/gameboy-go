@@ -118,49 +118,69 @@ func (gbs *GameboyState) printInstruction() {
 }
 
 // get the memories current content
-func (gb *Gameboy) currCpuState() *CpuState {
+func (d *Debugger) currCpuState() *CpuState {
 	return &CpuState{
-		CpuCycles:     gb.cpu.cpuCycles,
-		PC:            gb.cpu.pc,
-		SP:            gb.cpu.sp,
-		A:             gb.cpu.a,
-		F:             gb.cpu.f,
-		Z:             gb.cpu.f&0x80 != 0,
-		N:             gb.cpu.f&0x40 != 0,
-		H:             gb.cpu.f&0x20 != 0,
-		C:             gb.cpu.f&0x10 != 0,
-		BC:            uint16(gb.cpu.b)<<8 | uint16(gb.cpu.c),
-		DE:            uint16(gb.cpu.d)<<8 | uint16(gb.cpu.e),
-		HL:            uint16(gb.cpu.h)<<8 | uint16(gb.cpu.l),
-		PREFIXED:      gb.cpu.prefixed,
-		IR:            gb.cpu.ir,
-		OPERAND_VALUE: gb.cpu.operand,
-		IE:            gb.cpu.bus.Read(0xFFFF),
-		IME:           gb.cpu.ime,
-		HALTED:        gb.cpu.halted,
-		STOPPED:       gb.cpu.stopped,
+		CpuCycles:     d.gameboy.cpu.cpuCycles,
+		PC:            d.gameboy.cpu.pc,
+		SP:            d.gameboy.cpu.sp,
+		A:             d.gameboy.cpu.a,
+		F:             d.gameboy.cpu.f,
+		Z:             d.gameboy.cpu.f&0x80 != 0,
+		N:             d.gameboy.cpu.f&0x40 != 0,
+		H:             d.gameboy.cpu.f&0x20 != 0,
+		C:             d.gameboy.cpu.f&0x10 != 0,
+		BC:            uint16(d.gameboy.cpu.b)<<8 | uint16(d.gameboy.cpu.c),
+		DE:            uint16(d.gameboy.cpu.d)<<8 | uint16(d.gameboy.cpu.e),
+		HL:            uint16(d.gameboy.cpu.h)<<8 | uint16(d.gameboy.cpu.l),
+		PREFIXED:      d.gameboy.cpu.prefixed,
+		IR:            d.gameboy.cpu.ir,
+		OPERAND_VALUE: d.gameboy.cpu.operand,
+		IE:            d.gameboy.cpu.bus.Read(0xFFFF),
+		IME:           d.gameboy.cpu.ime,
+		HALTED:        d.gameboy.cpu.halted,
+		STOPPED:       d.gameboy.cpu.stopped,
 	}
 }
 
-/**
- * currInstruction: returns the current instruction being processed based on cpu IR and prefix values
- */
-func (gb *Gameboy) currInstruction() *Instruction {
-	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", gb.cpu.ir)), gb.cpu.prefixed)
+// currInstruction: returns the current instruction being processed based on cpu IR and prefix values
+func (d *Debugger) currInstruction() *Instruction {
+	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", d.gameboy.cpu.ir)), d.gameboy.cpu.prefixed)
 	return &instruction
 }
 
-/**
- * clear memory writes
- */
-func (gb *Gameboy) clearMemoryWrites() {
-	gb.cpuBus.mmu.clearMemoryWrites()
+// clear memory writes
+func (d *Debugger) clearMemoryWrites() {
+	d.gameboy.cpuBus.mmu.clearMemoryWrites()
+}
+
+// returns the current memory writes
+func (d *Debugger) currMemoryWrites() []MemoryWrite {
+	return d.gameboy.cpuBus.mmu.memoryWrites
 }
 
 /**
- * returns the current memory writes
- *  TODO:
+ * print the current state of the gameboy
  */
-func (gb *Gameboy) currMemoryWrites() []MemoryWrite {
-	return gb.cpuBus.mmu.memoryWrites
+func (d *Debugger) PrintCPUState() {
+	d.state.printCPUState()
+}
+
+/**
+ * print the current instruction
+ */
+func (d *Debugger) PrintInstruction() {
+	d.state.printInstruction()
+}
+
+/**
+ * print the properties of the memories attached to the bus
+ */
+func (d *Debugger) PrintMemoryProperties() {
+	memoryMaps := d.gameboy.cpuBus.mmu.GetMemoryMaps()
+	fmt.Println("")
+	fmt.Println("\n> Memory Mapping:")
+	fmt.Println("-----------------")
+	for _, memoryMap := range memoryMaps {
+		fmt.Printf("> Memory %s: %d bytes @ 0x%04X->0x%04X\n", memoryMap.Name, len(memoryMap.Data), memoryMap.Address, memoryMap.Address+uint16(len(memoryMap.Data))-1)
+	}
 }

@@ -93,7 +93,7 @@ func (d *Debugger) shiftState() {
  * saves the current state of the gameboy into the debugger state.
  */
 func (d *Debugger) testInstructionExecution() {
-	instr := d.gameboy.currInstruction()
+	instr := d.currInstruction()
 	curr := d.state.CURR_CPU_STATE
 	prev := d.state.PREV_CPU_STATE
 
@@ -139,9 +139,9 @@ func (d *Debugger) testInstructionExecution() {
 }
 
 func (d *Debugger) saveState() {
-	d.state.CURR_CPU_STATE = d.gameboy.currCpuState()
-	d.state.INSTR = d.gameboy.currInstruction()
-	d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
+	d.state.CURR_CPU_STATE = d.currCpuState()
+	d.state.INSTR = d.currInstruction()
+	d.state.MEMORY_WRITES = d.currMemoryWrites()
 }
 
 /**
@@ -149,7 +149,7 @@ func (d *Debugger) saveState() {
  */
 func (d *Debugger) Step() *GameboyState {
 	// clear memory writes
-	d.gameboy.clearMemoryWrites()
+	d.clearMemoryWrites()
 	// shift the current state into the previous state
 	d.shiftState()
 	// run the next instruction
@@ -174,17 +174,17 @@ func (d *Debugger) Step() *GameboyState {
 func (d *Debugger) Run() *GameboyState {
 	// TODO: I think that i can simply start the timer and the CPU will run until it is halted or stopped by a breakpoint but where ???
 	// reset memory writes
-	d.gameboy.clearMemoryWrites()
+	d.clearMemoryWrites()
 
 	// run the gameboy until a breakpoint is reached or the gameboy is halted
 	for {
-		d.state.PREV_CPU_STATE = d.gameboy.currCpuState() // since we do not know if this will be the last step before returning, we have to save the last state into the previous state at each iteration
+		d.state.PREV_CPU_STATE = d.currCpuState() // since we do not know if this will be the last step before returning, we have to save the last state into the previous state at each iteration
 		d.gameboy.Step()
 		// save the current state
 		d.shiftState()
-		d.state.CURR_CPU_STATE = d.gameboy.currCpuState()
-		d.state.INSTR = d.gameboy.currInstruction()
-		d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
+		d.state.CURR_CPU_STATE = d.currCpuState()
+		d.state.INSTR = d.currInstruction()
+		d.state.MEMORY_WRITES = d.currMemoryWrites()
 		d.testInstructionExecution()
 		// check if the current PC is a breakpoint or if the gameboy is halted
 		if contains(d.breakpoints, d.gameboy.cpu.pc) || d.gameboy.cpu.halted || d.gameboy.cpu.stopped {
@@ -193,33 +193,6 @@ func (d *Debugger) Run() *GameboyState {
 		}
 	}
 	return d.state
-}
-
-/**
- * print the current state of the gameboy
- */
-func (d *Debugger) PrintCPUState() {
-	d.state.printCPUState()
-}
-
-/**
- * print the current instruction
- */
-func (d *Debugger) PrintInstruction() {
-	d.state.printInstruction()
-}
-
-/**
- * print the properties of the memories attached to the bus
- */
-func (d *Debugger) PrintMemoryProperties() {
-	memoryMaps := d.gameboy.cpuBus.mmu.GetMemoryMaps()
-	fmt.Println("")
-	fmt.Println("\n> Memory Mapping:")
-	fmt.Println("-----------------")
-	for _, memoryMap := range memoryMaps {
-		fmt.Printf("> Memory %s: %d bytes @ 0x%04X->0x%04X\n", memoryMap.Name, len(memoryMap.Data), memoryMap.Address, memoryMap.Address+uint16(len(memoryMap.Data))-1)
-	}
 }
 
 // return the list of memories attached to the mmu including their name, address and data
