@@ -1,13 +1,11 @@
-package test
+package gameboy
 
 import (
 	"testing"
-
-	"github.com/codefrite/gameboy-go/gameboy"
 )
 
 func TestInstantiation8(t *testing.T) {
-	var r8 gameboy.Register8
+	var r8 Register8
 	r8.Set(0x01)
 	if r8.Get() != 0x01 {
 		t.Errorf("Expected r8 to be 0x00, got %02X", r8)
@@ -23,7 +21,7 @@ func TestInstantiation8(t *testing.T) {
 }
 
 func TestGetterSetter8(t *testing.T) {
-	var r8 gameboy.Register8
+	var r8 Register8
 	r8.Set(0x00)
 	// set the value to 0xE7
 	r8.Set(0xE7)
@@ -38,7 +36,7 @@ func TestGetterSetter8(t *testing.T) {
 
 func TestGetBit8(t *testing.T) {
 	// 0x00 = b0000 0000
-	var r8 gameboy.Register8
+	var r8 Register8
 	r8.Set(0x00)
 	for i := uint8(0); i < 8; i++ {
 		if r8.GetBit(i) {
@@ -85,7 +83,7 @@ func TestGetBit8(t *testing.T) {
 
 func TestSetBit8(t *testing.T) {
 	// 0xFF = b1111 1111
-	var r8 gameboy.Register8
+	var r8 Register8
 	r8.Set(0x00)
 	for i := uint8(0); i < 8; i++ {
 		r8.SetBit(i)
@@ -125,7 +123,7 @@ func TestSetBit8(t *testing.T) {
 
 func TestResetBit8(t *testing.T) {
 	// 0xFF = b1111 1111
-	var r8 gameboy.Register8
+	var r8 Register8
 	r8.Set(0xFF)
 	for i := uint8(0); i < 8; i++ {
 		r8.ResetBit(i)

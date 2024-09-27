@@ -1,11 +1,9 @@
-package test
+package gameboy
 
 import (
 	"fmt"
 	"reflect"
 	"testing"
-
-	"github.com/codefrite/gameboy-go/gameboy"
 )
 
 /*
@@ -53,13 +51,13 @@ Test Cases List:
 
 // global variables
 var (
-	bus     *gameboy.Bus
-	memory1 *gameboy.Memory
-	memory2 *gameboy.Memory
-	cpu     *gameboy.CPU
+	bus     *Bus
+	memory1 *Memory
+	memory2 *Memory
+	cpu     *CPU
 
-	cpuState1 *gameboy.CpuState
-	cpuState2 *gameboy.CpuState
+	cpuState1 *CpuState
+	cpuState2 *CpuState
 )
 
 /* SUPPORT FUNCs */
@@ -82,21 +80,21 @@ func mayPanic(f func()) (panicked bool) {
 // initialize the cpu states
 func preconditions() {
 	// create a bus
-	bus = gameboy.NewBus()
+	bus = NewBus()
 	// create a first memory and attach it to the bus
-	memory1 = gameboy.NewMemory(0x2000)
+	memory1 = NewMemory(0x2000)
 	bus.AttachMemory("RAM 1", 0x0000, memory1)
 	// create a second memory and attach it to the bus
-	memory2 = gameboy.NewMemory(0xDFFF)
+	memory2 = NewMemory(0xDFFF)
 	bus.AttachMemory("RAM 2", 0x2000, memory2)
 	// create a cpu
-	cpu = gameboy.NewCPU(bus)
-	ie := gameboy.NewMemory(0x0001)
+	cpu = NewCPU(bus)
+	ie := NewMemory(0x0001)
 	bus.AttachMemory("IE", 0xFFFF, ie)
-	cpu.PC = 0x0000
-	cpu.SP = 0xFFFE
-	cpu.Halted = false
-	cpu.Stopped = false
+	cpu.pc = 0x0000
+	cpu.sp = 0xFFFE
+	cpu.halted = false
+	cpu.stopped = false
 	// initialize the cpu states
 	cpuState := getCpuState()
 	cpuState1 = cpuState
@@ -115,29 +113,29 @@ func postconditions() {
 }
 
 // save the state of the cpu
-func getCpuState() *gameboy.CpuState {
-	return &gameboy.CpuState{
-		PC:            cpu.PC,
-		SP:            cpu.SP,
-		A:             cpu.A,
-		F:             cpu.F,
-		Z:             cpu.F&0x80 != 0,
-		N:             cpu.F&0x40 != 0,
-		H:             cpu.F&0x20 != 0,
-		C:             cpu.F&0x10 != 0,
-		BC:            uint16(cpu.B)<<8 | uint16(cpu.C),
-		DE:            uint16(cpu.D)<<8 | uint16(cpu.E),
-		HL:            uint16(cpu.H)<<8 | uint16(cpu.L),
-		PREFIXED:      cpu.Prefixed,
-		IR:            cpu.IR,
-		OPERAND_VALUE: cpu.Operand,
+func getCpuState() *CpuState {
+	return &CpuState{
+		PC:            cpu.pc,
+		SP:            cpu.sp,
+		A:             cpu.a,
+		F:             cpu.f,
+		Z:             cpu.f&0x80 != 0,
+		N:             cpu.f&0x40 != 0,
+		H:             cpu.f&0x20 != 0,
+		C:             cpu.f&0x10 != 0,
+		BC:            uint16(cpu.b)<<8 | uint16(cpu.c),
+		DE:            uint16(cpu.d)<<8 | uint16(cpu.e),
+		HL:            uint16(cpu.h)<<8 | uint16(cpu.l),
+		PREFIXED:      cpu.prefixed,
+		IR:            cpu.ir,
+		OPERAND_VALUE: cpu.operand,
 		IE:            cpu.GetIEFlag(),
-		IME:           cpu.IME,
-		HALTED:        cpu.Halted,
+		IME:           cpu.ime,
+		HALTED:        cpu.halted,
 	}
 }
 
-func printCpuState(cpuState *gameboy.CpuState) {
+func printCpuState(cpuState *CpuState) {
 	fmt.Println(" ***   *** *** ***   *** ***   ***   *** *** ***   ***   *** ***   *** *** ***   ***")
 	fmt.Println("CPU STATE:")
 	fmt.Printf("PC: 0x%04X\n", cpuState.PC)
@@ -160,8 +158,8 @@ func printCpuState(cpuState *gameboy.CpuState) {
 }
 
 // shift the state of the cpu from mem1 to mem2
-func shiftCpuState(mem1 *gameboy.CpuState, mem2 *gameboy.CpuState) {
-	*mem2 = gameboy.CpuState{
+func shiftCpuState(mem1 *CpuState, mem2 *CpuState) {
+	*mem2 = CpuState{
 		PC:            mem1.PC,
 		SP:            mem1.SP,
 		A:             mem1.A,
@@ -183,13 +181,13 @@ func shiftCpuState(mem1 *gameboy.CpuState, mem2 *gameboy.CpuState) {
 }
 
 // load program into the memory starting from the address 0x0000
-func loadProgramIntoMemory(memory *gameboy.Memory, program []uint8) {
+func loadProgramIntoMemory(memory *Memory, program []uint8) {
 	for idx, val := range program {
 		memory.Write(uint16(idx), val)
 	}
 }
 
-func compareCpuState(mem1 *gameboy.CpuState, mem2 *gameboy.CpuState) []string {
+func compareCpuState(mem1 *CpuState, mem2 *CpuState) []string {
 	result := make([]string, 0)
 	// Loop over the fields of the CpuState struct
 	v1 := reflect.ValueOf(*mem1)
@@ -265,7 +263,7 @@ func TestSTOP(t *testing.T) {
 	cpu.Run()
 
 	// check if the gameboy is halted on the STOP instruction
-	if !cpu.Stopped {
+	if !cpu.stopped {
 		t.Errorf("[STOP_TC1_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 	finalState := getCpuState()
@@ -294,7 +292,7 @@ func TestHALT(t *testing.T) {
 	cpu.Run()
 
 	// check if the gameboy is halted on the HALT instruction
-	if !cpu.Halted {
+	if !cpu.halted {
 		t.Errorf("[HALT_TC1_CHK_1] Error> HALT instruction should halt the gameboy\n")
 	}
 	finalState := getCpuState()
@@ -309,7 +307,7 @@ func TestHALT(t *testing.T) {
 /* TC4: should disable interrupts by setting the IME flag to false */
 func TestDI(t *testing.T) {
 	preconditions()
-	cpu.IME = true
+	cpu.ime = true
 
 	// load the program into the memory
 	testData := []uint8{0x00, 0x00, 0x00, 0x00, 0x00, 0xF3, 0x00, 0x00}
@@ -328,11 +326,11 @@ func TestDI(t *testing.T) {
 
 		// the IME flag should stay up until the end of the execution after the DI instruction
 		if i >= 0 && i <= 5 {
-			if !cpu.IME {
+			if !cpu.ime {
 				t.Errorf("[DI_TC1_CHK_1] Error> DI instruction should disable the IME flag after the execution of the next instruction\n")
 			}
 		} else if i >= 6 {
-			if cpu.IME {
+			if cpu.ime {
 				t.Errorf("[DI_TC1_CHK_2] Error> DI instruction should disable the IME flag\n")
 			}
 		}
@@ -344,7 +342,7 @@ func TestDI(t *testing.T) {
 /* TC5: should enable interrupts by setting the IME flag to true */
 func TestEI(t *testing.T) {
 	preconditions()
-	cpu.IME = false
+	cpu.ime = false
 
 	// load the program into the memory
 	testData := []uint8{0x00, 0x00, 0x00, 0x00, 0x00, 0xFB, 0x00, 0x00}
@@ -362,11 +360,11 @@ func TestEI(t *testing.T) {
 		*/
 		// the IME flag should stay down until the end of the execution after the EI instruction
 		if i >= 0 && i <= 5 {
-			if cpu.IME {
+			if cpu.ime {
 				t.Errorf("[EI_TC1_CHK_1] Error> EI instruction should enable the IME flag after the execution of the next instruction\n")
 			}
 		} else if i >= 6 {
-			if !cpu.IME {
+			if !cpu.ime {
 				t.Errorf("[EI_TC1_CHK_2] Error> EI instruction should enable the IME flag\n")
 			}
 		}
@@ -393,10 +391,10 @@ func TestJP(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.H = 0x00
-	cpu.L = 0xD0
-	cpu.F = 0xFF // Z = 1 / C = 1 / H = 1 / N = 1
-	saveFlags := cpu.F
+	cpu.h = 0x00
+	cpu.l = 0xD0
+	cpu.f = 0xFF // Z = 1 / C = 1 / H = 1 / N = 1
+	saveFlags := cpu.f
 
 	// test data
 	testData1 := []uint8{
@@ -426,7 +424,7 @@ func TestJP(t *testing.T) {
 	cpu.Run()
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
-	if !cpu.Stopped {
+	if !cpu.stopped {
 		t.Errorf("Error> STOP instruction should stop the gameboy\n")
 	}
 
@@ -453,10 +451,10 @@ func TestJP(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.H = 0x00
-	cpu.L = 0xD0
-	cpu.F = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
-	saveFlags = cpu.F
+	cpu.h = 0x00
+	cpu.l = 0xD0
+	cpu.f = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
+	saveFlags = cpu.f
 
 	// test data
 	testData2 := []uint8{
@@ -486,7 +484,7 @@ func TestJP(t *testing.T) {
 	cpu.Run()
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
-	if !cpu.Stopped {
+	if !cpu.stopped {
 		t.Errorf("[JP_TC1_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
@@ -526,10 +524,10 @@ func TestJR(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.H = 0x00
-	cpu.L = 0xD0
-	cpu.F = 0xFF // Z = 1 / C = 1 / H = 1 / N = 1
-	saveFlags := cpu.F
+	cpu.h = 0x00
+	cpu.l = 0xD0
+	cpu.f = 0xFF // Z = 1 / C = 1 / H = 1 / N = 1
+	saveFlags := cpu.f
 
 	// test data
 	testData1 := []uint8{
@@ -559,7 +557,7 @@ func TestJR(t *testing.T) {
 	cpu.Run()
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
-	if !cpu.Stopped {
+	if !cpu.stopped {
 		t.Errorf("[JP_TC1_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
@@ -586,10 +584,10 @@ func TestJR(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.H = 0x00
-	cpu.L = 0xD0
-	cpu.F = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
-	saveFlags = cpu.F
+	cpu.h = 0x00
+	cpu.l = 0xD0
+	cpu.f = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
+	saveFlags = cpu.f
 
 	// test data
 	testData2 := []uint8{
@@ -619,7 +617,7 @@ func TestJR(t *testing.T) {
 	cpu.Run()
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
-	if !cpu.Stopped {
+	if !cpu.stopped {
 		t.Errorf("[JP_TC2_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
@@ -656,10 +654,10 @@ func TestCALL(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.H = 0x00
-	cpu.L = 0xD0
-	cpu.F = 0xFF // Z = 1 / C = 1 / H = 1 / N = 1
-	saveFlags := cpu.F
+	cpu.h = 0x00
+	cpu.l = 0xD0
+	cpu.f = 0xFF // Z = 1 / C = 1 / H = 1 / N = 1
+	saveFlags := cpu.f
 
 	// test data
 	testData1 := []uint8{
@@ -689,7 +687,7 @@ func TestCALL(t *testing.T) {
 	cpu.Run()
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
-	if !cpu.Stopped {
+	if !cpu.stopped {
 		t.Errorf("[CALL_TC1_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
@@ -716,10 +714,10 @@ func TestCALL(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.H = 0x00
-	cpu.L = 0xD0
-	cpu.F = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
-	saveFlags = cpu.F
+	cpu.h = 0x00
+	cpu.l = 0xD0
+	cpu.f = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
+	saveFlags = cpu.f
 
 	// test data
 	testData2 := []uint8{
@@ -749,7 +747,7 @@ func TestCALL(t *testing.T) {
 	cpu.Run()
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
-	if !cpu.Stopped {
+	if !cpu.stopped {
 		t.Errorf("[CALL_TC2_CHK_1] Error> STOP instruction should stop the gameboy\n")
 	}
 
@@ -832,7 +830,7 @@ func TestRET(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.F = 0x80 // Z = 1 / C = 0 / H = 0 / N = 0
+	cpu.f = 0x80 // Z = 1 / C = 0 / H = 0 / N = 0
 
 	// prepare the test data
 	testData = []uint8{
@@ -881,7 +879,7 @@ func TestRET(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.F = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
+	cpu.f = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
 
 	// prepare the test data
 	testData = []uint8{
@@ -930,7 +928,7 @@ func TestRET(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.F = 0xFF // Z = 0 / C = 1 / H = 0 / N = 0
+	cpu.f = 0xFF // Z = 0 / C = 1 / H = 0 / N = 0
 
 	// prepare the test data
 	testData = []uint8{
@@ -979,7 +977,7 @@ func TestRET(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.F = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
+	cpu.f = 0x00 // Z = 0 / C = 0 / H = 0 / N = 0
 
 	// prepare the test data
 	testData = []uint8{
@@ -1100,7 +1098,7 @@ func TestRST(t *testing.T) {
 
 	// preconditions
 	preconditions()
-	cpu.Offset = 0x00F0
+	cpu.offset = 0x00F0
 
 	// prepare the test data
 	testData := []uint8{

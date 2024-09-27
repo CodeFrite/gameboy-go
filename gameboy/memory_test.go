@@ -1,9 +1,7 @@
-package test
+package gameboy
 
 import (
 	"testing"
-
-	"github.com/codefrite/gameboy-go/gameboy"
 )
 
 /*
@@ -24,7 +22,7 @@ Test Cases List:
 
 /* checks if the memory is initialized with the correct size and 0 at all memory addresses */
 func TestNewMemory(t *testing.T) {
-	memory := gameboy.NewMemory(0x2000)
+	memory := NewMemory(0x2000)
 	if memory == nil {
 		t.Error("Expected memory to be initialized")
 	}
@@ -44,7 +42,7 @@ func TestNewMemoryWithData(t *testing.T) {
 	for i := 0; i < 256; i++ {
 		data[i] = uint8(i)
 	}
-	memory := gameboy.NewMemoryWithData(0x0100, data)
+	memory := NewMemoryWithData(0x0100, data)
 	for i := 0; i < 256; i++ {
 		memoryCellData := memory.Read(uint16(i))
 		if memoryCellData != uint8(i) {
@@ -61,12 +59,12 @@ func TestNewMemoryWithDataUnmatchingSize(t *testing.T) {
 		}
 	}()
 	data := make([]uint8, 256)
-	gameboy.NewMemoryWithData(0xFFFF, data)
+	NewMemoryWithData(0xFFFF, data)
 }
 
 func TestNewMemoryWithRandomData(t *testing.T) {
 	memorySize := uint16(0x2000)
-	memory := gameboy.NewMemoryWithRandomData(memorySize)
+	memory := NewMemoryWithRandomData(memorySize)
 	// check that all data are not 0 and that they are random
 	freq := make(map[uint8]int)
 	for i := 0; i < int(memorySize); i++ {
@@ -88,7 +86,7 @@ func TestMemoryReadOutsideRange(t *testing.T) {
 			t.Errorf("Expected Read to panic when reading outside the memory range")
 		}
 	}()
-	memory := gameboy.NewMemory(10)
+	memory := NewMemory(10)
 	memory.Read(11)
 }
 
@@ -100,7 +98,7 @@ func TestMemoryWriteOutsideRange(t *testing.T) {
 			t.Errorf("Expected Write to panic when writing outside the memory range")
 		}
 	}()
-	memory := gameboy.NewMemory(10)
+	memory := NewMemory(10)
 	memory.Write(11, 0)
 }
 
@@ -112,7 +110,7 @@ func TestMemoryDump(t *testing.T) {
 	for i := 0; i < memSize; i++ {
 		data[i] = uint8(i)
 	}
-	memory := gameboy.NewMemoryWithData(uint16(memSizeUint16), data)
+	memory := NewMemoryWithData(uint16(memSizeUint16), data)
 	dump := memory.Dump(0, memory.Size()-1)
 	for i := 0; i < memSize-1; i++ {
 		memoryCellData := dump[i]
