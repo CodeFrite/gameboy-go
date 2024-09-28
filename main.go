@@ -12,7 +12,7 @@ import (
 /* create a new debugger, initialize it with a ROM and exit the program when done */
 func main() {
 	// Create a new Debugger
-	db := gameboy.NewDebugger()
+	db := gameboy.NewDebugger(nil) // TODO: pass a cpu state channel
 
 	// Initialize the Debugger with the ROM
 	db.Init("Tetris.gb")
