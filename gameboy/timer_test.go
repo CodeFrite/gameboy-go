@@ -16,7 +16,7 @@ func TestInstantiation(t *testing.T) {
 		t.Errorf("Expected subscribers list to be empty, got %v", len(timer.Subscribers))
 	}
 	// on instantiation, the done channel should be nil
-	if timer.DoneChan != nil {
+	if timer.DoneChan == nil {
 		t.Errorf("Expected done channel to be non-nil, got nil")
 	}
 	// on instantiation, the tick channel should be nil
