@@ -36,6 +36,7 @@ func NewTimer(frequency uint32) *Timer {
 	return &Timer{
 		Frequency:   frequency,
 		DoneChan:    make(chan bool),
+		TickChan:    nil,
 		Subscribers: make([]Synchronizable, 0),
 	}
 }
@@ -57,10 +58,9 @@ func (t *Timer) Start() chan bool {
 		for {
 			select {
 			case <-t.DoneChan:
-				return
+				break loop
 			case <-t.TickChan:
 				t.Tick()
-				break loop
 			}
 		}
 	}()
@@ -77,8 +77,6 @@ func (t *Timer) Stop() {
 
 // on tick, increment the count and notify all subscribers
 func (t *Timer) Tick() {
-	fmt.Println("Timer> tick ...")
-
 	for _, subscriber := range t.Subscribers {
 		subscriber.onTick()
 	}
