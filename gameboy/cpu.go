@@ -63,16 +63,17 @@ func NewCPU(bus *Bus) *CPU {
 	cpu := &CPU{
 		bus: bus,
 		// on startup, simulate the CPU registers being in an unknown state
-		pc: 0x0000, // only value set by the cpu on startup, others are randomized
-		sp: uint16(randValue(2, 16)),
-		a:  uint8(randValue(2, 8)),
-		f:  uint8(randValue(2, 8)),
-		b:  uint8(randValue(2, 8)),
-		c:  uint8(randValue(2, 8)),
-		d:  uint8(randValue(2, 8)),
-		e:  uint8(randValue(2, 8)),
-		h:  uint8(randValue(2, 8)),
-		l:  uint8(randValue(2, 8)),
+		cpuCycles: 0,
+		pc:        0x0000, // only value set by the cpu on startup, others are randomized
+		sp:        uint16(randValue(2, 16)),
+		a:         uint8(randValue(2, 8)),
+		f:         uint8(randValue(2, 8)),
+		b:         uint8(randValue(2, 8)),
+		c:         uint8(randValue(2, 8)),
+		d:         uint8(randValue(2, 8)),
+		e:         uint8(randValue(2, 8)),
+		h:         uint8(randValue(2, 8)),
+		l:         uint8(randValue(2, 8)),
 	}
 
 	return cpu
