@@ -12,11 +12,19 @@ type Gameboy struct {
 	cpuBus    *Bus
 	ppuBus    *Bus
 	crystal   *Timer // crystal oscillator running at 4.194304MHz
+
+	// state channels
+	cpuStateChannel chan<- *CpuState // v0.4.0
+	//ppuStateChannel chan<- *PpuState // v0.4.1
+	//apuStateChannel chan<- *ApuState // v0.4.2
+	//joypadStateChannel <-chan *JoypadState // v0.4.3
 }
 
-// creates a new gameboy empty struct
-func NewGameboy() *Gameboy {
-	gb := &Gameboy{}
+// creates a new gameboy struct
+func NewGameboy(cpuStateChannel chan<- *CpuState) *Gameboy {
+	gb := &Gameboy{
+		cpuStateChannel: cpuStateChannel,
+	}
 	return gb
 }
 

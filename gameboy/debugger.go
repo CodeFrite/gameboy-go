@@ -12,17 +12,24 @@ type Debugger struct {
 	gameboy     *Gameboy
 	state       *GameboyState
 	breakpoints []uint16 // list of breakpoints addresses set by the user to pause the execution with a maximum of 100 breakpoints
+
+	// state channels
+	cpuStateChannel chan<- *CpuState // v0.4.0
+	//ppuStateChannel chan<- *PpuState // v0.4.1
+	//apuStateChannel chan<- *ApuState // v0.4.2
+	//joypadStateChannel <-chan *JoypadState // v0.4.3
 }
 
 /**
  * creates a new debugger: instanciates a new gameboy and initializes the breakpoints list
  */
-func NewDebugger() *Debugger {
-	gb := NewGameboy()
+func NewDebugger(cpuStateChannel chan<- *CpuState) *Debugger {
+	gb := NewGameboy(cpuStateChannel)
 	return &Debugger{
-		gameboy:     gb,
-		state:       &GameboyState{},
-		breakpoints: make([]uint16, 100),
+		gameboy:         gb,
+		state:           &GameboyState{},
+		breakpoints:     make([]uint16, 100),
+		cpuStateChannel: cpuStateChannel,
 	}
 }
 
