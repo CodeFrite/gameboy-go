@@ -1,0 +1,86 @@
+package gameboy
+
+import (
+	"fmt"
+	"testing"
+	"time"
+)
+
+// When stepping the gameboy, the crystal oscillator should tick once, trigger the Gameboy.onTick() method,
+// which in turn should tick the CPU, PPU and APU.
+// In this test, we will tick the crystal 5 times and check that the CPU is executing once every tick
+// We will then make sure that Gameboy.onTick() sends back the CPU state through the cpu state channel to the test case
+func TestStepGameBoyDoTickCPU(t *testing.T) {
+	// create a channel to listen to cpu state updates
+	cpuStateChannel := make(chan *CpuState)
+	// create a new gameboy
+	gb := NewGameboy(cpuStateChannel)
+	// initialize the gameboy
+	gb.init("Tetris.gb")
+	// start the gameboy
+	fmt.Println("Gameboy> stepping ...")
+
+	// step 5 times
+	for i := 0; i < 5; i++ {
+		// step in // routine
+		go gb.Step()
+		// listen to the cpu state channel waiting for one cpu state to arrive
+
+		fmt.Println("Gameboy> listening to cpu state channel ...")
+		select {
+		case cpuState := <-cpuStateChannel:
+			fmt.Println("Gameboy> cpu state received ...")
+			cpuState.print()
+		case <-time.After(5 * time.Second):
+			t.Fatal("Test timed out waiting for cpu state")
+		}
+	}
+}
+
+// Scenario: the gameboy should run @1Hz and stop on a HALT instruction @PC=0x0007
+// Given I run the gameboy
+// And I replace instruction @PC=0x0007 by a HALT instruction (IR=0x76)
+// Then the gameboy should start the crystal oscillator
+// And the crystal oscillator should tick the CPU@v0.4.0, (PPU@v0.4.1 and APU@v0.4.2)
+// And at each step i, the gameboy should wait for the CPU, PPU and APU to finish
+// And at each step i, the gameboy should send the CPU, PPU and APU states to their respective channels
+// And the test case should receive the CPU, PPU and APU states
+func TestRunGameBoyDoTickCPUUntilHalt(t *testing.T) {
+	// create a channel to listen to cpu state updates
+	cpuStateChannel := make(chan *CpuState)
+	// create a new gameboy
+	gb := NewGameboy(cpuStateChannel)
+	// initialize the gameboy
+	gb.init("Tetris.gb")
+
+	// replace memory location @0x0007 with a HALT instruction (IR=0x76)
+	gb.cpuBus.Write(0x0007, 0x76)
+
+	// run the gameboy
+	fmt.Println("Gameboy> running ...")
+	go gb.Run()
+
+	var cpuState *CpuState
+loop:
+	// step 5 times
+	for {
+		// listen to the cpu state channel waiting for one cpu state to arrive
+
+		fmt.Println("Gameboy> listening to cpu state channel ...")
+		select {
+		case cpuState = <-cpuStateChannel:
+			fmt.Println("Gameboy> cpu state received ...")
+			cpuState.print()
+			if cpuState.PC == 0x0007 {
+				break loop
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("Test timed out waiting for cpu state")
+		}
+	}
+
+	// check that the CPU stopped on PC=0x0007
+	if cpuState.PC != 0x0007 {
+		t.Fatalf("Expected CPU to stop on PC=0x0007, got PC=0x%04X", cpuState.PC)
+	}
+}

@@ -36,7 +36,7 @@ func NewTimer(frequency uint32) *Timer {
 	return &Timer{
 		Frequency:   frequency,
 		DoneChan:    make(chan bool),
-		TickChan:    nil,
+		TickChan:    make(<-chan time.Time),
 		Subscribers: make([]Synchronizable, 0),
 	}
 }
@@ -49,8 +49,8 @@ func (t *Timer) Subscribe(subscriber Synchronizable) {
 // start the timer
 func (t *Timer) Start() chan bool {
 	// compute and convert the period to a time.Duration
-	period := 1.0 / float64(t.Frequency)
-	tickRate := time.Duration(period) * time.Millisecond
+	period := 1000000000 / float64(t.Frequency)
+	tickRate := time.Duration(period) * time.Nanosecond
 	t.TickChan = time.NewTicker(tickRate).C
 
 	go func() {

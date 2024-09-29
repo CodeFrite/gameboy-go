@@ -100,7 +100,7 @@ func (d *Debugger) shiftState() {
  * saves the current state of the gameboy into the debugger state.
  */
 func (d *Debugger) testInstructionExecution() {
-	instr := d.currInstruction()
+	instr := d.gameboy.currInstruction()
 	curr := d.state.CURR_CPU_STATE
 	prev := d.state.PREV_CPU_STATE
 
@@ -145,64 +145,39 @@ func (d *Debugger) testInstructionExecution() {
 	// check the memory writes
 }
 
+/*
 func (d *Debugger) saveState() {
-	d.state.CURR_CPU_STATE = d.currCpuState()
-	d.state.INSTR = d.currInstruction()
-	d.state.MEMORY_WRITES = d.currMemoryWrites()
-}
+	d.state.CURR_CPU_STATE = d.gameboy.cpu.getState()
+	d.state.INSTR = d.gameboy.currInstruction()
+	d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
+}*/
 
-/**
- * run the next instruction and return the gameboy state
- */
-func (d *Debugger) Step() *GameboyState {
-	// clear memory writes
-	d.clearMemoryWrites()
-	// shift the current state into the previous state
-	d.shiftState()
+// run the next instruction and return the gameboy state
+func (d *Debugger) Step() {
 	// run the next instruction
 	d.gameboy.Step()
-	// save the current state
-	d.saveState()
-
-	// test the instruction execution
-	// - read from memory locations named in the instruction operands
-	// - write to memory locations named in the instruction operands
-	// - changed the correct CPU registers, everytime or when the condition is met
-	// - changed the correct flags, everytime or when the condition is met
-	d.testInstructionExecution()
-
-	// return the current state
-	return d.state
 }
 
-/**
- * run the gameboy until a breakpoint is reached or the gameboy is halted
- */
-func (d *Debugger) Run() *GameboyState {
-	// TODO: I think that i can simply start the timer and the CPU will run until it is halted or stopped by a breakpoint but where ???
-	// reset memory writes
-	d.clearMemoryWrites()
-
-	// run the gameboy until a breakpoint is reached or the gameboy is halted
-	for {
-		d.state.PREV_CPU_STATE = d.currCpuState() // since we do not know if this will be the last step before returning, we have to save the last state into the previous state at each iteration
-		d.gameboy.Step()
-		// save the current state
-		d.shiftState()
-		d.state.CURR_CPU_STATE = d.currCpuState()
-		d.state.INSTR = d.currInstruction()
-		d.state.MEMORY_WRITES = d.currMemoryWrites()
-		d.testInstructionExecution()
-		// check if the current PC is a breakpoint or if the gameboy is halted
-		if contains(d.breakpoints, d.gameboy.cpu.pc) || d.gameboy.cpu.halted || d.gameboy.cpu.stopped {
-			// we do not halt the processor which is a feature used by the gameboy to save power, we just stop the execution from the debugger point of view by not executing any more instructions
-			break
-		}
-	}
-	return d.state
+// run the gameboy until a breakpoint is reached or the gameboy is halted
+func (d *Debugger) Run() {
+	d.gameboy.Run()
 }
 
 // return the list of memories attached to the mmu including their name, address and data
 func (d *Debugger) GetAttachedMemories() []MemoryWrite {
 	return d.gameboy.cpuBus.mmu.GetMemoryMaps()
+}
+
+// print the current state of the gameboy
+func (d *Debugger) PrintCPUState() {
+	//d.gameboy. // TODO:
+}
+
+// print the current instruction
+func (d *Debugger) PrintInstruction() {
+	d.state.INSTR.print()
+}
+
+func (d *Debugger) PrintMemoryProperties() {
+	d.gameboy.PrintMemoryProperties()
 }

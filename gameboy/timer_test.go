@@ -20,8 +20,8 @@ func TestInstantiation(t *testing.T) {
 		t.Errorf("Expected done channel to be non-nil, got nil")
 	}
 	// on instantiation, the tick channel should be nil
-	if timer.TickChan != nil {
-		t.Errorf("Expected tick channel to be nil, got %v", timer.TickChan)
+	if timer.TickChan == nil {
+		t.Errorf("Expected tick channel to be not nil, got %v", timer.TickChan)
 	}
 }
 
@@ -73,7 +73,7 @@ func TestTick(t *testing.T) {
 }
 
 func TestStartStop(t *testing.T) {
-	timer := NewTimer(1)
+	timer := NewTimer(1000)
 	subscriber := NewSynch()
 	timer.Subscribe(subscriber)
 
@@ -83,8 +83,8 @@ func TestStartStop(t *testing.T) {
 	if timer.TickChan == nil {
 		t.Errorf("Expected tick channel to be non-nil, got nil")
 	}
-	fmt.Println("Waiting for 10 seconds ...")
-	time.Sleep(10 * time.Second)
+	fmt.Println("Waiting for 2 seconds ...")
+	time.Sleep(2 * time.Second)
 	fmt.Println("Stopping timer ... tick count is", tickCount)
 	timer.Stop()
 	fmt.Println("Closing done channel ...")

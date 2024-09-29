@@ -41,6 +41,5 @@ func (gb *Gameboy) initMemory() {
 
 func (gb *Gameboy) initTimer() {
 	gb.crystal = NewTimer(CRYSTAL_FREQUENCY)
-	gb.crystal.Subscribe(gb.cpu)
-	gb.crystal.Subscribe(gb.ppu)
+	gb.crystal.Subscribe(gb)
 }
