@@ -1,7 +1,5 @@
 package gameboy
 
-import "fmt"
-
 // the interrupt struct is used to pass information about the interrupt to the subscribers
 type Interrupt struct {
 	_type   uint8
@@ -76,7 +74,6 @@ func (cpu *CPU) onVBlankInterrupt(interrupt Interrupt) {
 
 // Synchronizable interface implementation
 func (cpu *CPU) onTick() {
-	fmt.Println("CPU.onTick> tick ...")
 	// TODO: I will certainly need to %3 the tick since i fetch decode and execute in 1 cycle
 	// increment the CPU cycles
 	cpu.cpuCycles++

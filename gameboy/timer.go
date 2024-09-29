@@ -77,7 +77,6 @@ func (t *Timer) Stop() {
 
 // on tick, increment the count and notify all subscribers
 func (t *Timer) Tick() {
-	fmt.Println("Timer> tick")
 	for _, subscriber := range t.Subscribers {
 		go subscriber.onTick()
 	}

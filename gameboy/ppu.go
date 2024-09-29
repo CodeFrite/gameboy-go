@@ -20,7 +20,6 @@
 package gameboy
 
 import (
-	"fmt"
 	"math/rand/v2"
 )
 
@@ -166,17 +165,13 @@ func (p *PPU) onTick() {
 	switch p.mode {
 	case MODE_2_SEARCH_OVERLAP_OBJ_OAM:
 		// searching for OBJs which overlap this line
-		fmt.Println("PPU> mode 2: searching for OBJs which overlap this line")
 	case MODE_3_SEND_PIXEL_LCD:
 		// sending pixels to the LCD
-		fmt.Println("PPU> mode 3: sending pixels to the LCD")
 	case MODE_0_HBLANK:
 		// waiting until the end of the scanline
-		fmt.Println("PPU> mode 0: waiting until the end of the scanline")
 		// p.cpu.TriggerInterrupt(Interrupt{_type: interrupt_types["HBLANK"]}) ??? TODO: check if this is an interrupt that i should trigger or if the CPU pools the PPU mode for this
 	case MODE_1_VBLANK:
 		// waiting until the next frame
-		fmt.Println("PPU> mode 1: waiting until the next frame")
 		p.cpu.TriggerInterrupt(Interrupt{_type: interrupt_types["VBLANK"]})
 	}
 }
