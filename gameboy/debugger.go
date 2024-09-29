@@ -15,7 +15,7 @@ type Debugger struct {
 
 	// state channels
 	cpuStateChannel chan<- *CpuState // v0.4.0
-	//ppuStateChannel chan<- *PpuState // v0.4.1
+	ppuStateChannel chan<- *PpuState // v0.4.1
 	//apuStateChannel chan<- *ApuState // v0.4.2
 	//joypadStateChannel <-chan *JoypadState // v0.4.3
 }
@@ -23,8 +23,8 @@ type Debugger struct {
 /**
  * creates a new debugger: instanciates a new gameboy and initializes the breakpoints list
  */
-func NewDebugger(cpuStateChannel chan<- *CpuState) *Debugger {
-	gb := NewGameboy(cpuStateChannel)
+func NewDebugger(cpuStateChannel chan<- *CpuState, ppuStateChannel chan<- *PpuState) *Debugger {
+	gb := NewGameboy(cpuStateChannel, ppuStateChannel)
 	return &Debugger{
 		gameboy:         gb,
 		state:           &GameboyState{},
