@@ -2,6 +2,7 @@ package gameboy
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 )
@@ -58,17 +59,26 @@ func TestSubscription(t *testing.T) {
 }
 
 func TestTick(t *testing.T) {
+	n := 100
 
 	timer := NewTimer(1)
 	subscriber := NewSynch()
 	timer.Subscribe(subscriber)
 
 	tickCount = 0
-	for i := 1; i < 11; i++ {
-		timer.Tick()
-		if tickCount != i {
-			t.Errorf("Expected to have received 1 tick, got %v", tickCount)
-		}
+
+	wg := sync.WaitGroup{}
+	for i := 1; i <= n; i++ {
+		wg.Add(1)
+		go func() {
+			timer.Tick()
+			wg.Done()
+		}()
+		time.Sleep(1 * time.Millisecond)
+	}
+	wg.Wait()
+	if tickCount != n {
+		t.Errorf("Expected to have received %v tick, got %v", n, tickCount)
 	}
 }
 

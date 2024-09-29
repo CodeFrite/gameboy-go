@@ -13,9 +13,8 @@ import (
 func TestStepGameBoyDoTickCPU(t *testing.T) {
 	// create a channel to listen to cpu state updates
 	cpuStateChannel := make(chan *CpuState)
-	ppuStateChannel := make(chan *PpuState)
 	// create a new gameboy
-	gb := NewGameboy(cpuStateChannel, ppuStateChannel)
+	gb := NewGameboy(cpuStateChannel, nil)
 	// initialize the gameboy
 	gb.init("Tetris.gb")
 	// start the gameboy
@@ -49,9 +48,8 @@ func TestStepGameBoyDoTickCPU(t *testing.T) {
 func TestRunGameBoyDoTickCPUUntilHalt(t *testing.T) {
 	// create a channel to listen to cpu state updates
 	cpuStateChannel := make(chan *CpuState)
-	ppuStateChannel := make(chan *PpuState)
 	// create a new gameboy
-	gb := NewGameboy(cpuStateChannel, ppuStateChannel)
+	gb := NewGameboy(cpuStateChannel, nil)
 	// initialize the gameboy
 	gb.init("Tetris.gb")
 
@@ -60,7 +58,7 @@ func TestRunGameBoyDoTickCPUUntilHalt(t *testing.T) {
 
 	// run the gameboy
 	fmt.Println("Gameboy> running ...")
-	go gb.Run()
+	gb.Run()
 
 	var cpuState *CpuState
 loop:
@@ -72,7 +70,7 @@ loop:
 		case cpuState = <-cpuStateChannel:
 			fmt.Println("Gameboy> cpu state received ...")
 			cpuState.print()
-			if cpuState.PC == 0x0007 {
+			if cpuState.HALTED {
 				break loop
 			}
 		case <-time.After(5 * time.Second):
@@ -92,10 +90,9 @@ loop:
 // We will then make sure that Gameboy.onTick() sends back the PPU state through the ppu state channel to the test case
 func TestStepGameBoyDoTickPPU(t *testing.T) {
 	// create a channel to listen to ppu state updates
-	cpuStateChannel := make(chan *CpuState)
 	ppuStateChannel := make(chan *PpuState)
 	// create a new gameboy
-	gb := NewGameboy(cpuStateChannel, ppuStateChannel)
+	gb := NewGameboy(nil, ppuStateChannel)
 	// initialize the gameboy
 	gb.init("Tetris.gb")
 	// start the gameboy
@@ -104,6 +101,7 @@ func TestStepGameBoyDoTickPPU(t *testing.T) {
 	// step 5 times
 	for i := 0; i < 5; i++ {
 		// step in // routine
+		fmt.Println("Gameboy> stepping ...")
 		go gb.Step()
 		// listen to the ppu state channel waiting for one ppu state to arrive
 
@@ -153,7 +151,7 @@ loop:
 		case cpuState = <-cpuStateChannel:
 			fmt.Println("Gameboy> cpu state received ...")
 			cpuState.print()
-			if cpuState.PC == 0x0007 {
+			if cpuState.HALTED {
 				break loop
 			}
 		case <-time.After(5 * time.Second):
