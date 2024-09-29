@@ -1,6 +1,6 @@
 package gameboy
 
-const CRYSTAL_FREQUENCY = 4194304
+const CRYSTAL_FREQUENCY = 1
 
 /**
  * initializes the gameboy by creating the bus, bootrom, cpu, cartridge and the different memories

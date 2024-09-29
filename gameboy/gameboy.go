@@ -1,7 +1,6 @@
 package gameboy
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -47,7 +46,6 @@ func (gb *Gameboy) Step() {
 
 // the gameboy ticks in parallel the cpu, ppu and apu and wait for these calls all to end using a wait group
 func (gb *Gameboy) onTick() {
-	fmt.Println("Gameboy> tick")
 	// wait group to wait for all goroutines to finish
 	var wg sync.WaitGroup
 	// tick the cpu
@@ -66,14 +64,15 @@ func (gb *Gameboy) onTick() {
 	//gb.apu.onTick()
 
 	// wait for all goroutines to finish
-	fmt.Println("Gameboy.onTick> waiting for goroutines to finish")
 	wg.Wait()
 
 	// get the cpu, ppu and apu states and send them to the respective channels
-	fmt.Println("Gameboy.onTick> sending cpu state back to the channel")
-	gb.cpuStateChannel <- gb.cpu.getState()
-	fmt.Println("Gameboy.onTick> terminating ...")
-	gb.ppuStateChannel <- gb.ppu.getState()
+	if gb.cpuStateChannel != nil {
+		gb.cpuStateChannel <- gb.cpu.getState()
+	}
+	if gb.ppuStateChannel != nil {
+		gb.ppuStateChannel <- gb.ppu.getState()
+	}
 	//gb.apuStateChannel <- gb.currApuState()
 
 }
