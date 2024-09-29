@@ -18,15 +18,16 @@ type Gameboy struct {
 
 	// state channels
 	cpuStateChannel chan<- *CpuState // v0.4.0
-	//ppuStateChannel chan<- *PpuState // v0.4.1
+	ppuStateChannel chan<- *PpuState // v0.4.1
 	//apuStateChannel chan<- *ApuState // v0.4.2
 	//joypadStateChannel <-chan *JoypadState // v0.4.3
 }
 
 // creates a new gameboy struct
-func NewGameboy(cpuStateChannel chan<- *CpuState) *Gameboy {
+func NewGameboy(cpuStateChannel chan<- *CpuState, ppuStateChannel chan<- *PpuState) *Gameboy {
 	gb := &Gameboy{
 		cpuStateChannel: cpuStateChannel,
+		ppuStateChannel: ppuStateChannel,
 	}
 	return gb
 }
@@ -56,13 +57,11 @@ func (gb *Gameboy) onTick() {
 		wg.Done()
 	}()
 	// tick the ppu
-	/*
-		wg.Add(1)
-		go func() {
-			gb.ppu.onTick()
-			wg.Done()
-		}()
-	*/
+	wg.Add(1)
+	go func() {
+		gb.ppu.onTick()
+		wg.Done()
+	}()
 	// tick the apu
 	//gb.apu.onTick()
 
@@ -74,7 +73,7 @@ func (gb *Gameboy) onTick() {
 	fmt.Println("Gameboy.onTick> sending cpu state back to the channel")
 	gb.cpuStateChannel <- gb.cpu.getState()
 	fmt.Println("Gameboy.onTick> terminating ...")
-	//gb.ppuStateChannel <- gb.currPpuState()
+	gb.ppuStateChannel <- gb.ppu.getState()
 	//gb.apuStateChannel <- gb.currApuState()
 
 }
