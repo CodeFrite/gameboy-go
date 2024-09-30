@@ -75,8 +75,6 @@ func (cpu *CPU) onVBlankInterrupt(interrupt Interrupt) {
 // Synchronizable interface implementation
 func (cpu *CPU) onTick() {
 	// TODO: I will certainly need to %3 the tick since i fetch decode and execute in 1 cycle
-	// increment the CPU cycles
-	cpu.cpuCycles++
 	// check if the CPU is halted
 	if cpu.halted {
 		// check if the interrupt master enable flag is set
