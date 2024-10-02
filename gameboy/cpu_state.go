@@ -6,25 +6,25 @@ import (
 
 type CpuState struct {
 	// Special registers
-	CpuCycles uint64 `json:"cpuCycles"` // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
-	PC        uint16 `json:"PC"`        // Program Counter
-	SP        uint16 `json:"SP"`        // Stack Pointer
-	A         uint8  `json:"A"`         // Accumulator
-	F         uint8  `json:"F"`         // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
-	Z         bool   `json:"Z"`         // Zero flag
-	N         bool   `json:"N"`         // Subtraction flag
-	H         bool   `json:"H"`         // Half Carry flag
-	C         bool   `json:"C"`         // Carry flag
+	CPU_CYCLES uint64 `json:"CPU_CYCLES"` // number of cycles the CPU has executed TODO: change to the correct type and implement the interrupt (overflow) handling
+	PC         uint16 `json:"PC"`         // Program Counter
+	SP         uint16 `json:"SP"`         // Stack Pointer
+	A          uint8  `json:"A"`          // Accumulator
+	F          uint8  `json:"F"`          // Flags: Zero (position 7), Subtraction (position 6), Half Carry (position 5), Carry (position 4)
+	Z          bool   `json:"Z"`          // Zero flag
+	N          bool   `json:"N"`          // Subtraction flag
+	H          bool   `json:"H"`          // Half Carry flag
+	C          bool   `json:"C"`          // Carry flag
 	// 16-bits general purpose registers
 	BC uint16 `json:"BC"`
 	DE uint16 `json:"DE"`
 	HL uint16 `json:"HL"`
 
 	// Instruction
-	INSTR         Instruction `json:"instr"`        // Current instruction
-	PREFIXED      bool        `json:"prefixed"`     // Is the current instruction prefixed with 0xCB
-	IR            uint8       `json:"IR"`           // Instruction Register
-	OPERAND_VALUE uint16      `json:"operandValue"` // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+	INSTRUCTION   Instruction `json:"INSTRUCTION"`   // Current instruction
+	PREFIXED      bool        `json:"PREFIXED"`      // Is the current instruction prefixed with 0xCB
+	IR            uint8       `json:"IR"`            // Instruction Register
+	OPERAND_VALUE uint16      `json:"OPERAND_VALUE"` // Current operand fetched from memory (this register doesn't physically exist in the CPU)
 
 	// Interrupts
 	IE  uint8 `json:"IE"`  // Interrupt Enable
@@ -38,7 +38,7 @@ type CpuState struct {
 // get the memories current content
 func (c *CPU) getState() *CpuState {
 	return &CpuState{
-		CpuCycles:     c.cpuCycles,
+		CPU_CYCLES:    c.cpuCycles,
 		PC:            c.pc,
 		SP:            c.sp,
 		A:             c.a,
@@ -50,7 +50,7 @@ func (c *CPU) getState() *CpuState {
 		BC:            uint16(c.b)<<8 | uint16(c.c),
 		DE:            uint16(c.d)<<8 | uint16(c.e),
 		HL:            uint16(c.h)<<8 | uint16(c.l),
-		INSTR:         c.instruction,
+		INSTRUCTION:   c.instruction,
 		PREFIXED:      c.prefixed,
 		IR:            c.ir,
 		OPERAND_VALUE: c.operand,
@@ -65,7 +65,7 @@ func (cs *CpuState) print() {
 	fmt.Println("")
 	fmt.Println("\n> CPU State:")
 	fmt.Println("------------")
-	fmt.Printf("Cycles: %d\n", cs.CpuCycles)
+	fmt.Printf("Cycles: %d\n", cs.CPU_CYCLES)
 	fmt.Printf("PC: 0x%04X\n", cs.PC)
 	fmt.Printf("SP: 0x%04X\n", cs.SP)
 	fmt.Printf("A: 0x%02X\n", cs.A)

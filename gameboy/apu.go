@@ -6,7 +6,7 @@ type APU struct {
 }
 
 type ApuState struct {
-	sound bool
+	SOUND bool `json:"SOUND"`
 }
 
 func NewAPU() *APU {
@@ -17,7 +17,7 @@ func NewAPU() *APU {
 
 func (a *APU) getState() *ApuState {
 	return &ApuState{
-		sound: a.sound,
+		SOUND: a.sound,
 	}
 }
 
