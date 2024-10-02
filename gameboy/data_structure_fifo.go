@@ -44,11 +44,7 @@ func (f *fifo[T]) push(value *T) {
 	f.head = newNode(value, saveHead)
 	if f.len() > STATE_QUEUE_MAX_LENGTH {
 		// remove the oldest element
-		current := f.head
-		for current.getNext() != nil {
-			current = current.getNext()
-		}
-		current.setNext(nil)
+		f.pop()
 	}
 }
 
