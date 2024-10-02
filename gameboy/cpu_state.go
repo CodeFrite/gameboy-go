@@ -21,9 +21,10 @@ type CpuState struct {
 	HL uint16 `json:"HL"`
 
 	// Instruction
-	PREFIXED      bool   `json:"prefixed"`     // Is the current instruction prefixed with 0xCB
-	IR            uint8  `json:"IR"`           // Instruction Register
-	OPERAND_VALUE uint16 `json:"operandValue"` // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+	INSTR         Instruction `json:"instr"`        // Current instruction
+	PREFIXED      bool        `json:"prefixed"`     // Is the current instruction prefixed with 0xCB
+	IR            uint8       `json:"IR"`           // Instruction Register
+	OPERAND_VALUE uint16      `json:"operandValue"` // Current operand fetched from memory (this register doesn't physically exist in the CPU)
 
 	// Interrupts
 	IE  uint8 `json:"IE"`  // Interrupt Enable
@@ -49,6 +50,7 @@ func (c *CPU) getState() *CpuState {
 		BC:            uint16(c.b)<<8 | uint16(c.c),
 		DE:            uint16(c.d)<<8 | uint16(c.e),
 		HL:            uint16(c.h)<<8 | uint16(c.l),
+		INSTR:         c.instruction,
 		PREFIXED:      c.prefixed,
 		IR:            c.ir,
 		OPERAND_VALUE: c.operand,

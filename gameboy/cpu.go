@@ -33,10 +33,11 @@ type CPU struct {
 	ir               uint8  // Instruction Register
 
 	// Work variables
-	prefixed  bool   // Is the current instruction prefixed with 0xCB
-	operand   uint16 // Current operand fetched from memory (this register doesn't physically exist in the CPU)
-	offset    uint16 // offset used in some instructions
-	cpuCycles uint64 // number of cycles the CPU has executed since the last reset up to uint64 max value (18,446,744,073,709,551,615 =
+	instruction Instruction // Current instruction
+	prefixed    bool        // Is the current instruction prefixed with 0xCB
+	operand     uint16      // Current operand fetched from memory (this register doesn't physically exist in the CPU)
+	offset      uint16      // offset used in some instructions
+	cpuCycles   uint64      // number of cycles the CPU has executed since the last reset up to uint64 max value (18,446,744,073,709,551,615 =
 
 	// Interrupts
 	ime                    bool // interrupt master enable
@@ -318,6 +319,7 @@ func (c *CPU) Step() error {
 	// Decode the instruction
 	// get instruction from opcodes.json file with IR used as key
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.ir)), c.prefixed)
+	c.instruction = instruction
 	// get the operands of the instruction
 	operands := instruction.Operands
 	// fetch the operand value
