@@ -90,6 +90,6 @@ func (gb *Gameboy) onTick() {
 		gb.apuStateChannel <- gb.apu.getState()
 	}
 	if gb.memoryStateChannel != nil {
-		gb.memoryStateChannel <- &gb.cpuBus.mmu.memoryWrites
+		gb.memoryStateChannel <- gb.cpuBus.mmu.getMemoryWrites()
 	}
 }
