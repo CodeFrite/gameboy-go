@@ -14,9 +14,9 @@ func TestStepGameBoyDoTickCPU(t *testing.T) {
 	// create a channel to listen to cpu state updates
 	cpuStateChannel := make(chan *CpuState)
 	// create a new gameboy
-	gb := NewGameboy(cpuStateChannel, nil)
+	gb := NewGameboy(cpuStateChannel, nil, nil, nil, nil)
 	// initialize the gameboy
-	gb.init("Tetris.gb")
+	gb.LoadRom("Tetris.gb")
 	// start the gameboy
 	fmt.Println("Gameboy> stepping ...")
 
@@ -49,9 +49,9 @@ func TestRunGameBoyDoTickCPUUntilHalt(t *testing.T) {
 	// create a channel to listen to cpu state updates
 	cpuStateChannel := make(chan *CpuState)
 	// create a new gameboy
-	gb := NewGameboy(cpuStateChannel, nil)
+	gb := NewGameboy(cpuStateChannel, nil, nil, nil, nil)
 	// initialize the gameboy
-	gb.init("Tetris.gb")
+	gb.LoadRom("Tetris.gb")
 
 	// replace memory location @0x0007 with a HALT instruction (IR=0x76)
 	gb.cpuBus.Write(0x0007, 0x76)
@@ -92,9 +92,9 @@ func TestStepGameBoyDoTickPPU(t *testing.T) {
 	// create a channel to listen to ppu state updates
 	ppuStateChannel := make(chan *PpuState)
 	// create a new gameboy
-	gb := NewGameboy(nil, ppuStateChannel)
+	gb := NewGameboy(nil, ppuStateChannel, nil, nil, nil)
 	// initialize the gameboy
-	gb.init("Tetris.gb")
+	gb.LoadRom("Tetris.gb")
 	// start the gameboy
 	fmt.Println("Gameboy> stepping ...")
 
@@ -129,9 +129,9 @@ func TestRunGameBoyDoTickPPUUntilHalt(t *testing.T) {
 	cpuStateChannel := make(chan *CpuState)
 	ppuStateChannel := make(chan *PpuState)
 	// create a new gameboy
-	gb := NewGameboy(cpuStateChannel, ppuStateChannel)
+	gb := NewGameboy(cpuStateChannel, ppuStateChannel, nil, nil, nil)
 	// initialize the gameboy
-	gb.init("Tetris.gb")
+	gb.LoadRom("Tetris.gb")
 
 	// replace memory location @0x0007 with a HALT instruction (IR=0x76)
 	gb.cpuBus.Write(0x0007, 0x76)

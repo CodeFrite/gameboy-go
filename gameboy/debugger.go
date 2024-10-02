@@ -1,62 +1,127 @@
 package gameboy
 
-import (
-	"fmt"
-	"reflect"
-)
+const STATE_QUEUE_MAX_LENGTH = 100
 
 /**
  * debugger struct: combination of a gameboy, its internal state and a list of breakpoints set by the user
  */
 type Debugger struct {
-	gameboy     *Gameboy
-	state       *GameboyState
+	// state
+	gameboy          *Gameboy
+	cpuStateQueue    *fifo[CpuState]
+	ppuStateQueue    *fifo[PpuState]
+	apuStateQueue    *fifo[ApuState]
+	memoryStateQueue *fifo[[]MemoryWrite]
+	joypadStateQueue *fifo[JoypadState]
+
+	// break points
 	breakpoints []uint16 // list of breakpoints addresses set by the user to pause the execution with a maximum of 100 breakpoints
 
-	// state channels
-	cpuStateChannel chan<- *CpuState // v0.4.0
-	ppuStateChannel chan<- *PpuState // v0.4.1
-	//apuStateChannel chan<- *ApuState // v0.4.2
-	//joypadStateChannel <-chan *JoypadState // v0.4.3
+	// state channels received from the client meant to listen to the gameboy state
+	clientCpuStateChannel    chan<- *CpuState // v0.4.0
+	clientPpuStateChannel    chan<- *PpuState // v0.4.1
+	clientApuStateChannel    chan<- *ApuState // v0.4.2
+	clientMemoryStateChannel chan<- *[]MemoryWrite
+	clientJoypadStateChannel <-chan *JoypadState
+
+	// internal channels corresponding to the channels received from the client and used to intercept, store in a queue, and then relay the state changes
+	gameboyCpuStateChannel    chan *CpuState
+	gameboyPpuStateChannel    chan *PpuState
+	gameboyApuStateChannel    chan *ApuState
+	gameboyMemoryStateChannel chan *[]MemoryWrite
+	gameboyJoypadStateChannel chan *JoypadState
 }
 
 /**
  * creates a new debugger: instanciates a new gameboy and initializes the breakpoints list
  */
-func NewDebugger(cpuStateChannel chan<- *CpuState, ppuStateChannel chan<- *PpuState) *Debugger {
-	gb := NewGameboy(cpuStateChannel, ppuStateChannel)
+func NewDebugger(
+	cpuStateChannel chan<- *CpuState,
+	ppuStateChannel chan<- *PpuState,
+	apuStateChannel chan<- *ApuState,
+	memoryStateChannel chan<- *[]MemoryWrite,
+	joypadStateChannel <-chan *JoypadState,
+) *Debugger {
+
+	gameboyCpuStateChannel := make(chan *CpuState)
+	gameboyPpuStateChannel := make(chan *PpuState)
+	gameboyApuStateChannel := make(chan *ApuState)
+	gameboyMemoryStateChannel := make(chan *[]MemoryWrite)
+	gameboyJoypadStateChannel := make(chan *JoypadState)
+
+	gb := NewGameboy(gameboyCpuStateChannel, gameboyPpuStateChannel, gameboyApuStateChannel, gameboyMemoryStateChannel, gameboyJoypadStateChannel)
+
 	return &Debugger{
-		gameboy:         gb,
-		state:           &GameboyState{},
-		breakpoints:     make([]uint16, 100),
-		cpuStateChannel: cpuStateChannel,
+		gameboy:                   gb,
+		cpuStateQueue:             newFifo[CpuState](),
+		ppuStateQueue:             newFifo[PpuState](),
+		apuStateQueue:             newFifo[ApuState](),
+		memoryStateQueue:          newFifo[[]MemoryWrite](),
+		joypadStateQueue:          newFifo[JoypadState](),
+		clientCpuStateChannel:     cpuStateChannel,
+		clientPpuStateChannel:     ppuStateChannel,
+		clientApuStateChannel:     apuStateChannel,
+		clientMemoryStateChannel:  gameboyMemoryStateChannel,
+		clientJoypadStateChannel:  joypadStateChannel,
+		gameboyCpuStateChannel:    gameboyCpuStateChannel,
+		gameboyPpuStateChannel:    gameboyPpuStateChannel,
+		gameboyApuStateChannel:    gameboyApuStateChannel,
+		gameboyMemoryStateChannel: gameboyMemoryStateChannel,
+		gameboyJoypadStateChannel: gameboyJoypadStateChannel,
+		breakpoints:               make([]uint16, 100),
 	}
 }
 
 /**
  * initializes the gameboy with the given ROM and returns a pointer to the gameboy state.
  */
-func (d *Debugger) Init(romName string) *GameboyState {
-	d.gameboy.init(romName)
-	d.state = &GameboyState{
-		PREV_CPU_STATE: nil,
-		CURR_CPU_STATE: nil,
-		INSTR:          nil,
-		MEMORY_WRITES:  []MemoryWrite{},
-	}
-	return d.state
+func (d *Debugger) LoadRom(romName string) {
+	d.gameboy.LoadRom(romName)
+	initialCpuState := d.gameboy.cpu.getState()
+	initialPpuState := d.gameboy.ppu.getState()
+	initialApuState := d.gameboy.apu.getState()
+	initialMemoryWrites := &d.gameboy.cpuBus.mmu.memoryWrites
+
+	// save the initial state
+	d.cpuStateQueue.push(initialCpuState)
+	d.ppuStateQueue.push(initialPpuState)
+	d.apuStateQueue.push(initialApuState)
+	d.memoryStateQueue.push(initialMemoryWrites)
+
+	// launch the debugger internal channels in a go routine to listen to the gameboy state channels
+	// TODO: add a done channel to stop the go routine
+	go func() {
+		for {
+			select {
+			case cpuState := <-d.gameboyCpuStateChannel:
+				d.cpuStateQueue.push(cpuState)
+				d.clientCpuStateChannel <- cpuState
+			case ppuState := <-d.gameboyPpuStateChannel:
+				d.ppuStateQueue.push(ppuState)
+				d.clientPpuStateChannel <- ppuState
+			case apuState := <-d.gameboyApuStateChannel:
+				d.apuStateQueue.push(apuState)
+				d.clientApuStateChannel <- apuState
+			case memoryState := <-d.gameboyMemoryStateChannel:
+				d.memoryStateQueue.push(memoryState)
+				d.clientMemoryStateChannel <- memoryState
+			case joypadState := <-d.clientJoypadStateChannel:
+				// TODO: use it for conditional breakpoints on joypad events
+				d.gameboyJoypadStateChannel <- joypadState
+			}
+		}
+	}()
 }
 
-/**
- * helper function to check if a value is present in an uint16 array.
- */
-func contains(arr []uint16, addr uint16) bool {
-	for _, v := range arr {
-		if v == addr {
-			return true
-		}
-	}
-	return false
+// run the next instruction and return the gameboy state
+func (d *Debugger) Step() {
+	// run the next instruction
+	d.gameboy.Step()
+}
+
+// run the gameboy until a breakpoint is reached or the gameboy is halted
+func (d *Debugger) Run() {
+	d.gameboy.Run()
 }
 
 /**
@@ -90,15 +155,9 @@ func (d *Debugger) GetBreakPoints() []uint16 {
 }
 
 /**
- * shifts the current state into the previous state
- */
-func (d *Debugger) shiftState() {
-	d.state.PREV_CPU_STATE = d.state.CURR_CPU_STATE
-}
-
-/**
  * saves the current state of the gameboy into the debugger state.
  */
+/*
 func (d *Debugger) testInstructionExecution() {
 	instr := d.gameboy.currInstruction()
 	curr := d.state.CURR_CPU_STATE
@@ -144,6 +203,7 @@ func (d *Debugger) testInstructionExecution() {
 	// check the memory reads
 	// check the memory writes
 }
+*/
 
 /*
 func (d *Debugger) saveState() {
@@ -152,17 +212,6 @@ func (d *Debugger) saveState() {
 	d.state.MEMORY_WRITES = d.gameboy.currMemoryWrites()
 }*/
 
-// run the next instruction and return the gameboy state
-func (d *Debugger) Step() {
-	// run the next instruction
-	d.gameboy.Step()
-}
-
-// run the gameboy until a breakpoint is reached or the gameboy is halted
-func (d *Debugger) Run() {
-	d.gameboy.Run()
-}
-
 // return the list of memories attached to the mmu including their name, address and data
 func (d *Debugger) GetAttachedMemories() []MemoryWrite {
 	return d.gameboy.cpuBus.mmu.GetMemoryMaps()
@@ -170,14 +219,25 @@ func (d *Debugger) GetAttachedMemories() []MemoryWrite {
 
 // print the current state of the gameboy
 func (d *Debugger) PrintCPUState() {
-	//d.gameboy. // TODO:
+	d.cpuStateQueue.peek().print()
 }
 
 // print the current instruction
 func (d *Debugger) PrintInstruction() {
-	d.state.INSTR.print()
 }
 
 func (d *Debugger) PrintMemoryProperties() {
 	d.gameboy.PrintMemoryProperties()
+}
+
+/**
+ * helper function to check if a value is present in an uint16 array.
+ */
+func contains(arr []uint16, addr uint16) bool {
+	for _, v := range arr {
+		if v == addr {
+			return true
+		}
+	}
+	return false
 }

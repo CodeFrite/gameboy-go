@@ -6,27 +6,34 @@ import (
 
 // the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
 type Gameboy struct {
-	cpu       *CPU
-	ppu       *PPU
-	cartridge *Cartridge // 0x0000-0x7FFF (32KB switchable) - Cartridge ROM
-	vram      *Memory
-	wram      *Memory
+	crystal   *Timer // crystal oscillator running at 4.194304MHz
 	cpuBus    *Bus
 	ppuBus    *Bus
-	crystal   *Timer // crystal oscillator running at 4.194304MHz
+	cpu       *CPU
+	ppu       *PPU
+	apu       *APU
+	vram      *Memory
+	wram      *Memory
+	cartridge *Cartridge // 0x0000-0x7FFF (32KB switchable) - Cartridge ROM
+	joypad    *Joypad
 
 	// state channels
-	cpuStateChannel chan<- *CpuState // v0.4.0
-	ppuStateChannel chan<- *PpuState // v0.4.1
-	//apuStateChannel chan<- *ApuState // v0.4.2
-	//joypadStateChannel <-chan *JoypadState // v0.4.3
+	cpuStateChannel    chan<- *CpuState // v0.4.0
+	ppuStateChannel    chan<- *PpuState // v0.4.1
+	apuStateChannel    chan<- *ApuState // v0.4.2
+	joypadStateChannel <-chan *JoypadState
+	memoryStateChannel chan<- *[]MemoryWrite
 }
 
 // creates a new gameboy struct
-func NewGameboy(cpuStateChannel chan<- *CpuState, ppuStateChannel chan<- *PpuState) *Gameboy {
+func NewGameboy(cpuStateChannel chan<- *CpuState, ppuStateChannel chan<- *PpuState, apuStateChannel chan<- *ApuState, memoryStateChannel chan<- *[]MemoryWrite, joypadStateChannel <-chan *JoypadState) *Gameboy {
 	gb := &Gameboy{
-		cpuStateChannel: cpuStateChannel,
-		ppuStateChannel: ppuStateChannel,
+		cpuStateChannel:    cpuStateChannel,
+		ppuStateChannel:    ppuStateChannel,
+		apuStateChannel:    apuStateChannel,
+		memoryStateChannel: memoryStateChannel,
+		joypadStateChannel: joypadStateChannel,
+		joypad:             NewJoypad(joypadStateChannel),
 	}
 	return gb
 }
@@ -61,10 +68,16 @@ func (gb *Gameboy) onTick() {
 		wg.Done()
 	}()
 	// tick the apu
-	//gb.apu.onTick()
+	wg.Add(1)
+	go func() {
+		gb.apu.onTick()
+		wg.Done()
+	}()
 
 	// wait for all goroutines to finish
 	wg.Wait()
+
+	// now we can send the state to the respective channels
 
 	// get the cpu, ppu and apu states and send them to the respective channels
 	if gb.cpuStateChannel != nil {
@@ -73,6 +86,10 @@ func (gb *Gameboy) onTick() {
 	if gb.ppuStateChannel != nil {
 		gb.ppuStateChannel <- gb.ppu.getState()
 	}
-	//gb.apuStateChannel <- gb.currApuState()
-
+	if gb.apuStateChannel != nil {
+		gb.apuStateChannel <- gb.apu.getState()
+	}
+	if gb.memoryStateChannel != nil {
+		gb.memoryStateChannel <- &gb.cpuBus.mmu.memoryWrites
+	}
 }

@@ -5,7 +5,7 @@ const CRYSTAL_FREQUENCY = 1
 /**
  * initializes the gameboy by creating the bus, bootrom, cpu, cartridge and the different memories
  */
-func (gb *Gameboy) init(romName string) {
+func (gb *Gameboy) LoadRom(romName string) {
 	// buses
 	gb.cpuBus = NewBus()
 	gb.ppuBus = NewBus()
@@ -14,6 +14,8 @@ func (gb *Gameboy) init(romName string) {
 	gb.cpu.Init()
 	// ppu
 	gb.ppu = NewPPU(gb.cpu, gb.ppuBus)
+	// apu
+	gb.apu = NewAPU()
 	// cartridge
 	gb.cartridge = NewCartridge("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms", romName)
 	gb.cpuBus.AttachMemory("Cartridge ROM", 0x0000, gb.cartridge.rom)
@@ -43,3 +45,5 @@ func (gb *Gameboy) initTimer() {
 	gb.crystal = NewTimer(CRYSTAL_FREQUENCY)
 	gb.crystal.Subscribe(gb)
 }
+
+// TODO: initialize the joypad channel to listen to incoming joypad events from user

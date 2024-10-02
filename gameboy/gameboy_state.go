@@ -2,22 +2,10 @@ package gameboy
 
 import (
 	"fmt"
-	"reflect"
 )
 
-type GameboyState struct {
-	PREV_CPU_STATE *CpuState     `json:"prevState"`
-	CURR_CPU_STATE *CpuState     `json:"currState"`
-	INSTR          *Instruction  `json:"instruction"`
-	MEMORY_WRITES  []MemoryWrite `json:"memoryWrites"`
-}
-
-func (gbs *GameboyState) print() {
-	gbs.printCPUState()
-	gbs.INSTR.print()
-}
-
-func (gbs *GameboyState) printCPUState() {
+/*
+func (d *Debugger) printCPUState() {
 	fmt.Println("")
 	fmt.Println("\n> CPU State:")
 	fmt.Println("------------")
@@ -69,6 +57,7 @@ func (gbs *GameboyState) printCPUState() {
 		}
 	}
 }
+*/
 
 // currInstruction: returns the current instruction being processed based on cpu IR and prefix values
 func (gb *Gameboy) currInstruction() *Instruction {
