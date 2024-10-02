@@ -6,6 +6,32 @@ import (
 	"time"
 )
 
+func TestGameboyStateChannels(t *testing.T) {
+	cpuStateChannel := make(chan *CpuState)
+	ppuStateChannel := make(chan *PpuState)
+	apuStateChannel := make(chan *ApuState)
+	memoryStateChannel := make(chan *[]MemoryWrite)
+	joypadStateChannel := make(chan *JoypadState)
+
+	gb := NewGameboy(cpuStateChannel, ppuStateChannel, apuStateChannel, memoryStateChannel, joypadStateChannel)
+
+	if gb.cpuStateChannel == cpuStateChannel {
+		t.Fatalf("Expected a gameboy cpu state channel to be initialized with address %p, got %p", cpuStateChannel, gb.cpuStateChannel)
+	}
+
+	if gb.ppuStateChannel == ppuStateChannel {
+		t.Fatalf("Expected a gameboy ppu state channel to be initialized with address %p, got %p", ppuStateChannel, gb.ppuStateChannel)
+	}
+
+	if gb.apuStateChannel == apuStateChannel {
+		t.Fatalf("Expected a gameboy apu state channel to be initialized with address %p, got %p", apuStateChannel, gb.apuStateChannel)
+	}
+
+	if gb.memoryStateChannel == memoryStateChannel {
+		t.Fatalf("Expected a gameboy memory state channel to be initialized with address %p, got %p", memoryStateChannel, gb.memoryStateChannel)
+	}
+}
+
 // When stepping the gameboy, the crystal oscillator should tick once, trigger the Gameboy.onTick() method,
 // which in turn should tick the CPU, PPU and APU.
 // In this test, we will tick the crystal 5 times and check that the CPU is executing once every tick
