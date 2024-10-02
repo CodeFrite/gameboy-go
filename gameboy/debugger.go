@@ -61,7 +61,7 @@ func NewDebugger(
 		clientCpuStateChannel:     cpuStateChannel,
 		clientPpuStateChannel:     ppuStateChannel,
 		clientApuStateChannel:     apuStateChannel,
-		clientMemoryStateChannel:  gameboyMemoryStateChannel,
+		clientMemoryStateChannel:  memoryStateChannel,
 		clientJoypadStateChannel:  joypadStateChannel,
 		gameboyCpuStateChannel:    gameboyCpuStateChannel,
 		gameboyPpuStateChannel:    gameboyPpuStateChannel,
