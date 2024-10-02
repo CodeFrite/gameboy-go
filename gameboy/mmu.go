@@ -69,6 +69,10 @@ func NewMMU() *MMU {
 	}
 }
 
+func (m *MMU) getMemoryWrites() *[]MemoryWrite {
+	return &m.memoryWrites
+}
+
 // add a memory write to the memory writes
 func (m *MMU) addMemoryWrite(memoryWrite MemoryWrite) {
 	m.memoryWrites = append(m.memoryWrites, memoryWrite)
