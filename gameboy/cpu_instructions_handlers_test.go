@@ -198,7 +198,7 @@ func compareCpuState(mem1 *CpuState, mem2 *CpuState) []string {
 		fieldName := typeOfS.Field(i).Name
 		val1 := v1.Field(i).Interface()
 		val2 := v2.Field(i).Interface()
-		if fieldName != "INSTR" && val1 != val2 {
+		if fieldName != "INSTRUCTION" && val1 != val2 {
 			result = append(result, fieldName)
 		}
 	}
