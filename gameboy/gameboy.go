@@ -54,7 +54,6 @@ func (gb *Gameboy) Step() {
 
 // the gameboy ticks in parallel the cpu, ppu and apu and wait for these calls all to end using a wait group
 func (gb *Gameboy) onTick() {
-	gb.ticks++
 	// wait group to wait for all goroutines to finish
 	var wg sync.WaitGroup
 	// tick the cpu 1 out of 3 ticks
@@ -97,4 +96,5 @@ func (gb *Gameboy) onTick() {
 	if gb.memoryStateChannel != nil {
 		gb.memoryStateChannel <- gb.cpuBus.mmu.getMemoryWrites()
 	}
+	gb.ticks++
 }

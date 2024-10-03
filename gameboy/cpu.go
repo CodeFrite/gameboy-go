@@ -313,6 +313,9 @@ func (c *CPU) Step() error {
 		return nil
 	}
 
+	// clear memory writes
+	c.bus.mmu.clearMemoryWrites()
+
 	// update the pc and reset the offset
 	c.updatepc()
 	c.offset = 0
