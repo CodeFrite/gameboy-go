@@ -82,7 +82,7 @@ func (c *CPU) executeInstruction(instruction Instruction) {
 		if strings.HasPrefix(instruction.Mnemonic, "ILLEGAL_") {
 			c.ILLEGAL(&instruction)
 		} else {
-			err := fmt.Sprintf("Unknown instruction: 0x%02X= %s", c.ir, instruction.Mnemonic)
+			err := fmt.Sprintf("Unknown instruction: 0x%02X= %s @PC%04X", c.ir, instruction.Mnemonic, c.pc)
 			panic(err)
 		}
 	}

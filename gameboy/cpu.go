@@ -18,12 +18,19 @@ const (
 	HRAM_LEN           uint16 = 0x007F
 	IE_FLAG_START      uint16 = 0xFFFF
 	IE_FLAG_LEN        uint16 = 0x0001
+
+	CPU_EXECUTION_STATE_FREE   CPU_EXECUTION_STATE = "free"
+	CPU_EXECUTION_STATE_LOCKED CPU_EXECUTION_STATE = "locked"
 )
+
+type CPU_EXECUTION_STATE = string
 
 /*
  * CPU: executes instructions fetched from memory, reads and writes to memory (internal registers, flags & bus)
  */
 type CPU struct {
+	state CPU_EXECUTION_STATE // CPU state (locked, free)
+
 	// Work Registers (not mapped to memory)
 	pc               uint16 // Program Counter
 	sp               uint16 // Stack Pointer
@@ -62,7 +69,8 @@ func NewCPU(bus *Bus) *CPU {
 	}
 
 	cpu := &CPU{
-		bus: bus,
+		state: CPU_EXECUTION_STATE_FREE,
+		bus:   bus,
 		// on startup, simulate the CPU registers being in an unknown state
 		cpuCycles: 0,
 		pc:        0x0000, // only value set by the cpu on startup, others are randomized
@@ -265,7 +273,7 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 		} else {
 			value = c.bus.Read16(c.getHL())
 		}
-	case "sp": // always immediate
+	case "SP": // always immediate
 		value = c.sp
 	case "$00": // RST $00
 		value = 0x00
@@ -299,6 +307,7 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 // Execute one cycle of the CPU: fetch, decode and execute the next instruction
 // TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
 func (c *CPU) Step() error {
+
 	// return if the CPU is halted or stopped
 	if c.halted || c.stopped {
 		return nil
@@ -365,6 +374,13 @@ func (c *CPU) Step() error {
 
 // Run the CPU
 func (c *CPU) Run() {
+	// return if CPU is locked, otherwise lock CPU and run
+	if c.state == CPU_EXECUTION_STATE_LOCKED {
+		fmt.Println("CPU is locked")
+		return
+	} else {
+		c.state = CPU_EXECUTION_STATE_LOCKED
+	}
 	for {
 		if c.halted {
 			// if the CPU is halted, wait for an interrupt to wake it up
@@ -381,6 +397,9 @@ func (c *CPU) Run() {
 			panic(err)
 		}
 	}
+
+	// unlock the CPU
+	c.state = CPU_EXECUTION_STATE_FREE
 }
 
 // Boot the CPU and returns when the boot process is done (pc=0x0100)

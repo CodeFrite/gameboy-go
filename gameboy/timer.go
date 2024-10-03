@@ -31,7 +31,7 @@ type Timer struct {
 func NewTimer(frequency uint32) *Timer {
 	if frequency == 0 {
 		frequency = 1
-		fmt.Println("Timer> invalid frequency, reverting to default value of 1000 ms (1 Hz)")
+		fmt.Println("Timer> invalid frequency, reverting to default duration of 1000 ms (1 Hz)")
 	}
 	return &Timer{
 		Frequency:   frequency,

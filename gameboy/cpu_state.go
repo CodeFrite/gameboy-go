@@ -79,6 +79,7 @@ func (cs *CpuState) print() {
 	fmt.Printf("HL: 0x%04X\n", cs.HL)
 	fmt.Printf("PREFIXED: %t\n", cs.PREFIXED)
 	fmt.Printf("IR: 0x%02X\n", cs.IR)
+	fmt.Printf("INSTRUCTION: %s\n", cs.INSTRUCTION.Mnemonic)
 	fmt.Printf("OPERAND_VALUE: 0x%02X\n", cs.OPERAND_VALUE)
 	fmt.Printf("IE: 0x%02X\n", cs.IE)
 	fmt.Printf("IME: %t\n", cs.IME)

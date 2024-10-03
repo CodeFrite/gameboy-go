@@ -1,5 +1,7 @@
 package gameboy
 
+import "fmt"
+
 // the interrupt struct is used to pass information about the interrupt to the subscribers
 type Interrupt struct {
 	_type   uint8
@@ -74,7 +76,14 @@ func (cpu *CPU) onVBlankInterrupt(interrupt Interrupt) {
 
 // Synchronizable interface implementation
 func (cpu *CPU) onTick() {
-	// TODO: I will certainly need to %3 the tick since i fetch decode and execute in 1 cycle
+	// return if CPU is locked, otherwise lock CPU and run
+	if cpu.state == CPU_EXECUTION_STATE_LOCKED {
+		fmt.Println("CPU is locked")
+		return
+	} else {
+		cpu.state = CPU_EXECUTION_STATE_LOCKED
+	}
+
 	// check if the CPU is halted
 	if cpu.halted {
 		// check if the interrupt master enable flag is set
@@ -85,6 +94,9 @@ func (cpu *CPU) onTick() {
 	} else {
 		cpu.Step()
 	}
+
+	// unlock the CPU
+	cpu.state = CPU_EXECUTION_STATE_FREE
 }
 
 func (cpu *CPU) onLCDInterrupt(interrupt Interrupt) {

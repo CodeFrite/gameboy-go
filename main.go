@@ -15,7 +15,7 @@ func main() {
 	db := gameboy.NewDebugger(nil, nil, nil, nil, nil) // TODO: pass a cpu state channel
 
 	// Initialize the Debugger with the ROM
-	db.Init("Tetris.gb")
+	db.LoadRom("Tetris.gb")
 
 	// main loop that asks the user to either if he wants to run, step, pause, add a breakpoint, delete a breakpoint, print the state or exit the debugger
 	exit := false

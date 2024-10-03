@@ -7,6 +7,7 @@ import (
 // the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
 type Gameboy struct {
 	crystal   *Timer // crystal oscillator running at 4.194304MHz
+	ticks     uint64
 	cpuBus    *Bus
 	ppuBus    *Bus
 	cpu       *CPU
@@ -53,14 +54,18 @@ func (gb *Gameboy) Step() {
 
 // the gameboy ticks in parallel the cpu, ppu and apu and wait for these calls all to end using a wait group
 func (gb *Gameboy) onTick() {
+	gb.ticks++
 	// wait group to wait for all goroutines to finish
 	var wg sync.WaitGroup
-	// tick the cpu
-	wg.Add(1)
-	go func() {
-		gb.cpu.onTick()
-		wg.Done()
-	}()
+	// tick the cpu 1 out of 3 ticks
+	if gb.ticks%3 == 0 {
+		wg.Add(1)
+		go func() {
+			gb.cpu.onTick()
+			wg.Done()
+		}()
+	}
+
 	// tick the ppu
 	wg.Add(1)
 	go func() {

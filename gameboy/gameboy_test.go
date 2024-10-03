@@ -15,19 +15,19 @@ func TestGameboyStateChannels(t *testing.T) {
 
 	gb := NewGameboy(cpuStateChannel, ppuStateChannel, apuStateChannel, memoryStateChannel, joypadStateChannel)
 
-	if gb.cpuStateChannel == cpuStateChannel {
+	if gb.cpuStateChannel != cpuStateChannel {
 		t.Fatalf("Expected a gameboy cpu state channel to be initialized with address %p, got %p", cpuStateChannel, gb.cpuStateChannel)
 	}
 
-	if gb.ppuStateChannel == ppuStateChannel {
+	if gb.ppuStateChannel != ppuStateChannel {
 		t.Fatalf("Expected a gameboy ppu state channel to be initialized with address %p, got %p", ppuStateChannel, gb.ppuStateChannel)
 	}
 
-	if gb.apuStateChannel == apuStateChannel {
+	if gb.apuStateChannel != apuStateChannel {
 		t.Fatalf("Expected a gameboy apu state channel to be initialized with address %p, got %p", apuStateChannel, gb.apuStateChannel)
 	}
 
-	if gb.memoryStateChannel == memoryStateChannel {
+	if gb.memoryStateChannel != memoryStateChannel {
 		t.Fatalf("Expected a gameboy memory state channel to be initialized with address %p, got %p", memoryStateChannel, gb.memoryStateChannel)
 	}
 }
