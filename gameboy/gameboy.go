@@ -6,17 +6,18 @@ import (
 
 // the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
 type Gameboy struct {
-	crystal   *Timer // crystal oscillator running at 4.194304MHz
-	ticks     uint64
-	cpuBus    *Bus
-	ppuBus    *Bus
-	cpu       *CPU
-	ppu       *PPU
-	apu       *APU
-	vram      *Memory
-	wram      *Memory
-	cartridge *Cartridge // 0x0000-0x7FFF (32KB switchable) - Cartridge ROM
-	joypad    *Joypad
+	busyChannel chan bool
+	crystal     *Timer // crystal oscillator running at 4.194304MHz
+	ticks       uint64
+	cpuBus      *Bus
+	ppuBus      *Bus
+	cpu         *CPU
+	ppu         *PPU
+	apu         *APU
+	vram        *Memory
+	wram        *Memory
+	cartridge   *Cartridge // 0x0000-0x7FFF (32KB switchable) - Cartridge ROM
+	joypad      *Joypad
 
 	// state channels
 	cpuStateChannel    chan<- *CpuState // v0.4.0
@@ -29,6 +30,7 @@ type Gameboy struct {
 // creates a new gameboy struct
 func NewGameboy(cpuStateChannel chan<- *CpuState, ppuStateChannel chan<- *PpuState, apuStateChannel chan<- *ApuState, memoryStateChannel chan<- *[]MemoryWrite, joypadStateChannel <-chan *JoypadState) *Gameboy {
 	gb := &Gameboy{
+		busyChannel:        make(chan bool, 1),
 		cpuStateChannel:    cpuStateChannel,
 		ppuStateChannel:    ppuStateChannel,
 		apuStateChannel:    apuStateChannel,
@@ -54,6 +56,9 @@ func (gb *Gameboy) Step() {
 
 // the gameboy ticks in parallel the cpu, ppu and apu and wait for these calls all to end using a wait group
 func (gb *Gameboy) onTick() {
+	// busy channel to prevent multiple ticks at the same time
+	gb.busyChannel <- true
+
 	// wait group to wait for all goroutines to finish
 	var wg sync.WaitGroup
 	// tick the cpu 1 out of 3 ticks
@@ -97,4 +102,5 @@ func (gb *Gameboy) onTick() {
 		gb.memoryStateChannel <- gb.cpuBus.mmu.getMemoryWrites()
 	}
 	gb.ticks++
+	<-gb.busyChannel
 }
