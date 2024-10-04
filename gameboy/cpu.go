@@ -29,6 +29,9 @@ type CPU_EXECUTION_STATE = string
  * CPU: executes instructions fetched from memory, reads and writes to memory (internal registers, flags & bus)
  */
 type CPU struct {
+	// lock the CPU to prevent concurrent access
+	busyChannel chan bool
+
 	state CPU_EXECUTION_STATE // CPU state (locked, free)
 
 	// Work Registers (not mapped to memory)
@@ -69,8 +72,9 @@ func NewCPU(bus *Bus) *CPU {
 	}
 
 	cpu := &CPU{
-		state: CPU_EXECUTION_STATE_FREE,
-		bus:   bus,
+		busyChannel: make(chan bool, 1),
+		state:       CPU_EXECUTION_STATE_FREE,
+		bus:         bus,
 		// on startup, simulate the CPU registers being in an unknown state
 		cpuCycles: 0,
 		pc:        0x0000, // only value set by the cpu on startup, others are randomized

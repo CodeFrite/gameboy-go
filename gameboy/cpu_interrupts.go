@@ -77,8 +77,10 @@ func (cpu *CPU) onVBlankInterrupt(interrupt Interrupt) {
 // Synchronizable interface implementation
 func (cpu *CPU) onTick() {
 	// return if CPU is locked, otherwise lock CPU and run
+	cpu.busyChannel <- true
 	if cpu.state == CPU_EXECUTION_STATE_LOCKED {
 		fmt.Println("CPU is locked")
+		<-cpu.busyChannel
 		return
 	} else {
 		cpu.state = CPU_EXECUTION_STATE_LOCKED
@@ -94,6 +96,7 @@ func (cpu *CPU) onTick() {
 	} else {
 		cpu.Step()
 	}
+	<-cpu.busyChannel
 
 	// unlock the CPU
 	cpu.state = CPU_EXECUTION_STATE_FREE
