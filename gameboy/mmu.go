@@ -1,6 +1,7 @@
 package gameboy
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -42,13 +43,15 @@ type MemoryWrite struct {
 	Data    JSONableSlice `json:"data"`
 }
 
-/**
- * MarshalJSON is a custom JSON marshalling method for the JSONableSlice type
- * it converts the slice of uint8 to a string of comma-separated values
- */
+// MarshalJSON is a custom JSON marshalling method for the JSONableSlice type
+// It converts the slice of uint8 to a string of comma-separated values
 func (j JSONableSlice) MarshalJSON() ([]byte, error) {
-	result := strings.Join(strings.Fields(fmt.Sprintf("%d", j)), ",")
-	return []byte(result), nil
+	strValues := make([]string, len(j))
+	for i, v := range j {
+		strValues[i] = fmt.Sprintf("%d", v)
+	}
+	result := strings.Join(strValues, ",")
+	return json.Marshal(result)
 }
 
 /**
