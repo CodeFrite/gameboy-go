@@ -23,12 +23,12 @@ type Gameboy struct {
 	cpuStateChannel    chan<- *CpuState // v0.4.0
 	ppuStateChannel    chan<- *PpuState // v0.4.1
 	apuStateChannel    chan<- *ApuState // v0.4.2
+	memoryStateChannel chan<- []MemoryWrite
 	joypadStateChannel <-chan *JoypadState
-	memoryStateChannel chan<- *[]MemoryWrite
 }
 
 // creates a new gameboy struct
-func NewGameboy(cpuStateChannel chan<- *CpuState, ppuStateChannel chan<- *PpuState, apuStateChannel chan<- *ApuState, memoryStateChannel chan<- *[]MemoryWrite, joypadStateChannel <-chan *JoypadState) *Gameboy {
+func NewGameboy(cpuStateChannel chan<- *CpuState, ppuStateChannel chan<- *PpuState, apuStateChannel chan<- *ApuState, memoryStateChannel chan<- []MemoryWrite, joypadStateChannel <-chan *JoypadState) *Gameboy {
 	gb := &Gameboy{
 		busyChannel:        make(chan bool, 1),
 		cpuStateChannel:    cpuStateChannel,
@@ -99,7 +99,7 @@ func (gb *Gameboy) onTick() {
 		gb.apuStateChannel <- gb.apu.getState()
 	}
 	if gb.memoryStateChannel != nil {
-		gb.memoryStateChannel <- gb.cpuBus.mmu.getMemoryWrites()
+		gb.memoryStateChannel <- *gb.cpuBus.mmu.getMemoryWrites()
 	}
 	gb.ticks++
 	<-gb.busyChannel

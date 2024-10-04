@@ -11,7 +11,7 @@ type Debugger struct {
 	cpuStateQueue    *fifo[CpuState]
 	ppuStateQueue    *fifo[PpuState]
 	apuStateQueue    *fifo[ApuState]
-	memoryStateQueue *fifo[[]MemoryWrite]
+	memoryStateQueue fifo[[]MemoryWrite]
 	joypadStateQueue *fifo[JoypadState]
 
 	// break points
@@ -21,7 +21,7 @@ type Debugger struct {
 	clientCpuStateChannel    chan<- *CpuState // v0.4.0
 	clientPpuStateChannel    chan<- *PpuState // v0.4.1
 	clientApuStateChannel    chan<- *ApuState // v0.4.2
-	clientMemoryStateChannel chan<- *[]MemoryWrite
+	clientMemoryStateChannel chan<- []MemoryWrite
 	clientJoypadStateChannel <-chan *JoypadState
 	doneChannel              chan bool
 
@@ -29,7 +29,7 @@ type Debugger struct {
 	internalCpuStateChannel    chan *CpuState
 	internalPpuStateChannel    chan *PpuState
 	internalApuStateChannel    chan *ApuState
-	internalMemoryStateChannel chan *[]MemoryWrite
+	internalMemoryStateChannel chan []MemoryWrite
 	internalJoypadStateChannel chan *JoypadState
 }
 
@@ -40,14 +40,14 @@ func NewDebugger(
 	cpuStateChannel chan<- *CpuState,
 	ppuStateChannel chan<- *PpuState,
 	apuStateChannel chan<- *ApuState,
-	memoryStateChannel chan<- *[]MemoryWrite,
+	memoryStateChannel chan<- []MemoryWrite,
 	joypadStateChannel <-chan *JoypadState,
 ) *Debugger {
 
 	internalCpuStateChannel := make(chan *CpuState)
 	internalPpuStateChannel := make(chan *PpuState)
 	internalApuStateChannel := make(chan *ApuState)
-	internalMemoryStateChannel := make(chan *[]MemoryWrite)
+	internalMemoryStateChannel := make(chan []MemoryWrite)
 	internalJoypadStateChannel := make(chan *JoypadState)
 	doneChannel := make(chan bool)
 
@@ -64,7 +64,7 @@ func NewDebugger(
 		cpuStateQueue:              newFifo[CpuState](),
 		ppuStateQueue:              newFifo[PpuState](),
 		apuStateQueue:              newFifo[ApuState](),
-		memoryStateQueue:           newFifo[[]MemoryWrite](),
+		memoryStateQueue:           *newFifo[[]MemoryWrite](),
 		joypadStateQueue:           newFifo[JoypadState](),
 		clientCpuStateChannel:      cpuStateChannel,
 		clientPpuStateChannel:      ppuStateChannel,
@@ -133,7 +133,7 @@ func (d *Debugger) listenToGameboyState() {
 				}
 			case memoryState := <-d.internalMemoryStateChannel:
 
-				d.memoryStateQueue.push(memoryState)
+				d.memoryStateQueue.push(&memoryState)
 				if d.clientMemoryStateChannel != nil {
 					d.clientMemoryStateChannel <- memoryState
 				}

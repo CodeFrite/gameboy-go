@@ -18,7 +18,7 @@ func TestDebuggerStateChannels(t *testing.T) {
 	cpuStateChannel := make(chan *CpuState)
 	ppuStateChannel := make(chan *PpuState)
 	apuStateChannel := make(chan *ApuState)
-	memoryStateChannel := make(chan *[]MemoryWrite)
+	memoryStateChannel := make(chan []MemoryWrite)
 	joypadStateChannel := make(chan *JoypadState)
 
 	debugger := NewDebugger(cpuStateChannel, ppuStateChannel, apuStateChannel, memoryStateChannel, joypadStateChannel)
