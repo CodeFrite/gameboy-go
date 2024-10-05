@@ -96,13 +96,48 @@ func (d *Debugger) LoadRom(romName string) {
 	d.ppuStateQueue.push(initialPpuState)
 	d.apuStateQueue.push(initialApuState)
 	d.memoryStateQueue.push(initialMemoryWrites)
+}
+
+// run the next instruction and return the gameboy state
+func (d *Debugger) Step() {
+	// run the next instruction
+	d.gameboy.Step()
+
+	// add the new state to the queue and send it to the client if a channel is present
+	cpuState := <-d.internalCpuStateChannel
+	d.cpuStateQueue.push(cpuState)
+	if d.clientCpuStateChannel != nil {
+		d.clientCpuStateChannel <- cpuState
+	}
+	ppuState := <-d.internalPpuStateChannel
+	d.ppuStateQueue.push(ppuState)
+	if d.clientPpuStateChannel != nil {
+		d.clientPpuStateChannel <- ppuState
+	}
+	apuState := <-d.internalApuStateChannel
+	d.apuStateQueue.push(apuState)
+	if d.clientApuStateChannel != nil {
+		d.clientApuStateChannel <- apuState
+	}
+	memoryState := <-d.internalMemoryStateChannel
+	d.memoryStateQueue.push(&memoryState)
+	if d.clientMemoryStateChannel != nil {
+		d.clientMemoryStateChannel <- memoryState
+	}
+}
+
+// run the gameboy until a breakpoint is reached or the gameboy is halted
+func (d *Debugger) Run() chan bool {
 	d.listenToGameboyState()
+	d.gameboy.Run()
+	return d.doneChannel
 }
 
 func (d *Debugger) listenToGameboyState() {
 	// launch the debugger internal channels in a go routine to listen to the gameboy state channels
 	// TODO: add a done channel to stop the go routine
 	go func() {
+	loop:
 		for {
 			// listen to the gameboy state channels
 			select {
@@ -113,11 +148,12 @@ func (d *Debugger) listenToGameboyState() {
 					d.clientCpuStateChannel <- cpuState
 				}
 				// manage breakpoints
-				if contains(d.breakpoints, cpuState.PC) {
+				if contains(d.breakpoints, cpuState.PC) || cpuState.HALTED || cpuState.STOPPED {
 					// stop the gameboy
 
 					d.gameboy.crystal.Stop()
 					d.doneChannel <- true
+					break loop
 				}
 			case ppuState := <-d.internalPpuStateChannel:
 
@@ -145,18 +181,6 @@ func (d *Debugger) listenToGameboyState() {
 			}
 		}
 	}()
-}
-
-// run the next instruction and return the gameboy state
-func (d *Debugger) Step() {
-	// run the next instruction
-	d.gameboy.Step()
-}
-
-// run the gameboy until a breakpoint is reached or the gameboy is halted
-func (d *Debugger) Run() chan bool {
-	d.gameboy.Run()
-	return d.doneChannel
 }
 
 /**
