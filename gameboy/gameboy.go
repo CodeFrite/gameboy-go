@@ -70,12 +70,18 @@ func (gb *Gameboy) onTick() {
 		}()
 	}
 
-	// tick the ppu
-	wg.Add(1)
-	go func() {
-		gb.ppu.onTick()
-		wg.Done()
-	}()
+	// tick the ppu if FF40 bit 7 is set
+	lcdc := gb.cpu.bus.Read(0xFF40)
+	lcd_ppu_enabled := lcdc&0x80 == 0x80
+
+	if lcd_ppu_enabled {
+		wg.Add(1)
+		go func() {
+			gb.ppu.onTick()
+			wg.Done()
+		}()
+	}
+
 	// tick the apu
 	wg.Add(1)
 	go func() {
