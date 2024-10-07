@@ -128,7 +128,7 @@ func (d *Debugger) Step() {
 
 // run the gameboy until a breakpoint is reached or the gameboy is halted
 func (d *Debugger) Run() chan bool {
-	d.listenToGameboyState()
+	go d.listenToGameboyState()
 	d.gameboy.Run()
 	return d.doneChannel
 }
@@ -143,18 +143,43 @@ func (d *Debugger) listenToGameboyState() {
 			select {
 			case cpuState := <-d.internalCpuStateChannel:
 
-				d.cpuStateQueue.push(cpuState)
-				if d.clientCpuStateChannel != nil {
-					d.clientCpuStateChannel <- cpuState
-				}
 				// manage breakpoints
 				if contains(d.breakpoints, cpuState.PC) || cpuState.HALTED || cpuState.STOPPED {
-					// stop the gameboy
-
+					// stop the gameboy crystal from ticking
 					d.gameboy.crystal.Stop()
-					d.doneChannel <- true
+
+					// we must send the ppu, apu and memory states to the client
+					if d.clientPpuStateChannel != nil {
+						ppuState := <-d.internalPpuStateChannel
+						d.ppuStateQueue.push(ppuState)
+						d.clientPpuStateChannel <- ppuState
+					}
+
+					if d.clientApuStateChannel != nil {
+						apuState := <-d.internalApuStateChannel
+						d.apuStateQueue.push(apuState)
+						d.clientApuStateChannel <- apuState
+					}
+
+					if d.clientMemoryStateChannel != nil {
+						memoryState := <-d.internalMemoryStateChannel
+						d.memoryStateQueue.push(&memoryState)
+						d.clientMemoryStateChannel <- memoryState
+					}
+
+					d.cpuStateQueue.push(cpuState)
+					if d.clientCpuStateChannel != nil {
+						d.clientCpuStateChannel <- cpuState
+					}
+
 					break loop
+				} else {
+					d.cpuStateQueue.push(cpuState)
+					if d.clientCpuStateChannel != nil {
+						d.clientCpuStateChannel <- cpuState
+					}
 				}
+
 			case ppuState := <-d.internalPpuStateChannel:
 
 				d.ppuStateQueue.push(ppuState)
@@ -180,6 +205,7 @@ func (d *Debugger) listenToGameboyState() {
 				*/
 			}
 		}
+		d.doneChannel <- true
 	}()
 }
 
