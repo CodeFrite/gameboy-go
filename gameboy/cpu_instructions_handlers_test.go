@@ -1193,7 +1193,7 @@ func Test_0xF0_LDH_A__a8(t *testing.T) {
 		t.Errorf("[0xF0_LDH_A__a8_TC13_CHK_0] Error> LDH A, (a8) instruction: the program counter should have stopped at 0x0005, got 0x%04X \n", finalState.PC)
 	}
 
-	// A should be 0x77
+	// A should be 0xB5
 	if finalState.A != 0xB5 {
 		t.Errorf("[0xF0_LDH_A__a8_TC13_CHK_1] Error> LDH A, (a8) instruction: the A register should have been set to 0xB5, got 0x%02X \n", finalState.A)
 	}
@@ -1208,7 +1208,48 @@ func Test_0xF0_LDH_A__a8(t *testing.T) {
 }
 
 func Test_0xE0_LDH__a8_A(t *testing.T) {
-	t.Skip("not implemented yet")
+	preconditions()
+
+	// set flags to some arbitrary values to check if they are not impacted by the instruction
+	cpu.f = 0xE5
+
+	// set the value of A to 0xB5
+	cpu.a = 0xB5
+
+	// print A initial value
+	getCpuState().print()
+
+	// load the program into the memory
+	testData := []uint8{0x00, 0x00, 0x00, 0xE0, 0x77, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData)
+
+	//printMemoryProperties()
+
+	// run the program and control step by step the IME flag
+	cpu.Run()
+
+	// check the final state of the cpu
+	finalState := getCpuState()
+
+	finalState.print()
+
+	// program should have stopped at 0x0005
+	if finalState.PC != 0x0005 {
+		t.Errorf("[0xF0_LDH_A__a8_TC13_CHK_0] Error> LDH (a8), A instruction: the program counter should have stopped at 0x0005, got 0x%04X \n", finalState.PC)
+	}
+
+	// [FF77] should be 0xB5
+	inMemoryValue := bus.Read(0xFF77)
+	if inMemoryValue != 0xB5 {
+		t.Errorf("[0xF0_LDH__a8_A_TC13_CHK_1] Error> LDH (a8), A instruction: the memory location @0x77 should have been set to 0xB5, got 0x%02X \n", inMemoryValue)
+	}
+
+	// check if the flags are not impacted
+	if finalState.F != 0xE5 {
+		t.Errorf("[0xF0_LDH_A__a8_TC13_CHK_2] Error> LDH (a8), A instruction: the flags should not have been impacted, got 0x%02X \n", finalState.F)
+	}
+
+	postconditions()
 }
 
 /* TC14: should push the value from the source into the stack */
