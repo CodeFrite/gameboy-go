@@ -87,14 +87,17 @@ func preconditions() {
 	// create a second memory and attach it to the bus
 	memory2 = NewMemory(0xDFFF)
 	bus.AttachMemory("RAM 2", 0x2000, memory2)
-	// create a cpu
-	cpu = NewCPU(bus)
+	// create IE memory and attach it to the bus
 	ie := NewMemory(0x0001)
 	bus.AttachMemory("IE", 0xFFFF, ie)
+
+	// create a cpu
+	cpu = NewCPU(bus)
 	cpu.pc = 0x0000
 	cpu.sp = 0xFFFE
 	cpu.halted = false
 	cpu.stopped = false
+
 	// initialize the cpu states
 	cpuState := getCpuState()
 	cpuState1 = cpuState
@@ -203,6 +206,15 @@ func compareCpuState(mem1 *CpuState, mem2 *CpuState) []string {
 		}
 	}
 	return result
+}
+
+func printMemoryProperties() {
+	memoryMaps := bus.mmu.GetMemoryMaps()
+	fmt.Println("\n> Memory Mapping:")
+	fmt.Println("-----------------")
+	for _, memoryMap := range memoryMaps {
+		fmt.Printf("> Memory %s: %d bytes @ 0x%04X->0x%04X\n", memoryMap.Name, len(memoryMap.Data), memoryMap.Address, memoryMap.Address+uint16(len(memoryMap.Data))-1)
+	}
 }
 
 /* TEST CASES */
@@ -1149,8 +1161,53 @@ func TestLD(t *testing.T) {
 	t.Skip("not implemented yet")
 }
 
-/* TC13: should load the value from the source into the destination */
-func TestLDH(t *testing.T) {
+/* TC13: should load the value from the source into the destination and not impact the flags */
+func Test_0xF0_LDH_A__a8(t *testing.T) {
+	preconditions()
+
+	// print A initial value
+	getCpuState().print()
+
+	// set flags to some arbitrary values to check if they are not impacted by the instruction
+	cpu.f = 0xE5
+
+	// load the program into the memory
+	testData := []uint8{0x00, 0x00, 0x00, 0xF0, 0x77, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData)
+
+	// the instruction LDH will look @0xFF77 for the value to load into A. Let's set this value to 0xB5
+	bus.Write(0xFF77, 0xB5)
+
+	//printMemoryProperties()
+
+	// run the program and control step by step the IME flag
+	cpu.Run()
+
+	// check the final state of the cpu
+	finalState := getCpuState()
+
+	finalState.print()
+
+	// program should have stopped at 0x0005
+	if finalState.PC != 0x0005 {
+		t.Errorf("[0xF0_LDH_A__a8_TC13_CHK_0] Error> LDH A, (a8) instruction: the program counter should have stopped at 0x0005, got 0x%04X \n", finalState.PC)
+	}
+
+	// A should be 0x77
+	if finalState.A != 0xB5 {
+		t.Errorf("[0xF0_LDH_A__a8_TC13_CHK_1] Error> LDH A, (a8) instruction: the A register should have been set to 0xB5, got 0x%02X \n", finalState.A)
+	}
+
+	// check if the flags are not impacted
+	if finalState.F != 0xE5 {
+		t.Errorf("[0xF0_LDH_A__a8_TC13_CHK_2] Error> LDH A, (a8) instruction: the flags should not have been impacted, got 0x%02X \n", finalState.F)
+	}
+
+	postconditions()
+
+}
+
+func Test_0xE0_LDH__a8_A(t *testing.T) {
 	t.Skip("not implemented yet")
 }
 
