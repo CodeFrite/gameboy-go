@@ -790,9 +790,8 @@ func (c *CPU) CCF(instruction *Instruction) {
 	 flags: Z:Z N:1 H:H C:C
 */
 func (c *CPU) CP(instruction *Instruction) {
-	val := c.a - uint8(c.operand)
 	// update flags
-	if val == 0 {
+	if c.a == uint8(c.operand) {
 		c.setZFlag()
 	} else {
 		c.resetZFlag()
