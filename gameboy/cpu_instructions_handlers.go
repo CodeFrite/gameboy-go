@@ -1232,6 +1232,11 @@ func (c *CPU) SUB(instruction *Instruction) {
 	default:
 		panic("SUB: unknown operand")
 	}
+
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 func (c *CPU) SBC(instruction *Instruction) {
 	panic("SBC not implemented")
