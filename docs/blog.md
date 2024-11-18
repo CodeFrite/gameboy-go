@@ -108,6 +108,4 @@ I think that I will need to:
 
 # 08/10/2024: Reaching the logo checksum quest
 
-
-
-![alt text](image.png)
+![gameboy ui](blog_1.png)
