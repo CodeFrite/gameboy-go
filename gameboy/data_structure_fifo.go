@@ -24,6 +24,7 @@ func (n *node[T]) setNext(next *node[T]) {
 }
 
 /* FIFO STRUCT */
+const INFINITE_MAX_NODE_COUNT uint64 = 2 ^ 64 - 1
 
 // fifo is a first-in-first-out data structure with a head pointer
 // it has a limit capacity and when it is full, it will remove the oldest element
@@ -31,18 +32,19 @@ func (n *node[T]) setNext(next *node[T]) {
 // the most recent element is always at the begining of the fifo and pointed by the head
 // the oldest element points to nothing
 type fifo[T any] struct {
-	head *node[T]
+	maxNodeCount uint64
+	head         *node[T]
 }
 
-func newFifo[T any]() *fifo[T] {
-	return &fifo[T]{head: nil}
+func newFifo[T any](maxNodeCount uint64) *fifo[T] {
+	return &fifo[T]{head: nil, maxNodeCount: maxNodeCount}
 }
 
 func (f *fifo[T]) push(value *T) {
 	// the new node become the one the head is pointing to
 	saveHead := f.head
 	f.head = newNode(value, saveHead)
-	if f.len() > STATE_QUEUE_MAX_LENGTH {
+	if uint64(f.len()) > f.maxNodeCount {
 		// remove the oldest element
 		f.pop()
 	}

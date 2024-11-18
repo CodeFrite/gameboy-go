@@ -14,6 +14,9 @@ type Debugger struct {
 	memoryStateQueue fifo[[]MemoryWrite]
 	joypadStateQueue *fifo[JoypadState]
 
+	// queue of program counter positions to render a diagram of the program flow
+	programFlow *fifo[uint16]
+
 	// break points
 	breakpoints []uint16 // list of breakpoints addresses set by the user to pause the execution with a maximum of 100 breakpoints
 
@@ -61,11 +64,12 @@ func NewDebugger(
 
 	return &Debugger{
 		gameboy:                    gb,
-		cpuStateQueue:              newFifo[CpuState](),
-		ppuStateQueue:              newFifo[PpuState](),
-		apuStateQueue:              newFifo[ApuState](),
-		memoryStateQueue:           *newFifo[[]MemoryWrite](),
-		joypadStateQueue:           newFifo[JoypadState](),
+		programFlow:                newFifo[uint16](INFINITE_MAX_NODE_COUNT),
+		cpuStateQueue:              newFifo[CpuState](STATE_QUEUE_MAX_LENGTH),
+		ppuStateQueue:              newFifo[PpuState](STATE_QUEUE_MAX_LENGTH),
+		apuStateQueue:              newFifo[ApuState](STATE_QUEUE_MAX_LENGTH),
+		memoryStateQueue:           *newFifo[[]MemoryWrite](STATE_QUEUE_MAX_LENGTH),
+		joypadStateQueue:           newFifo[JoypadState](STATE_QUEUE_MAX_LENGTH),
 		clientCpuStateChannel:      cpuStateChannel,
 		clientPpuStateChannel:      ppuStateChannel,
 		clientApuStateChannel:      apuStateChannel,
@@ -92,6 +96,7 @@ func (d *Debugger) LoadRom(romName string) {
 	initialMemoryWrites := &d.gameboy.cpuBus.mmu.memoryWrites
 
 	// save the initial state
+	d.programFlow.push(&initialCpuState.PC)
 	d.cpuStateQueue.push(initialCpuState)
 	d.ppuStateQueue.push(initialPpuState)
 	d.apuStateQueue.push(initialApuState)
@@ -106,6 +111,7 @@ func (d *Debugger) Step() {
 	// add the new state to the queue and send it to the client if a channel is present
 	cpuState := <-d.internalCpuStateChannel
 	d.cpuStateQueue.push(cpuState)
+	d.programFlow.push(&cpuState.PC)
 	if d.clientCpuStateChannel != nil {
 		d.clientCpuStateChannel <- cpuState
 	}
@@ -168,6 +174,7 @@ func (d *Debugger) listenToGameboyState() {
 					}
 
 					d.cpuStateQueue.push(cpuState)
+					d.programFlow.push(&cpuState.PC)
 					if d.clientCpuStateChannel != nil {
 						d.clientCpuStateChannel <- cpuState
 					}
@@ -175,6 +182,7 @@ func (d *Debugger) listenToGameboyState() {
 					break loop
 				} else {
 					d.cpuStateQueue.push(cpuState)
+					d.programFlow.push(&cpuState.PC)
 					if d.clientCpuStateChannel != nil {
 						d.clientCpuStateChannel <- cpuState
 					}
