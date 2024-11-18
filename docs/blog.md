@@ -105,3 +105,9 @@ I think that I will need to:
 - I added a unit test for the JR instruction 
 - I added a unit test for the RET instruction
 - I added a unit test for the RETI instruction
+
+# 08/10/2024: Reaching the logo checksum quest
+
+
+
+![alt text](image.png)
