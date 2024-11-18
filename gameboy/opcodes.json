@@ -618,7 +618,7 @@
       "cycles": [12, 8],
       "operands": [
         {
-          "name": "NZ",
+          "name": "flag_NZ",
           "immediate": true
         },
         {
@@ -777,7 +777,7 @@
       "cycles": [12, 8],
       "operands": [
         {
-          "name": "Z",
+          "name": "flag_Z",
           "immediate": true
         },
         {
@@ -935,7 +935,7 @@
       "cycles": [12, 8],
       "operands": [
         {
-          "name": "NC",
+          "name": "flag_NC",
           "immediate": true
         },
         {
@@ -1094,7 +1094,7 @@
       "cycles": [12, 8],
       "operands": [
         {
-          "name": "C",
+          "name": "flag_C",
           "immediate": true
         },
         {
@@ -4059,7 +4059,7 @@
       "cycles": [20, 8],
       "operands": [
         {
-          "name": "NZ",
+          "name": "flag_NZ",
           "immediate": true
         }
       ],
@@ -4095,7 +4095,7 @@
       "cycles": [16, 12],
       "operands": [
         {
-          "name": "NZ",
+          "name": "flag_NZ",
           "immediate": true
         },
         {
@@ -4137,7 +4137,7 @@
       "cycles": [24, 12],
       "operands": [
         {
-          "name": "NZ",
+          "name": "flag_NZ",
           "immediate": true
         },
         {
@@ -4219,7 +4219,7 @@
       "cycles": [20, 8],
       "operands": [
         {
-          "name": "Z",
+          "name": "flag_Z",
           "immediate": true
         }
       ],
@@ -4250,7 +4250,7 @@
       "cycles": [16, 12],
       "operands": [
         {
-          "name": "Z",
+          "name": "flag_Z",
           "immediate": true
         },
         {
@@ -4286,7 +4286,7 @@
       "cycles": [24, 12],
       "operands": [
         {
-          "name": "Z",
+          "name": "flag_Z",
           "immediate": true
         },
         {
@@ -4369,7 +4369,7 @@
       "cycles": [20, 8],
       "operands": [
         {
-          "name": "NC",
+          "name": "flag_NC",
           "immediate": true
         }
       ],
@@ -4405,7 +4405,7 @@
       "cycles": [16, 12],
       "operands": [
         {
-          "name": "NC",
+          "name": "flag_NC",
           "immediate": true
         },
         {
@@ -4441,7 +4441,7 @@
       "cycles": [24, 12],
       "operands": [
         {
-          "name": "NC",
+          "name": "flag_NC",
           "immediate": true
         },
         {
@@ -4523,7 +4523,7 @@
       "cycles": [20, 8],
       "operands": [
         {
-          "name": "C",
+          "name": "flag_C",
           "immediate": true
         }
       ],
@@ -4554,7 +4554,7 @@
       "cycles": [16, 12],
       "operands": [
         {
-          "name": "C",
+          "name": "flag_C",
           "immediate": true
         },
         {
@@ -4590,7 +4590,7 @@
       "cycles": [24, 12],
       "operands": [
         {
-          "name": "C",
+          "name": "flag_C",
           "immediate": true
         },
         {

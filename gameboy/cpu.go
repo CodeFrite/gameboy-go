@@ -257,7 +257,6 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 		} else {
 			panic("Non immediate operand not implemented yet")
 		}
-
 	case "BC":
 		if operand.Immediate {
 			value = c.getBC()
@@ -294,12 +293,32 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 		value = 0x30
 	case "$38": // RST $38
 		value = 0x38
-	case "Z":
-		value = uint16(c.f & 0x80)
-	case "NZ":
-		value = uint16(c.f & 0x80)
-	case "NC":
-		value = uint16(c.f & 0x10)
+
+	// flags
+	case "flag_Z":
+		if c.getZFlag() {
+			value = uint16(1)
+		} else {
+			value = uint16(0)
+		}
+	case "flag_NZ":
+		if c.getZFlag() {
+			value = uint16(1)
+		} else {
+			value = uint16(0)
+		}
+	case "flag_C":
+		if c.getCFlag() {
+			value = uint16(1)
+		} else {
+			value = uint16(0)
+		}
+	case "flag_NC":
+		if c.getCFlag() {
+			value = uint16(1)
+		} else {
+			value = uint16(0)
+		}
 	default:
 		err := fmt.Sprintf("cpu.fetchOperandValue> Unknown operand name: %s (0x%02X)", operand.Name, c.ir)
 		panic(err)
