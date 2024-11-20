@@ -2640,9 +2640,1655 @@ func TestAND(t *testing.T) {
 	t.Skip("not implemented yet")
 }
 
-// INC: should increment the value of the destination
+// INC: Increment register or memory @[HL]
+// opcodes:
+//   - 0x3C=INC A
+//   - 0x04=INC B
+//   - 0x0C=INC C
+//   - 0x14=INC D
+//   - 0x1C=INC E
+//   - 0x24=INC H
+//   - 0x2C=INC L
+//   - 0x34=INC [HL]
+//   - 0x03=INC BC
+//   - 0x13=INC DE
+//   - 0x23=INC HL
+//   - 0x33=INC SP
+//
+// flags: Z:Z N:0 H:H C:-
 func TestINC(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0x3C: INC A", test_0x3C_INC_A)
+	t.Run("0x04: INC B", test_0x04_INC_B)
+	t.Run("0x0C: INC C", test_0x0C_INC_C)
+	t.Run("0x14: INC D", test_0x14_INC_D)
+	t.Run("0x1C: INC E", test_0x1C_INC_E)
+	t.Run("0x24: INC H", test_0x24_INC_H)
+	t.Run("0x2C: INC L", test_0x2C_INC_L)
+	t.Run("0x34: INC [HL]", test_0x34_INC_HL)
+	t.Run("0x03: INC BC", test_0x03_INC_BC)
+	t.Run("0x13: INC DE", test_0x13_INC_DE)
+	t.Run("0x23: INC HL", test_0x23_INC_HL)
+	t.Run("0x33: INC SP", test_0x33_INC_SP)
+}
+func test_0x3C_INC_A(t *testing.T) {
+	// TC 1: increment register A 6 times from 0x71 to 0x77 and stop @0x0006
+	preconditions()
+
+	cpu.a = 0x0071
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x3C, 0x3C, 0x3C, 0x3C, 0x3C, 0x3C, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x3C_INC_A] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register A = 0x77
+	if cpu.a != 0x77 {
+		t.Errorf("[test_0x3C_INC_A] Error> the value of register A should have been set to 0x77, got 0x%02X \n", cpu.a)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register A from 0x0F to 0x10 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.a = 0x000F
+
+	testData2 := []uint8{0x3C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x3C_INC_A] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value at [HL] = 0x10
+	if cpu.a != 0x10 {
+		t.Errorf("[test_0x3C_INC_A] Error> the value of register A should have been set to 0x10, got 0x%02X \n", cpu.a)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing [HL] from 0xFF to 0x00 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.a = 0x00FF
+
+	testData3 := []uint8{0x3C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x3C_INC_A] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register A = 0x00
+	if cpu.a != 0x00 {
+		t.Errorf("[test_0x3C_INC_A] Error> the valueof register A should have been set to 0x00, got 0x%02X \n", cpu.a)
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x3C_INC_A] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x04_INC_B(t *testing.T) {
+	// TC 1: increment register B 6 times from 0x71 to 0x77 and stop @0x0006
+	preconditions()
+
+	cpu.b = 0x0071
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x04_INC_B] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register B = 0x77
+	if cpu.b != 0x77 {
+		t.Errorf("[test_0x04_INC_B] Error> the value of register B should have been set to 0x77, got 0x%02X \n", cpu.b)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register B from 0x0F to 0x10 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.b = 0x000F
+
+	testData2 := []uint8{0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x04_INC_B] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register B = 0x10
+	if cpu.b != 0x10 {
+		t.Errorf("[test_0x04_INC_B] Error> the value of register B should have been set to 0x10, got 0x%02X \n", cpu.b)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register B from 0xFF to 0x00 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.b = 0x00FF
+
+	testData3 := []uint8{0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x04_INC_B] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register B = 0x00
+	if cpu.b != 0x00 {
+		t.Errorf("[test_0x04_INC_B] Error> the valueof register B should have been set to 0x00, got 0x%02X \n", cpu.b)
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x04_INC_B] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x0C_INC_C(t *testing.T) {
+	// TC 1: increment register C 6 times from 0x71 to 0x77 and stop @0x0006
+	preconditions()
+
+	cpu.c = 0x0071
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x0C_INC_C] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register C = 0x77
+	if cpu.c != 0x77 {
+		t.Errorf("[test_0x0C_INC_C] Error> the value of register C should have been set to 0x77, got 0x%02X \n", cpu.c)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register C from 0x0F to 0x10 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.c = 0x000F
+
+	testData2 := []uint8{0x0C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x0C_INC_C] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register C = 0x10
+	if cpu.c != 0x10 {
+		t.Errorf("[test_0x0C_INC_C] Error> the value of register C should have been set to 0x10, got 0x%02X \n", cpu.c)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register C from 0xFF to 0x00 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.c = 0x00FF
+
+	testData3 := []uint8{0x0C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x0C_INC_C] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register C = 0x00
+	if cpu.c != 0x00 {
+		t.Errorf("[test_0x0C_INC_C] Error> the valueof register C should have been set to 0x00, got 0x%02X \n", cpu.c)
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x0C_INC_C] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x14_INC_D(t *testing.T) {
+	// TC 1: increment register D 6 times from 0x71 to 0x77 and stop @0x0006
+	preconditions()
+
+	cpu.d = 0x0071
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x14_INC_D] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register D = 0x77
+	if cpu.d != 0x77 {
+		t.Errorf("[test_0x14_INC_D] Error> the value of register D should have been set to 0x77, got 0x%02X \n", cpu.d)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register D from 0x0F to 0x10 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.d = 0x000F
+
+	testData2 := []uint8{0x14, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x14_INC_D] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register D = 0x10
+	if cpu.d != 0x10 {
+		t.Errorf("[test_0x14_INC_D] Error> the value of register D should have been set to 0x10, got 0x%02X \n", cpu.d)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register D from 0xFF to 0x00 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.d = 0x00FF
+
+	testData3 := []uint8{0x14, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x14_INC_D] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register D = 0x00
+	if cpu.d != 0x00 {
+		t.Errorf("[test_0x14_INC_D] Error> the valueof register D should have been set to 0x00, got 0x%02X \n", cpu.d)
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x14_INC_D] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x1C_INC_E(t *testing.T) {
+	// TC 1: increment register E 6 times from 0x71 to 0x77 and stop @0x0006
+	preconditions()
+
+	cpu.e = 0x0071
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x1C_INC_E] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register E = 0x77
+	if cpu.e != 0x77 {
+		t.Errorf("[test_0x1C_INC_E] Error> the value of register E should have been set to 0x77, got 0x%02X \n", cpu.e)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register E from 0x0F to 0x10 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.e = 0x000F
+
+	testData2 := []uint8{0x1C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x1C_INC_E] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register E = 0x10
+	if cpu.e != 0x10 {
+		t.Errorf("[test_0x1C_INC_E] Error> the value of register E should have been set to 0x10, got 0x%02X \n", cpu.e)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register E from 0xFF to 0x00 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.e = 0x00FF
+
+	testData3 := []uint8{0x1C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x1C_INC_E] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register E = 0x00
+	if cpu.e != 0x00 {
+		t.Errorf("[test_0x1C_INC_E] Error> the valueof register E should have been set to 0x00, got 0x%02X \n", cpu.e)
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x1C_INC_E] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x24_INC_H(t *testing.T) {
+	// TC 1: increment register H 6 times from 0x71 to 0x77 and stop @0x0006
+	preconditions()
+
+	cpu.h = 0x0071
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x24_INC_H] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register H = 0x77
+	if cpu.h != 0x77 {
+		t.Errorf("[test_0x24_INC_H] Error> the value of register H should have been set to 0x77, got 0x%02X \n", cpu.h)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register H from 0x0F to 0x10 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.h = 0x000F
+
+	testData2 := []uint8{0x24, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x24_INC_H] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register H = 0x10
+	if cpu.h != 0x10 {
+		t.Errorf("[test_0x24_INC_H] Error> the value of register H should have been set to 0x10, got 0x%02X \n", cpu.h)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register H from 0xFF to 0x00 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.h = 0x00FF
+
+	testData3 := []uint8{0x24, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x24_INC_H] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register H = 0x00
+	if cpu.h != 0x00 {
+		t.Errorf("[test_0x24_INC_H] Error> the valueof register H should have been set to 0x00, got 0x%02X \n", cpu.h)
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x2C_INC_L(t *testing.T) {
+	// TC 1: increment register L 6 times from 0x71 to 0x77 and stop @0x0006
+	preconditions()
+
+	cpu.l = 0x0071
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x2C, 0x2C, 0x2C, 0x2C, 0x2C, 0x2C, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x2C_INC_L] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register H = 0x77
+	if cpu.l != 0x77 {
+		t.Errorf("[test_0x2C_INC_L] Error> the value of register L should have been set to 0x77, got 0x%02X \n", cpu.l)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register L from 0x0F to 0x10 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.l = 0x000F
+
+	testData2 := []uint8{0x2C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x2C_INC_L] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register H = 0x10
+	if cpu.l != 0x10 {
+		t.Errorf("[test_0x2C_INC_L] Error> the value of register L should have been set to 0x10, got 0x%02X \n", cpu.l)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register L from 0xFF to 0x00 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.l = 0x00FF
+
+	testData3 := []uint8{0x2C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x2C_INC_L] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register H = 0x00
+	if cpu.l != 0x00 {
+		t.Errorf("[test_0x2C_INC_L] Error> the valueof register L should have been set to 0x00, got 0x%02X \n", cpu.l)
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x2C_INC_L] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x24_INC_H] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x34_INC_HL(t *testing.T) {
+	// TC 1: increment [HL] 6 times from 0x71 to 0x77 and stop @0x0006
+	preconditions()
+
+	cpu.setHL(0x0007)
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x10, 0x71}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x34_INC_HL] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value at [HL] = 0x77
+	if bus.Read(0x0007) != 0x77 {
+		t.Errorf("[test_0x34_INC_HL] Error> the value at [HL] should have been set to 0x77, got 0x%02X \n", bus.Read(0x0007))
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing [HL] from 0x0F to 0x10 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.setHL(0x0007)
+
+	testData2 := []uint8{0x34, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x34_INC_HL] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value at [HL] = 0x10
+	if bus.Read(0x0007) != 0x10 {
+		t.Errorf("[test_0x34_INC_HL] Error> the value at [HL] should have been set to 0x10, got 0x%02X \n", bus.Read(0x0007))
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing [HL] from 0xFF to 0x00 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.setHL(0x0007)
+
+	testData3 := []uint8{0x34, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x34_INC_HL] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value at [HL] = 0x00
+	if bus.Read(0x0007) != 0x00 {
+		t.Errorf("[test_0x34_INC_HL] Error> the value at [HL] should have been set to 0x00, got 0x%02X \n", bus.Read(0x0007))
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x34_INC_HL] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x03_INC_BC(t *testing.T) {
+	// TC 1: increment register BC 6 times from 0xFF71 to 0xFF77 and stop @0x0006
+	preconditions()
+
+	cpu.setBC(0xFF71)
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x03_INC_BC] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register BC = 0xFF77
+	if cpu.getBC() != 0xFF77 {
+		t.Errorf("[test_0x03_INC_BC] Error> the value of register BC should have been set to 0xFF77, got 0x%04X \n", cpu.getBC())
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register BC from 0x00FF to 0x0100 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.setBC(0x00FF)
+
+	testData2 := []uint8{0x03, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x03_INC_BC] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register B = 0x0100
+	if cpu.getBC() != 0x0100 {
+		t.Errorf("[test_0x03_INC_BC] Error> the value of register BC should have been set to 0x10, got 0x%04X \n", cpu.getBC())
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register BC from 0xFFFF to 0x0000 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.setBC(0xFFFF)
+
+	testData3 := []uint8{0x03, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x03_INC_BC] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register BC = 0x0000
+	if cpu.getBC() != 0x0000 {
+		t.Errorf("[test_0x03_INC_BC] Error> the valueof register BC should have been set to 0x00, got 0x%04X \n", cpu.getBC())
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x03_INC_BC] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x13_INC_DE(t *testing.T) {
+	// TC 1: increment register DE 6 times from 0xFF71 to 0xFF77 and stop @0x0006
+	preconditions()
+
+	cpu.setDE(0xFF71)
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x13, 0x13, 0x13, 0x13, 0x13, 0x13, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x13_INC_DE] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register BC = 0xFF77
+	if cpu.getDE() != 0xFF77 {
+		t.Errorf("[test_0x13_INC_DE] Error> the value of register DE should have been set to 0xFF77, got 0x%04X \n", cpu.getDE())
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register DE from 0x00FF to 0x0100 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.setDE(0x00FF)
+
+	testData2 := []uint8{0x13, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x13_INC_DE] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register B = 0x0100
+	if cpu.getDE() != 0x0100 {
+		t.Errorf("[test_0x13_INC_DE] Error> the value of register DE should have been set to 0x10, got 0x%04X \n", cpu.getDE())
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register DE from 0xFFFF to 0x0000 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.setDE(0xFFFF)
+
+	testData3 := []uint8{0x13, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x13_INC_DE] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register BC = 0x0000
+	if cpu.getDE() != 0x0000 {
+		t.Errorf("[test_0x13_INC_DE] Error> the valueof register DE should have been set to 0x00, got 0x%04X \n", cpu.getDE())
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x13_INC_DE] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x23_INC_HL(t *testing.T) {
+	// TC 1: increment register HL 6 times from 0xFF71 to 0xFF77 and stop @0x0006
+	preconditions()
+
+	cpu.setHL(0xFF71)
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x23, 0x23, 0x23, 0x23, 0x23, 0x23, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x23_INC_HL] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register BC = 0xFF77
+	if cpu.getHL() != 0xFF77 {
+		t.Errorf("[test_0x23_INC_HL] Error> the value of register DE should have been set to 0xFF77, got 0x%04X \n", cpu.getHL())
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register HL from 0x00FF to 0x0100 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.setHL(0x00FF)
+
+	testData2 := []uint8{0x23, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x23_INC_HL] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register B = 0x0100
+	if cpu.getHL() != 0x0100 {
+		t.Errorf("[test_0x23_INC_HL] Error> the value of register HL should have been set to 0x10, got 0x%04X \n", cpu.getHL())
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register HL from 0xFFFF to 0x0000 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.setHL(0xFFFF)
+
+	testData3 := []uint8{0x23, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x23_INC_HL] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register BC = 0x0000
+	if cpu.getHL() != 0x0000 {
+		t.Errorf("[test_0x23_INC_HL] Error> the valueof register HL should have been set to 0x00, got 0x%04X \n", cpu.getHL())
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x23_INC_HL] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
+}
+func test_0x33_INC_SP(t *testing.T) {
+	// TC 1: increment register SP 6 times from 0xFF71 to 0xFF77 and stop @0x0006
+	preconditions()
+
+	cpu.sp = 0xFF71
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+
+	testData1 := []uint8{0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x10, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData1)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0006 {
+		t.Errorf("[test_0x33_INC_SP] Error> the program counter should have stopped at 0x0006, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register SP = 0xFF77
+	if cpu.sp != 0xFF77 {
+		t.Errorf("[test_0x33_INC_SP] Error> the value of register SP should have been set to 0xFF77, got 0x%04X \n", cpu.sp)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is reset
+	if cpu.getHFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the H flag should have been reset, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC2: check H flag (Z:Z N:0 H:H C:-) by incrementing register SP from 0x00FF to 0x0100 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.sp = 0x00FF
+
+	testData2 := []uint8{0x33, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData2)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x33_INC_SP] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register B = 0x0100
+	if cpu.sp != 0x0100 {
+		t.Errorf("[test_0x33_INC_SP] Error> the value of register SP should have been set to 0x10, got 0x%04X \n", cpu.sp)
+	}
+
+	// check that Z flag is not set
+	if cpu.getZFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the Z flag should have been reset, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the N flag should have been reset, got %t \n", cpu.getNFlag())
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the C flag should have been left untouched, got %t \n", cpu.getCFlag())
+	}
+
+	postconditions()
+
+	// TC3: check Z & H flags (Z:Z N:0 H:H C:-) by incrementing register SP from 0xFFFF to 0x0000 and stop @0x0001
+	preconditions()
+
+	cpu.resetZFlag()
+	cpu.setNFlag()
+	cpu.resetHFlag()
+	cpu.setCFlag()
+	cpu.sp = 0xFFFF
+
+	testData3 := []uint8{0x33, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	loadProgramIntoMemory(memory1, testData3)
+	cpu.Run()
+
+	// check the final state of the cpu
+	if cpu.pc != 0x0001 {
+		t.Errorf("[test_0x33_INC_SP] Error> the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+	}
+
+	// check if the value of register SP = 0x0000
+	if cpu.sp != 0x0000 {
+		t.Errorf("[test_0x33_INC_SP] Error> the valueof register SP should have been set to 0x00, got 0x%04X \n", cpu.sp)
+	}
+
+	// check that Z flag is set
+	if !cpu.getZFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the Z flag should have been set, got %t \n", cpu.getZFlag())
+	}
+
+	// check that N flag is reset
+	if cpu.getNFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the N flag should have been reset \n")
+	}
+
+	// check if the H flag is set
+	if !cpu.getHFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the H flag should have been set, got %t \n", cpu.getHFlag())
+	}
+
+	// check if C flag is left untouched
+	if !cpu.getCFlag() {
+		t.Errorf("[test_0x33_INC_SP] Error> the C flag should have been left untouched \n")
+	}
+	postconditions()
 }
 
 // CCF: should flip the carry flag

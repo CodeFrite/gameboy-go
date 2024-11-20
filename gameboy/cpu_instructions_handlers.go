@@ -1014,10 +1014,34 @@ func (c *CPU) DEC(instruction *Instruction) {
 
 	 flags: Z:Z N:0 H:H C:-
 */
+
+/*
+	 INC: Increment register or memory
+	 opcodes:
+	  - 0x3C=INC A
+	 	- 0x04=INC B
+		- 0x0C=INC C
+		- 0x14=INC D
+		- 0x1C=INC E
+		- 0x24=INC H
+		- 0x2C=INC L
+		- 0x34=INC [HL]
+		- 0x03=INC BC
+		- 0x13=INC DE
+		- 0x23=INC HL
+		- 0x33=INC SP
+
+	 flags: Z:Z N:0 H:H C:-
+*/
 func (c *CPU) INC(instruction *Instruction) {
+	c.resetNFlag()
+
 	switch instruction.Operands[0].Name {
 	case "A":
+		// increment value
 		c.a++
+
+		// update flags
 		if c.a == 0x00 {
 			c.setZFlag()
 		} else {
@@ -1028,10 +1052,12 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
-		// reset the N flag
-		c.resetNFlag()
+
 	case "B":
+		// increment value
 		c.b++
+
+		// update flags
 		if c.b == 0x00 {
 			c.setZFlag()
 		} else {
@@ -1042,10 +1068,12 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
-		// reset the N flag
-		c.resetNFlag()
+
 	case "C":
+		// increment value
 		c.c++
+
+		// update flags
 		if c.c == 0x00 {
 			c.setZFlag()
 		} else {
@@ -1056,10 +1084,12 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
-		// reset the N flag
-		c.resetNFlag()
+
 	case "D":
+		// increment value
 		c.d++
+
+		// update flags
 		if c.d == 0x00 {
 			c.setZFlag()
 		} else {
@@ -1070,10 +1100,12 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
-		// reset the N flag
-		c.resetNFlag()
+
 	case "E":
+		// increment value
 		c.e++
+
+		// update flags
 		if c.e == 0x00 {
 			c.setZFlag()
 		} else {
@@ -1084,10 +1116,12 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
-		// reset the N flag
-		c.resetNFlag()
+
 	case "H":
+		// increment value
 		c.h++
+
+		// update flags
 		if c.h == 0x00 {
 			c.setZFlag()
 		} else {
@@ -1098,10 +1132,12 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
-		// reset the N flag
-		c.resetNFlag()
+
 	case "L":
+		// increment value
 		c.l++
+
+		// update flags
 		if c.l == 0x00 {
 			c.setZFlag()
 		} else {
@@ -1112,12 +1148,60 @@ func (c *CPU) INC(instruction *Instruction) {
 		} else {
 			c.resetHFlag()
 		}
-		// reset the N flag
-		c.resetNFlag()
+
+	case "BC":
+		// increment value
+		val := c.getBC() + 1
+		c.setBC(val)
+
+		// update flags
+		if val == 0x0000 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (val & 0xFF) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+
+	case "DE":
+		// increment value
+		val := c.getDE() + 1
+		c.setDE(val)
+
+		// update flags
+		if val == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		if (val & 0xFF) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+
 	case "HL":
 		if instruction.Operands[0].Immediate {
-			c.setHL(c.getHL() + 1)
-		} else if instruction.Operands[0].Increment {
+			// increment value
+			val := c.getHL() + 1
+			c.setHL(val)
+
+			// update flags
+			if val == 0x00 {
+				c.setZFlag()
+			} else {
+				c.resetZFlag()
+			}
+			if (val & 0xFF) == 0x00 {
+				c.setHFlag()
+			} else {
+				c.resetHFlag()
+			}
+		} else {
+			// increment value
 			addr := c.getHL()
 			val := c.bus.Read(addr) + 1
 			err := c.bus.Write(addr, val)
@@ -1126,6 +1210,7 @@ func (c *CPU) INC(instruction *Instruction) {
 				panic(err)
 			}
 
+			// update flags
 			if val == 0x00 {
 				c.setZFlag()
 			} else {
@@ -1136,21 +1221,24 @@ func (c *CPU) INC(instruction *Instruction) {
 			} else {
 				c.resetHFlag()
 			}
-			// reset the N flag
-			c.resetNFlag()
 		}
-	case "DE":
-		if instruction.Operands[0].Immediate {
-			c.setDE(c.getDE() + 1)
-		} else if instruction.Operands[0].Increment {
-			addr := c.getDE()
-			val := c.bus.Read(addr) + 1
-			err := c.bus.Write(addr, val)
-			if err != nil {
-				fmt.Printf("\n> Panic @0x%04X\n", c.pc)
-				panic(err)
-			}
+
+	case "SP":
+		// increment value
+		c.sp++
+
+		// update flags
+		if c.sp == 0x00 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
 		}
+		if (c.sp & 0xFF) == 0x00 {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+
 	default:
 		panic(fmt.Sprintf(">> PANIC >> INC instruction: unknown operand %s", instruction.Operands[0].Name))
 	}
