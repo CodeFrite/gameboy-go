@@ -4704,8 +4704,424 @@ func TestOR(t *testing.T) {
 }
 
 // XOR: should perform a bitwise XOR between the source and the destination
+// opcodes
+// 	- 0xA8: XOR A, B
+// 	- 0xA9: XOR A, C
+// 	- 0xAA: XOR A, D
+// 	- 0xAB: XOR A, E
+// 	- 0xAC: XOR A, H
+// 	- 0xAD: XOR A, L
+// 	- 0xAE: XOR A, (HL)
+// 	- 0xAF: XOR A, A
+// 	- 0xEE: XOR A, n8
+// flags: Z:Z N:0 H:0 C:0
+
 func TestXOR(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0xA8_XOR_A_B", test_0xA8_XOR_A_B)
+	t.Run("0xA9_XOR_A_C", test_0xA9_XOR_A_C)
+	t.Run("0xAA_XOR_A_D", test_0xAA_XOR_A_D)
+	t.Run("0xAB_XOR_A_E", test_0xAB_XOR_A_E)
+	t.Run("0xAC_XOR_A_H", test_0xAC_XOR_A_H)
+	t.Run("0xAD_XOR_A_L", test_0xAD_XOR_A_L)
+	t.Run("0xAE_XOR_A_HL", test_0xAE_XOR_A_HL)
+	t.Run("0xAF_XOR_A_A", test_0xAF_XOR_A_A)
+	t.Run("0xEE_XOR_A_n8", test_0xEE_XOR_A_n8)
+}
+func test_0xA8_XOR_A_B(t *testing.T) {
+	testData := [][3]uint8{
+		{0b00000000, 0b00000000, 0b00000000},
+		{0b11111111, 0b11111111, 0b00000000},
+		{0b01010101, 0b10101010, 0b11111111},
+		{0b10101010, 0b01010101, 0b11111111},
+		{0b00001111, 0b11110000, 0b11111111},
+		{0b00001111, 0b00001111, 0b00000000},
+		{0b11110000, 0b00001111, 0b11111111},
+		{0b11110000, 0b11110000, 0b00000000},
+		{0b00110011, 0b11001100, 0b11111111},
+		{0b11001100, 0b00110011, 0b11111111},
+		{0b00110011, 0b00110011, 0b00000000},
+		{0b11001100, 0b11001100, 0b00000000},
+		{0b01101001, 0b11110100, 0b10011101},
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		cpu.f = 0xF0
+		cpu.a = data[0]
+		cpu.b = data[1]
+		expected := data[2]
+		testProgram := []uint8{0xA8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA8_XOR_A_B] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+
+		if cpu.a != expected {
+			t.Errorf("[test_0xA8_XOR_A_B] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expected, cpu.a)
+		}
+		if expected == 0x00 {
+			if cpu.f != 0x80 {
+				t.Errorf("[test_0xA8_XOR_A_B] TC%v> Expected flags to be reset except Z flag, got 0x%02X", idx, cpu.f)
+			}
+		} else {
+			if cpu.f != 0x00 {
+				t.Errorf("[test_0xA8_XOR_A_B] TC%v> Expected flags to be reset, got 0x%02X", idx, cpu.f)
+			}
+		}
+	}
+}
+func test_0xA9_XOR_A_C(t *testing.T) {
+	testData := [][3]uint8{
+		{0b00000000, 0b00000000, 0b00000000},
+		{0b11111111, 0b11111111, 0b00000000},
+		{0b01010101, 0b10101010, 0b11111111},
+		{0b10101010, 0b01010101, 0b11111111},
+		{0b00001111, 0b11110000, 0b11111111},
+		{0b00001111, 0b00001111, 0b00000000},
+		{0b11110000, 0b00001111, 0b11111111},
+		{0b11110000, 0b11110000, 0b00000000},
+		{0b00110011, 0b11001100, 0b11111111},
+		{0b11001100, 0b00110011, 0b11111111},
+		{0b00110011, 0b00110011, 0b00000000},
+		{0b11001100, 0b11001100, 0b00000000},
+		{0b01101001, 0b11110100, 0b10011101},
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		cpu.f = 0xF0
+		cpu.a = data[0]
+		cpu.c = data[1]
+		expected := data[2]
+		testProgram := []uint8{0xA9, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA9_XOR_A_C] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+
+		if cpu.a != expected {
+			t.Errorf("[test_0xA9_XOR_A_C] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expected, cpu.a)
+		}
+		if expected == 0x00 {
+			if cpu.f != 0x80 {
+				t.Errorf("[test_0xA9_XOR_A_C] TC%v> Expected flags to be reset except Z flag, got 0x%02X", idx, cpu.f)
+			}
+		} else {
+			if cpu.f != 0x00 {
+				t.Errorf("[test_0xA9_XOR_A_C] TC%v> Expected flags to be reset, got 0x%02X", idx, cpu.f)
+			}
+		}
+	}
+}
+func test_0xAA_XOR_A_D(t *testing.T) {
+	testData := [][3]uint8{
+		{0b00000000, 0b00000000, 0b00000000},
+		{0b11111111, 0b11111111, 0b00000000},
+		{0b01010101, 0b10101010, 0b11111111},
+		{0b10101010, 0b01010101, 0b11111111},
+		{0b00001111, 0b11110000, 0b11111111},
+		{0b00001111, 0b00001111, 0b00000000},
+		{0b11110000, 0b00001111, 0b11111111},
+		{0b11110000, 0b11110000, 0b00000000},
+		{0b00110011, 0b11001100, 0b11111111},
+		{0b11001100, 0b00110011, 0b11111111},
+		{0b00110011, 0b00110011, 0b00000000},
+		{0b11001100, 0b11001100, 0b00000000},
+		{0b01101001, 0b11110100, 0b10011101},
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		cpu.f = 0xF0
+		cpu.a = data[0]
+		cpu.d = data[1]
+		expected := data[2]
+		testProgram := []uint8{0xAA, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xAA_XOR_A_D] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+
+		if cpu.a != expected {
+			t.Errorf("[test_0xAA_XOR_A_D] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expected, cpu.a)
+		}
+		if expected == 0x00 {
+			if cpu.f != 0x80 {
+				t.Errorf("[test_0xAA_XOR_A_D] TC%v> Expected flags to be reset except Z flag, got 0x%02X", idx, cpu.f)
+			}
+		} else {
+			if cpu.f != 0x00 {
+				t.Errorf("[test_0xAA_XOR_A_D] TC%v> Expected flags to be reset, got 0x%02X", idx, cpu.f)
+			}
+		}
+	}
+}
+func test_0xAB_XOR_A_E(t *testing.T) {
+	testData := [][3]uint8{
+		{0b00000000, 0b00000000, 0b00000000},
+		{0b11111111, 0b11111111, 0b00000000},
+		{0b01010101, 0b10101010, 0b11111111},
+		{0b10101010, 0b01010101, 0b11111111},
+		{0b00001111, 0b11110000, 0b11111111},
+		{0b00001111, 0b00001111, 0b00000000},
+		{0b11110000, 0b00001111, 0b11111111},
+		{0b11110000, 0b11110000, 0b00000000},
+		{0b00110011, 0b11001100, 0b11111111},
+		{0b11001100, 0b00110011, 0b11111111},
+		{0b00110011, 0b00110011, 0b00000000},
+		{0b11001100, 0b11001100, 0b00000000},
+		{0b01101001, 0b11110100, 0b10011101},
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		cpu.f = 0xF0
+		cpu.a = data[0]
+		cpu.e = data[1]
+		expected := data[2]
+		testProgram := []uint8{0xAB, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xAB_XOR_A_E] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+
+		if cpu.a != expected {
+			t.Errorf("[test_0xAB_XOR_A_E] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expected, cpu.a)
+		}
+		if expected == 0x00 {
+			if cpu.f != 0x80 {
+				t.Errorf("[test_0xAB_XOR_A_E] TC%v> Expected flags to be reset except Z flag, got 0x%02X", idx, cpu.f)
+			}
+		} else {
+			if cpu.f != 0x00 {
+				t.Errorf("[test_0xAB_XOR_A_E] TC%v> Expected flags to be reset, got 0x%02X", idx, cpu.f)
+			}
+		}
+	}
+}
+func test_0xAC_XOR_A_H(t *testing.T) {
+	testData := [][3]uint8{
+		{0b00000000, 0b00000000, 0b00000000},
+		{0b11111111, 0b11111111, 0b00000000},
+		{0b01010101, 0b10101010, 0b11111111},
+		{0b10101010, 0b01010101, 0b11111111},
+		{0b00001111, 0b11110000, 0b11111111},
+		{0b00001111, 0b00001111, 0b00000000},
+		{0b11110000, 0b00001111, 0b11111111},
+		{0b11110000, 0b11110000, 0b00000000},
+		{0b00110011, 0b11001100, 0b11111111},
+		{0b11001100, 0b00110011, 0b11111111},
+		{0b00110011, 0b00110011, 0b00000000},
+		{0b11001100, 0b11001100, 0b00000000},
+		{0b01101001, 0b11110100, 0b10011101},
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		cpu.f = 0xF0
+		cpu.a = data[0]
+		cpu.h = data[1]
+		expected := data[2]
+		testProgram := []uint8{0xAC, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xAC_XOR_A_H] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+
+		if cpu.a != expected {
+			t.Errorf("[test_0xAC_XOR_A_H] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expected, cpu.a)
+		}
+		if expected == 0x00 {
+			if cpu.f != 0x80 {
+				t.Errorf("[test_0xAC_XOR_A_H] TC%v> Expected flags to be reset except Z flag, got 0x%02X", idx, cpu.f)
+			}
+		} else {
+			if cpu.f != 0x00 {
+				t.Errorf("[test_0xAC_XOR_A_H] TC%v> Expected flags to be reset, got 0x%02X", idx, cpu.f)
+			}
+		}
+	}
+}
+func test_0xAD_XOR_A_L(t *testing.T) {
+	testData := [][3]uint8{
+		{0b00000000, 0b00000000, 0b00000000},
+		{0b11111111, 0b11111111, 0b00000000},
+		{0b01010101, 0b10101010, 0b11111111},
+		{0b10101010, 0b01010101, 0b11111111},
+		{0b00001111, 0b11110000, 0b11111111},
+		{0b00001111, 0b00001111, 0b00000000},
+		{0b11110000, 0b00001111, 0b11111111},
+		{0b11110000, 0b11110000, 0b00000000},
+		{0b00110011, 0b11001100, 0b11111111},
+		{0b11001100, 0b00110011, 0b11111111},
+		{0b00110011, 0b00110011, 0b00000000},
+		{0b11001100, 0b11001100, 0b00000000},
+		{0b01101001, 0b11110100, 0b10011101},
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		cpu.f = 0xF0
+		cpu.a = data[0]
+		cpu.l = data[1]
+		expected := data[2]
+		testProgram := []uint8{0xAD, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xAD_XOR_A_L] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+
+		if cpu.a != expected {
+			t.Errorf("[test_0xAD_XOR_A_L] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expected, cpu.a)
+		}
+		if expected == 0x00 {
+			if cpu.f != 0x80 {
+				t.Errorf("[test_0xAD_XOR_A_L] TC%v> Expected flags to be reset except Z flag, got 0x%02X", idx, cpu.f)
+			}
+		} else {
+			if cpu.f != 0x00 {
+				t.Errorf("[test_0xAD_XOR_A_L] TC%v> Expected flags to be reset, got 0x%02X", idx, cpu.f)
+			}
+		}
+	}
+}
+func test_0xAE_XOR_A_HL(t *testing.T) {
+	testData := [][3]uint8{
+		{0b00000000, 0b00000000, 0b00000000},
+		{0b11111111, 0b11111111, 0b00000000},
+		{0b01010101, 0b10101010, 0b11111111},
+		{0b10101010, 0b01010101, 0b11111111},
+		{0b00001111, 0b11110000, 0b11111111},
+		{0b00001111, 0b00001111, 0b00000000},
+		{0b11110000, 0b00001111, 0b11111111},
+		{0b11110000, 0b11110000, 0b00000000},
+		{0b00110011, 0b11001100, 0b11111111},
+		{0b11001100, 0b00110011, 0b11111111},
+		{0b00110011, 0b00110011, 0b00000000},
+		{0b11001100, 0b11001100, 0b00000000},
+		{0b01101001, 0b11110100, 0b10011101},
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		cpu.f = 0xF0
+		cpu.a = data[0]
+		cpu.setHL(0x0002)
+		expected := data[2]
+		testProgram := []uint8{0xAE, 0x10, data[1]}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xAE_XOR_A_HL] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+
+		if cpu.a != expected {
+			t.Errorf("[test_0xAE_XOR_A_HL] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expected, cpu.a)
+		}
+		if expected == 0x00 {
+			if cpu.f != 0x80 {
+				t.Errorf("[test_0xAE_XOR_A_HL] TC%v> Expected flags to be reset except Z flag, got 0x%02X", idx, cpu.f)
+			}
+		} else {
+			if cpu.f != 0x00 {
+				t.Errorf("[test_0xAE_XOR_A_HL] TC%v> Expected flags to be reset, got 0x%02X", idx, cpu.f)
+			}
+		}
+	}
+}
+func test_0xAF_XOR_A_A(t *testing.T) {
+	testData := [][3]uint8{
+		{0b00000000, 0b00000000, 0b00000000},
+		{0b11111111, 0b11111111, 0b00000000},
+		{0b01010101, 0b10101010, 0b11111111},
+		{0b10101010, 0b01010101, 0b11111111},
+		{0b00001111, 0b11110000, 0b11111111},
+		{0b00001111, 0b00001111, 0b00000000},
+		{0b11110000, 0b00001111, 0b11111111},
+		{0b11110000, 0b11110000, 0b00000000},
+		{0b00110011, 0b11001100, 0b11111111},
+		{0b11001100, 0b00110011, 0b11111111},
+		{0b00110011, 0b00110011, 0b00000000},
+		{0b11001100, 0b11001100, 0b00000000},
+		{0b01101001, 0b11110100, 0b10011101},
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		cpu.f = 0xF0
+		cpu.a = data[0]
+		expected := data[2]
+		testProgram := []uint8{0xAF, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xAF_XOR_A_A] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+
+		if cpu.a != 0x00 {
+			t.Errorf("[test_0xAF_XOR_A_A] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expected, cpu.a)
+		}
+		if cpu.f != 0x80 {
+			t.Errorf("[test_0xAF_XOR_A_A] TC%v> Expected flags to be reset, got 0x%02X", idx, cpu.f)
+		}
+	}
+}
+func test_0xEE_XOR_A_n8(t *testing.T) {
+	testData := [][3]uint8{
+		{0b00000000, 0b00000000, 0b00000000},
+		{0b11111111, 0b11111111, 0b00000000},
+		{0b01010101, 0b10101010, 0b11111111},
+		{0b10101010, 0b01010101, 0b11111111},
+		{0b00001111, 0b11110000, 0b11111111},
+		{0b00001111, 0b00001111, 0b00000000},
+		{0b11110000, 0b00001111, 0b11111111},
+		{0b11110000, 0b11110000, 0b00000000},
+		{0b00110011, 0b11001100, 0b11111111},
+		{0b11001100, 0b00110011, 0b11111111},
+		{0b00110011, 0b00110011, 0b00000000},
+		{0b11001100, 0b11001100, 0b00000000},
+		{0b01101001, 0b11110100, 0b10011101},
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		cpu.f = 0xF0
+		cpu.a = data[0]
+		expected := data[2]
+		testProgram := []uint8{0xEE, data[1], 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0xEE_XOR_A_n8] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.a != expected {
+			t.Errorf("[test_0xEE_XOR_A_n8] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expected, cpu.a)
+		}
+		if expected == 0x00 {
+			if cpu.f != 0x80 {
+				t.Errorf("[test_0xEE_XOR_A_n8] TC%v> Expected flags to be reset except Z flag, got 0x%02X", idx, cpu.f)
+			}
+		} else {
+			if cpu.f != 0x00 {
+				t.Errorf("[test_0xEE_XOR_A_n8] TC%v> Expected flags to be reset, got 0x%02X", idx, cpu.f)
+			}
+		}
+	}
 }
 
 // RLA: should rotate the destination left through the carry
