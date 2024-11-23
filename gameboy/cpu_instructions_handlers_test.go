@@ -4366,9 +4366,374 @@ func TestCCF(t *testing.T) {
 	}
 }
 
-// CP: should compare the value from the source to the destination
+// CP: compare 2 memory locations and/or registers by subtracting them without storing the result
+// opcodes:
+//   - BF = CP A, A
+//   - B8 = CP A, B
+//   - B9 = CP A, C
+//   - BA = CP A, D
+//   - BB = CP A, E
+//   - BC = CP A, H
+//   - BD = CP A, L
+//   - BE = CP A, [HL]
+//   - FE = CP A, n8
+//     flags: Z:Z N:1 H:H C:C
 func TestCP(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0xBF: CP A, A", test_0xBF_CP_A_A)
+	t.Run("0xB8: CP A, B", test_0xB8_CP_A_B)
+	t.Run("0xB9: CP A, C", test_0xB9_CP_A_C)
+	t.Run("0xBA: CP A, D", test_0xBA_CP_A_D)
+	t.Run("0xBB: CP A, E", test_0xBB_CP_A_E)
+	t.Run("0xBC: CP A, H", test_0xBC_CP_A_H)
+	t.Run("0xBD: CP A, L", test_0xBD_CP_A_L)
+	t.Run("0xBE: CP A, [HL]", test_0xBE_CP_A_HL)
+	t.Run("0xFE: CP A, n8", test_0xFE_CP_A_n8)
+}
+
+type TestData_CP struct {
+	minuend    uint8
+	subtrahend uint8
+	Z          bool
+	N          bool
+	H          bool
+	C          bool
+}
+
+var testDataCP = []TestData_CP{
+	{0x00, 0x00, true, true, false, false},
+	{0x00, 0x01, false, true, true, true},
+	{0x01, 0x00, false, true, false, false},
+	{0x01, 0x01, true, true, false, false},
+	{0x10, 0x00, false, true, false, false},
+	{0x10, 0x01, false, true, true, false},
+	{0x0F, 0x01, false, true, false, false},
+	{0x0F, 0x0F, true, true, false, false},
+	{0xF0, 0x01, false, true, true, false},
+	{0xF0, 0xF0, true, true, false, false},
+	{0xFF, 0x01, false, true, false, false},
+	{0xFF, 0xFF, true, true, false, false},
+}
+
+func test_0xBF_CP_A_A(t *testing.T) {
+	for idx, data := range testDataCP {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data.minuend
+		testProgram := []uint8{0xBF, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
+		}
+		// check that register A is left untouched
+		if cpu.a != data.minuend {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the value of register A should have been left untouched, got 0x%02X \n", idx, cpu.a)
+		}
+		// check flags
+		if !cpu.getZFlag() {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the Z flag should always be set, got %t \n", idx, cpu.getZFlag())
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the N flag should always be set, got %t \n", idx, cpu.getNFlag())
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the H flag should have be reset, got %t \n", idx, cpu.getHFlag())
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the C flag should have be reset, got %t \n", idx, cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0xB8_CP_A_B(t *testing.T) {
+	for idx, data := range testDataCP {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data.minuend
+		cpu.b = data.subtrahend
+		testProgram := []uint8{0xB8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
+		}
+		// check that register A & B are left untouched
+		if cpu.a != data.minuend {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the value of register A should have been left untouched, got 0x%02X \n", idx, cpu.a)
+		}
+		if cpu.b != data.subtrahend {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the value of register B should have been left untouched, got 0x%02X \n", idx, cpu.b)
+		}
+		// check flags
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the Z flag should have been set to %t, got %t \n", idx, data.Z, cpu.getZFlag())
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the N flag should always be set, got %t \n", idx, cpu.getNFlag())
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the H flag should have been set to %t, got %t \n", idx, data.H, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0xB8_CP_A_B] %d> the C flag should have been set to %t, got %t \n", idx, data.C, cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0xB9_CP_A_C(t *testing.T) {
+	for idx, data := range testDataCP {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data.minuend
+		cpu.c = data.subtrahend
+		testProgram := []uint8{0xB9, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB9_CP_A_C] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
+		}
+		// check that register A & C are left untouched
+		if cpu.a != data.minuend {
+			t.Errorf("[test_0xB9_CP_A_C] %d> the value of register A should have been left untouched, got 0x%02X \n", idx, cpu.a)
+		}
+		if cpu.c != data.subtrahend {
+			t.Errorf("[test_0xB9_CP_A_C] %d> the value of register C should have been left untouched, got 0x%02X \n", idx, cpu.c)
+		}
+		// check flags
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0xB9_CP_A_C] %d> the Z flag should have been set to %t, got %t \n", idx, data.Z, cpu.getZFlag())
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0xB9_CP_A_C] %d> the N flag should always be set, got %t \n", idx, cpu.getNFlag())
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0xB9_CP_A_C] %d> the H flag should have been set to %t, got %t \n", idx, data.H, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0xB9_CP_A_C] %d> the C flag should have been set to %t, got %t \n", idx, data.C, cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0xBA_CP_A_D(t *testing.T) {
+	for idx, data := range testDataCP {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data.minuend
+		cpu.d = data.subtrahend
+		testProgram := []uint8{0xBA, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xBA_CP_A_D] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
+		}
+		// check that register A & D are left untouched
+		if cpu.a != data.minuend {
+			t.Errorf("[test_0xBA_CP_A_D] %d> the value of register A should have been left untouched, got 0x%02X \n", idx, cpu.a)
+		}
+		if cpu.d != data.subtrahend {
+			t.Errorf("[test_0xBA_CP_A_D] %d> the value of register D should have been left untouched, got 0x%02X \n", idx, cpu.d)
+		}
+		// check flags
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0xBA_CP_A_D] %d> the Z flag should have been set to %t, got %t \n", idx, data.Z, cpu.getZFlag())
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0xBA_CP_A_D] %d> the N flag should always be set, got %t \n", idx, cpu.getNFlag())
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0xBA_CP_A_D] %d> the H flag should have been set to %t, got %t \n", idx, data.H, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0xBA_CP_A_D] %d> the C flag should have been set to %t, got %t \n", idx, data.C, cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0xBB_CP_A_E(t *testing.T) {
+	for idx, data := range testDataCP {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data.minuend
+		cpu.e = data.subtrahend
+		testProgram := []uint8{0xBB, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xBB_CP_A_E] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
+		}
+		// check that register A & E are left untouched
+		if cpu.a != data.minuend {
+			t.Errorf("[test_0xBB_CP_A_E] %d> the value of register A should have been left untouched, got 0x%02X \n", idx, cpu.a)
+		}
+		if cpu.e != data.subtrahend {
+			t.Errorf("[test_0xBB_CP_A_E] %d> the value of register E should have been left untouched, got 0x%02X \n", idx, cpu.e)
+		}
+		// check flags
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0xBB_CP_A_E] %d> the Z flag should have been set to %t, got %t \n", idx, data.Z, cpu.getZFlag())
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0xBB_CP_A_E] %d> the N flag should always be set, got %t \n", idx, cpu.getNFlag())
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0xBB_CP_A_E] %d> the H flag should have been set to %t, got %t \n", idx, data.H, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0xBB_CP_A_E] %d> the C flag should have been set to %t, got %t \n", idx, data.C, cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0xBC_CP_A_H(t *testing.T) {
+	for idx, data := range testDataCP {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data.minuend
+		cpu.h = data.subtrahend
+		testProgram := []uint8{0xBC, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xBC_CP_A_H] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
+		}
+		// check that register A & H are left untouched
+		if cpu.a != data.minuend {
+			t.Errorf("[test_0xBC_CP_A_H] %d> the value of register A should have been left untouched, got 0x%02X \n", idx, cpu.a)
+		}
+		if cpu.h != data.subtrahend {
+			t.Errorf("[test_0xBC_CP_A_H] %d> the value of register H should have been left untouched, got 0x%02X \n", idx, cpu.h)
+		}
+		// check flags
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0xBC_CP_A_H] %d> the Z flag should have been set to %t, got %t \n", idx, data.Z, cpu.getZFlag())
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0xBC_CP_A_H] %d> the N flag should always be set, got %t \n", idx, cpu.getNFlag())
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0xBC_CP_A_H] %d> the H flag should have been set to %t, got %t \n", idx, data.H, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0xBC_CP_A_H] %d> the C flag should have been set to %t, got %t \n", idx, data.C, cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0xBD_CP_A_L(t *testing.T) {
+	for idx, data := range testDataCP {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data.minuend
+		cpu.l = data.subtrahend
+		testProgram := []uint8{0xBD, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xBD_CP_A_L] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
+		}
+		// check that register A & L are left untouched
+		if cpu.a != data.minuend {
+			t.Errorf("[test_0xBD_CP_A_L] %d> the value of register A should have been left untouched, got 0x%02X \n", idx, cpu.a)
+		}
+		if cpu.l != data.subtrahend {
+			t.Errorf("[test_0xBD_CP_A_L] %d> the value of register L should have been left untouched, got 0x%02X \n", idx, cpu.l)
+		}
+		// check flags
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0xBD_CP_A_L] %d> the Z flag should have been set to %t, got %t \n", idx, data.Z, cpu.getZFlag())
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0xBD_CP_A_L] %d> the N flag should always be set, got %t \n", idx, cpu.getNFlag())
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0xBD_CP_A_L] %d> the H flag should have been set to %t, got %t \n", idx, data.H, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0xBD_CP_A_L] %d> the C flag should have been set to %t, got %t \n", idx, data.C, cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0xBE_CP_A_HL(t *testing.T) {
+	for idx, data := range testDataCP {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data.minuend
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0xBE, 0x10, data.subtrahend}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xBE_CP_A_HL] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
+		}
+		// check that register A & [HL] are left untouched
+		if cpu.a != data.minuend {
+			t.Errorf("[test_0xBE_CP_A_HL] %d> the value of register A should have been left untouched, got 0x%02X \n", idx, cpu.a)
+		}
+		memoryLocationHLValue := cpu.bus.Read(cpu.getHL())
+		if memoryLocationHLValue != data.subtrahend {
+			t.Errorf("[test_0xBE_CP_A_HL] %d> the value of memory location [HL] should have been left untouched, got 0x%02X \n", idx, memoryLocationHLValue)
+		}
+		// check flags
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0xBE_CP_A_HL] %d> the Z flag should have been set to %t, got %t \n", idx, data.Z, cpu.getZFlag())
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0xBE_CP_A_HL] %d> the N flag should always be set, got %t \n", idx, cpu.getNFlag())
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0xBE_CP_A_HL] %d> the H flag should have been set to %t, got %t \n", idx, data.H, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0xBE_CP_A_HL] %d> the C flag should have been set to %t, got %t \n", idx, data.C, cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0xFE_CP_A_n8(t *testing.T) {
+	for idx, data := range testDataCP {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data.minuend
+		testProgram := []uint8{0xFE, data.subtrahend, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0xFE_CP_A_n8] %d> the program counter should have stopped at 0x0002, got 0x%04X \n", idx, cpu.pc)
+		}
+		// check that register A & B are left untouched
+		if cpu.a != data.minuend {
+			t.Errorf("[test_0xFE_CP_A_n8] %d> the value of register A should have been left untouched, got 0x%02X \n", idx, cpu.a)
+		}
+		n8OperandValue := cpu.bus.Read(0x0001)
+		if n8OperandValue != data.subtrahend {
+			t.Errorf("[test_0xFE_CP_A_n8] %d> the value of operand at memory location 0x0001 should have been left untouched, got 0x%02X \n", idx, n8OperandValue)
+		}
+		// check flags
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0xFE_CP_A_n8] %d> the Z flag should have been set to %t, got %t \n", idx, data.Z, cpu.getZFlag())
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0xFE_CP_A_n8] %d> the N flag should always be set, got %t \n", idx, cpu.getNFlag())
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0xFE_CP_A_n8] %d> the H flag should have been set to %t, got %t \n", idx, data.H, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0xFE_CP_A_n8] %d> the C flag should have been set to %t, got %t \n", idx, data.C, cpu.getCFlag())
+		}
+		postconditions()
+	}
 }
 
 // CPL: should flip all bits of the destination
