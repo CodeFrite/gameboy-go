@@ -982,11 +982,18 @@ func (c *CPU) DEC(instruction *Instruction) {
 		} else {
 			addr := c.getHL()
 			val := c.bus.Read(addr)
+			if val&0x0F == 0x00 {
+				c.setHFlag()
+			}
 			err := c.bus.Write(addr, val-1)
 			if err != nil {
 				fmt.Printf("\n> Panic @0x%04X\n", c.pc)
 				panic(err)
 			}
+			if val-1 == 0x00 {
+				c.setZFlag()
+			}
+			c.setNFlag()
 		}
 	case "SP":
 		c.sp = (c.sp - 1)

@@ -2,6 +2,7 @@ package gameboy
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
 	"testing"
 )
@@ -214,6 +215,33 @@ func printMemoryProperties() {
 	fmt.Println("-----------------")
 	for _, memoryMap := range memoryMaps {
 		fmt.Printf("> Memory %s: %d bytes @ 0x%04X->0x%04X\n", memoryMap.Name, len(memoryMap.Data), memoryMap.Address, memoryMap.Address+uint16(len(memoryMap.Data))-1)
+	}
+}
+
+func randomizeFlags() {
+	randomBit := rand.Intn(2)
+	if randomBit == 0 {
+		cpu.resetZFlag()
+	} else {
+		cpu.setZFlag()
+	}
+	randomBit = rand.Intn(2)
+	if randomBit == 0 {
+		cpu.resetNFlag()
+	} else {
+		cpu.setNFlag()
+	}
+	randomBit = rand.Intn(2)
+	if randomBit == 0 {
+		cpu.resetHFlag()
+	} else {
+		cpu.setHFlag()
+	}
+	randomBit = rand.Intn(2)
+	if randomBit == 0 {
+		cpu.resetCFlag()
+	} else {
+		cpu.setCFlag()
 	}
 }
 
@@ -4635,9 +4663,519 @@ func TestDAA(t *testing.T) {
 	}
 }
 
-// DEC: should decrement the value of the destination
+// DEC: should decrement the value of the destination (register or memory)
+// opcodes:
+//	- 0x3D=DEC A
+//	- 0x05=DEC B
+//	- 0x0D=DEC C
+//	- 0x15=DEC D
+//	- 0x1D=DEC E
+//	- 0x25=DEC H
+//	- 0x2D=DEC L
+//	- 0x35=DEC [HL]
+// flags: Z:Z N:1 H:H C:-
+
+// - 0x0B=DEC BC
+// - 0x1B=DEC DE
+// - 0x2B=DEC HL
+// - 0x3B=DEC SP
+// flags: Z:- N:- H:- C:-
 func TestDEC(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0x3D_DEC_A", test_0x3D_DEC_A)
+	t.Run("0x05_DEC_B", test_0x05_DEC_B)
+	t.Run("0x0D_DEC_C", test_0x0D_DEC_C)
+	t.Run("0x15_DEC_D", test_0x15_DEC_D)
+	t.Run("0x1D_DEC_E", test_0x1D_DEC_E)
+	t.Run("0x25_DEC_H", test_0x25_DEC_H)
+	t.Run("0x2D_DEC_L", test_0x2D_DEC_L)
+	t.Run("0x35_DEC_HL", test_0x35_DEC_HL)
+	t.Run("0x0B_DEC_BC", test_0x0B_DEC_BC)
+	t.Run("0x1B_DEC_DE", test_0x1B_DEC_DE)
+	t.Run("0x2B_DEC_HL", test_0x2B_DEC_HL)
+	t.Run("0x3B_DEC_SP", test_0x3B_DEC_SP)
+}
+
+type TestData_DEC_8bit struct {
+	initialValue  uint8
+	expectedValue uint8
+	Z             bool
+	N             bool
+	H             bool
+	C             bool
+}
+
+var testData_DEC_8bit = []TestData_DEC_8bit{
+	{
+		initialValue:  0x00,
+		expectedValue: 0xFF,
+		Z:             false,
+		N:             true,
+		H:             true,
+		C:             false,
+	},
+	{
+		initialValue:  0x01,
+		expectedValue: 0x00,
+		Z:             true,
+		N:             true,
+		H:             false,
+		C:             true,
+	},
+	{
+		initialValue:  0x10,
+		expectedValue: 0x0F,
+		Z:             false,
+		N:             true,
+		H:             true,
+		C:             false,
+	},
+	{
+		initialValue:  0x0F,
+		expectedValue: 0x0E,
+		Z:             false,
+		N:             true,
+		H:             false,
+		C:             true,
+	},
+	{
+		initialValue:  0xF0,
+		expectedValue: 0xEF,
+		Z:             false,
+		N:             true,
+		H:             true,
+		C:             false,
+	},
+	{
+		initialValue:  0xFF,
+		expectedValue: 0xFE,
+		Z:             false,
+		N:             true,
+		H:             false,
+		C:             true,
+	},
+}
+
+func test_0x3D_DEC_A(t *testing.T) {
+	for idx, data := range testData_DEC_8bit {
+		preconditions()
+		cpu.f = 0x00
+		if data.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		cpu.a = data.initialValue
+		testProgram := []uint8{0x3D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x3D_DEC_A] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.a != data.expectedValue {
+			t.Errorf("[test_0x3D_DEC_A] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.a)
+		}
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0x3D_DEC_A] TC%v> Expected Z flag to be %t", idx, data.Z)
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0x3D_DEC_A] TC%v> Expected N flag to be %t", idx, data.N)
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0x3D_DEC_A] TC%v> Expected H flag to be %t", idx, data.H)
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0x3D_DEC_A] TC%v> Expected C flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x05_DEC_B(t *testing.T) {
+	for idx, data := range testData_DEC_8bit {
+		preconditions()
+		cpu.f = 0x00
+		if data.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		cpu.b = data.initialValue
+		testProgram := []uint8{0x05, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x05_DEC_B] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.b != data.expectedValue {
+			t.Errorf("[test_0x05_DEC_B] TC%v> Expected B to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.b)
+		}
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0x05_DEC_B] TC%v> Expected Z flag to be %t", idx, data.Z)
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0x05_DEC_B] TC%v> Expected N flag to be %t", idx, data.N)
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0x05_DEC_B] TC%v> Expected H flag to be %t", idx, data.H)
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0x05_DEC_B] TC%v> Expected C flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x0D_DEC_C(t *testing.T) {
+	for idx, data := range testData_DEC_8bit {
+		preconditions()
+		cpu.f = 0x00
+		if data.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		cpu.c = data.initialValue
+		testProgram := []uint8{0x0D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x0D_DEC_C] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.c != data.expectedValue {
+			t.Errorf("[test_0x0D_DEC_C] TC%v> Expected C to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.c)
+		}
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0x0D_DEC_C] TC%v> Expected Z flag to be %t", idx, data.Z)
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0x0D_DEC_C] TC%v> Expected N flag to be %t", idx, data.N)
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0x0D_DEC_C] TC%v> Expected H flag to be %t", idx, data.H)
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0x0D_DEC_C] TC%v> Expected C flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x15_DEC_D(t *testing.T) {
+	for idx, data := range testData_DEC_8bit {
+		preconditions()
+		cpu.f = 0x00
+		if data.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		cpu.d = data.initialValue
+		testProgram := []uint8{0x15, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x15_DEC_D] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.d != data.expectedValue {
+			t.Errorf("[test_0x15_DEC_D] TC%v> Expected D to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.d)
+		}
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0x15_DEC_D] TC%v> Expected Z flag to be %t", idx, data.Z)
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0x15_DEC_D] TC%v> Expected N flag to be %t", idx, data.N)
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0x15_DEC_D] TC%v> Expected H flag to be %t", idx, data.H)
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0x15_DEC_D] TC%v> Expected C flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x1D_DEC_E(t *testing.T) {
+	for idx, data := range testData_DEC_8bit {
+		preconditions()
+		cpu.f = 0x00
+		if data.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		cpu.e = data.initialValue
+		testProgram := []uint8{0x1D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x1D_DEC_E] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.e != data.expectedValue {
+			t.Errorf("[test_0x1D_DEC_E] TC%v> Expected E to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.e)
+		}
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0x1D_DEC_E] TC%v> Expected Z flag to be %t", idx, data.Z)
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0x1D_DEC_E] TC%v> Expected N flag to be %t", idx, data.N)
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0x1D_DEC_E] TC%v> Expected H flag to be %t", idx, data.H)
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0x1D_DEC_E] TC%v> Expected C flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x25_DEC_H(t *testing.T) {
+	for idx, data := range testData_DEC_8bit {
+		preconditions()
+		cpu.f = 0x00
+		if data.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		cpu.h = data.initialValue
+		testProgram := []uint8{0x25, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x25_DEC_H] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.h != data.expectedValue {
+			t.Errorf("[test_0x25_DEC_H] TC%v> Expected H to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.h)
+		}
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0x25_DEC_H] TC%v> Expected Z flag to be %t", idx, data.Z)
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0x25_DEC_H] TC%v> Expected N flag to be %t", idx, data.N)
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0x25_DEC_H] TC%v> Expected H flag to be %t", idx, data.H)
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0x25_DEC_H] TC%v> Expected C flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x2D_DEC_L(t *testing.T) {
+	for idx, data := range testData_DEC_8bit {
+		preconditions()
+		cpu.f = 0x00
+		if data.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		cpu.l = data.initialValue
+		testProgram := []uint8{0x2D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x2D_DEC_L] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.l != data.expectedValue {
+			t.Errorf("[test_0x2D_DEC_L] TC%v> Expected L to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.l)
+		}
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0x2D_DEC_L] TC%v> Expected Z flag to be %t", idx, data.Z)
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0x2D_DEC_L] TC%v> Expected N flag to be %t", idx, data.N)
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0x2D_DEC_L] TC%v> Expected H flag to be %t", idx, data.H)
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0x2D_DEC_L] TC%v> Expected C flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x35_DEC_HL(t *testing.T) {
+	for idx, data := range testData_DEC_8bit {
+		preconditions()
+		cpu.f = 0x00
+		if data.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0x35, 0x10, data.initialValue}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x35_DEC_HL] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data.expectedValue {
+			t.Errorf("[test_0x35_DEC_HL] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, data.expectedValue, valueAtHL)
+		}
+		if cpu.getZFlag() != data.Z {
+			t.Errorf("[test_0x35_DEC_HL] TC%v> Expected Z flag to be %t", idx, data.Z)
+		}
+		if cpu.getNFlag() != data.N {
+			t.Errorf("[test_0x35_DEC_HL] TC%v> Expected N flag to be %t", idx, data.N)
+		}
+		if cpu.getHFlag() != data.H {
+			t.Errorf("[test_0x35_DEC_HL] TC%v> Expected H flag to be %t", idx, data.H)
+		}
+		if cpu.getCFlag() != data.C {
+			t.Errorf("[test_0x35_DEC_HL] TC%v> Expected C flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+
+type TestData_DEC_16bit struct {
+	initialValue  uint16
+	expectedValue uint16
+}
+
+var testData_DEC_16bit = []TestData_DEC_16bit{
+	{
+		initialValue:  0x0000,
+		expectedValue: 0xFFFF,
+	},
+	{
+		initialValue:  0x0001,
+		expectedValue: 0x0000,
+	},
+	{
+		initialValue:  0x0010,
+		expectedValue: 0x000F,
+	},
+	{
+		initialValue:  0x000F,
+		expectedValue: 0x000E,
+	},
+	{
+		initialValue:  0x00F0,
+		expectedValue: 0x00EF,
+	},
+	{
+		initialValue:  0x00FF,
+		expectedValue: 0x00FE,
+	},
+	{
+		initialValue:  0xFFFF,
+		expectedValue: 0xFFFE,
+	},
+	{
+		initialValue:  0xFF00,
+		expectedValue: 0xFEFF,
+	},
+	{
+		initialValue:  0x1234,
+		expectedValue: 0x1233,
+	},
+}
+
+func test_0x0B_DEC_BC(t *testing.T) {
+	for idx, data := range testData_DEC_16bit {
+		preconditions()
+		// randomize the flags
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setBC(data.initialValue)
+		testProgram := []uint8{0x0B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x0B_DEC_BC] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.getBC() != data.expectedValue {
+			t.Errorf("[test_0x0B_DEC_BC] TC%v> Expected BC to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.getBC())
+		}
+		// flags should be untouched
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x0B_DEC_BC] TC%v> Expected flags to be untouched 0x%02X, got 0x%02X", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x1B_DEC_DE(t *testing.T) {
+	for idx, data := range testData_DEC_16bit {
+		preconditions()
+		// randomize the flags
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setDE(data.initialValue)
+		testProgram := []uint8{0x1B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x1B_DEC_DE] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.getDE() != data.expectedValue {
+			t.Errorf("[test_0x1B_DEC_DE] TC%v> Expected DE to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.getDE())
+		}
+		// flags should be untouched
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x1B_DEC_DE] TC%v> Expected flags to be untouched 0x%02X, got 0x%02X", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x2B_DEC_HL(t *testing.T) {
+	for idx, data := range testData_DEC_16bit {
+		preconditions()
+		// randomize the flags
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(data.initialValue)
+		testProgram := []uint8{0x2B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x2B_DEC_HL] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.getHL() != data.expectedValue {
+			t.Errorf("[test_0x2B_DEC_HL] TC%v> Expected HL to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.getHL())
+		}
+		// flags should be untouched
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x2B_DEC_HL] TC%v> Expected flags to be untouched 0x%02X, got 0x%02X", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x3B_DEC_SP(t *testing.T) {
+	for idx, data := range testData_DEC_16bit {
+		preconditions()
+		// randomize the flags
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.sp = data.initialValue
+		testProgram := []uint8{0x3B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x3B_DEC_SP] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		if cpu.sp != data.expectedValue {
+			t.Errorf("[test_0x3B_DEC_SP] TC%v> Expected SP to be 0x%02X, got 0x%02X", idx, data.expectedValue, cpu.sp)
+		}
+		// flags should be untouched
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x3B_DEC_SP] TC%v> Expected flags to be untouched 0x%02X, got 0x%02X", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
 }
 
 // SUB: should subtract the value from the source to the destination
@@ -4705,17 +5243,17 @@ func TestOR(t *testing.T) {
 
 // XOR: should perform a bitwise XOR between the source and the destination
 // opcodes
-// 	- 0xA8: XOR A, B
-// 	- 0xA9: XOR A, C
-// 	- 0xAA: XOR A, D
-// 	- 0xAB: XOR A, E
-// 	- 0xAC: XOR A, H
-// 	- 0xAD: XOR A, L
-// 	- 0xAE: XOR A, (HL)
-// 	- 0xAF: XOR A, A
-// 	- 0xEE: XOR A, n8
+//   - 0xA8: XOR A, B
+//   - 0xA9: XOR A, C
+//   - 0xAA: XOR A, D
+//   - 0xAB: XOR A, E
+//   - 0xAC: XOR A, H
+//   - 0xAD: XOR A, L
+//   - 0xAE: XOR A, (HL)
+//   - 0xAF: XOR A, A
+//   - 0xEE: XOR A, n8
+//
 // flags: Z:Z N:0 H:0 C:0
-
 func TestXOR(t *testing.T) {
 	t.Run("0xA8_XOR_A_B", test_0xA8_XOR_A_B)
 	t.Run("0xA9_XOR_A_C", test_0xA9_XOR_A_C)
