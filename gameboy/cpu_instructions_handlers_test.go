@@ -5702,9 +5702,225 @@ func test_0xF5_PUSH_AF(t *testing.T) {
 	postconditions()
 }
 
-// POP: should pop the value from the stack into the destination
+// POP: Pop a 16-bit register pair from the stack
+// opcodes:
+//   - 0xC1 = POP BC
+//   - 0xD1 = POP DE
+//   - 0xE1 = POP HL
+//   - 0xF1 = POP AF (flags are restored from the stack)
+//
+// flags: - except for 0xF1 where Z->Z N->N H->H C->C
 func TestPOP(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0xC1_POP_BC", test_0xC1_POP_BC)
+	t.Run("0xD1_POP_DE", test_0xD1_POP_DE)
+	t.Run("0xE1_POP_HL", test_0xE1_POP_HL)
+	t.Run("0xF1_POP_AF", test_0xF1_POP_AF)
+}
+
+var popTestData = []uint16{0x1234, 0x5678, 0x9ABC, 0xDEF0, 0xFFAA, 0x19A7, 0xD65C, 0x71B9, 0x0000, 0xFFFF}
+
+func test_0xC1_POP_BC(t *testing.T) {
+	preconditions()
+	randomizeFlags()
+	saveFlags := cpu.f
+
+	// to isolate this test from the PUSH BC test, we will push the values into the HRAM and update the stack pointer manually
+	// we will push them in reverse order to POP them in the correct order
+	for idx, _ := range popTestData {
+		value := popTestData[len(popTestData)-1-idx]
+		// extract the high and low bytes
+		high := uint8(value >> 8)
+		low := uint8(value)
+		// push the value into the HRAM
+		cpu.sp -= 1
+		cpu.bus.Write(cpu.sp, high)
+		cpu.sp -= 1
+		cpu.bus.Write(cpu.sp, low)
+	}
+
+	// execute the test
+	testProgram := []uint8{0xC1, 0x10}
+	loadProgramIntoMemory(memory1, testProgram)
+
+	for idx, value := range popTestData {
+		// soft reset of the cpu after STOP instruction which blocks the cpu execution and set the offset and pc
+		cpu.stopped = false
+		cpu.offset = 0x0000
+		cpu.pc = 0x0000
+
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xC1_POP_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into BC register
+		if cpu.getBC() != value {
+			t.Errorf("[test_0xC1_POP_BC] %v> expected BC register to be 0x%04X, got 0x%04X\n", idx, value, cpu.getBC())
+		}
+		// check if stack pointer has been incremented
+		expectedSP := 0xFFFE - uint16(len(popTestData)*2) + uint16(2*(idx+1))
+		if cpu.sp != expectedSP {
+			t.Errorf("[test_0xC1_POP_BC] %v> expected stack pointer to be incremented to 0x%04X, got 0x%04X\n", idx, expectedSP, cpu.sp)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xC1_POP_BC] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+	}
+	postconditions()
+}
+func test_0xD1_POP_DE(t *testing.T) {
+	preconditions()
+	randomizeFlags()
+	saveFlags := cpu.f
+
+	// to isolate this test from the PUSH BC test, we will push the values into the HRAM and update the stack pointer manually
+	// we will push them in reverse order to POP them in the correct order
+	for idx, _ := range popTestData {
+		value := popTestData[len(popTestData)-1-idx]
+		// extract the high and low bytes
+		high := uint8(value >> 8)
+		low := uint8(value)
+		// push the value into the HRAM
+		cpu.sp -= 1
+		cpu.bus.Write(cpu.sp, high)
+		cpu.sp -= 1
+		cpu.bus.Write(cpu.sp, low)
+	}
+
+	// execute the test
+	testProgram := []uint8{0xD1, 0x10}
+	loadProgramIntoMemory(memory1, testProgram)
+
+	for idx, value := range popTestData {
+		// soft reset of the cpu after STOP instruction which blocks the cpu execution and set the offset and pc
+		cpu.stopped = false
+		cpu.offset = 0x0000
+		cpu.pc = 0x0000
+
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xD1_POP_DE] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into DE register
+		if cpu.getDE() != value {
+			t.Errorf("[test_0xD1_POP_DE] %v> expected DE register to be 0x%04X, got 0x%04X\n", idx, value, cpu.getDE())
+		}
+		// check if stack pointer has been incremented
+		expectedSP := 0xFFFE - uint16(len(popTestData)*2) + uint16(2*(idx+1))
+		if cpu.sp != expectedSP {
+			t.Errorf("[test_0xD1_POP_DE] %v> expected stack pointer to be incremented to 0x%04X, got 0x%04X\n", idx, expectedSP, cpu.sp)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xD1_POP_DE] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+	}
+	postconditions()
+}
+func test_0xE1_POP_HL(t *testing.T) {
+	preconditions()
+	randomizeFlags()
+	saveFlags := cpu.f
+
+	// to isolate this test from the PUSH BC test, we will push the values into the HRAM and update the stack pointer manually
+	// we will push them in reverse order to POP them in the correct order
+	for idx, _ := range popTestData {
+		value := popTestData[len(popTestData)-1-idx]
+		// extract the high and low bytes
+		high := uint8(value >> 8)
+		low := uint8(value)
+		// push the value into the HRAM
+		cpu.sp -= 1
+		cpu.bus.Write(cpu.sp, high)
+		cpu.sp -= 1
+		cpu.bus.Write(cpu.sp, low)
+	}
+
+	// execute the test
+	testProgram := []uint8{0xE1, 0x10}
+	loadProgramIntoMemory(memory1, testProgram)
+
+	for idx, value := range popTestData {
+		// soft reset of the cpu after STOP instruction which blocks the cpu execution and set the offset and pc
+		cpu.stopped = false
+		cpu.offset = 0x0000
+		cpu.pc = 0x0000
+
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xE1_POP_HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into HL register
+		if cpu.getHL() != value {
+			t.Errorf("[test_0xE1_POP_HL] %v> expected HL register to be 0x%04X, got 0x%04X\n", idx, value, cpu.getHL())
+		}
+		// check if stack pointer has been incremented
+		expectedSP := 0xFFFE - uint16(len(popTestData)*2) + uint16(2*(idx+1))
+		if cpu.sp != expectedSP {
+			t.Errorf("[test_0xE1_POP_HL] %v> expected stack pointer to be incremented to 0x%04X, got 0x%04X\n", idx, expectedSP, cpu.sp)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xE1_POP_HL] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+	}
+	postconditions()
+}
+func test_0xF1_POP_AF(t *testing.T) {
+	preconditions()
+	randomizeFlags()
+
+	// to isolate this test from the PUSH BC test, we will push the values into the HRAM and update the stack pointer manually
+	// we will push them in reverse order to POP them in the correct order
+	for idx, _ := range popTestData {
+		value := popTestData[len(popTestData)-1-idx]
+		// extract the high and low bytes
+		high := uint8(value >> 8)
+		low := uint8(value)
+		// push the value into the HRAM
+		cpu.sp -= 1
+		cpu.bus.Write(cpu.sp, high)
+		cpu.sp -= 1
+		cpu.bus.Write(cpu.sp, low)
+	}
+
+	// execute the test
+	testProgram := []uint8{0xF1, 0x10}
+	loadProgramIntoMemory(memory1, testProgram)
+
+	for idx, value := range popTestData {
+		// soft reset of the cpu after STOP instruction which blocks the cpu execution and set the offset and pc
+		cpu.stopped = false
+		cpu.offset = 0x0000
+		cpu.pc = 0x0000
+
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xF1_POP_AF] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != uint8(value>>8) {
+			t.Errorf("[test_0xF1_POP_AF] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, uint8(value>>8), cpu.a)
+		}
+		// check data correctly loaded into F register
+		if cpu.f != uint8(value) {
+			t.Errorf("[test_0xF1_POP_AF] %v> expected F register to be 0x%02X, got 0x%02X\n", idx, uint8(value), cpu.f)
+		}
+		// check if stack pointer has been incremented
+		expectedSP := 0xFFFE - uint16(len(popTestData)*2) + uint16(2*(idx+1))
+		if cpu.sp != expectedSP {
+			t.Errorf("[test_0xF1_POP_AF] %v> expected stack pointer to be incremented to 0x%04X, got 0x%04X\n", idx, expectedSP, cpu.sp)
+		}
+	}
+	postconditions()
 }
 
 // ADD: should add the value from the source to the destination
