@@ -8871,9 +8871,366 @@ func TestSCF(t *testing.T) {
 	postconditions()
 }
 
-// TC28: should perform a bitwise OR between the source and the destination
+// Stores into A register the result of the bitwise OR operation between A and the operand
+// opcodes:
+//   - 0xB0 = OR A, B
+//   - 0xB1 = OR A, C
+//   - 0xB2 = OR A, D
+//   - 0xB3 = OR A, E
+//   - 0xB4 = OR A, H
+//   - 0xB5 = OR A, L
+//   - 0xB6 = OR A, [HL]
+//   - 0xB7 = OR A, A
+//   - 0xF6 = OR A, n8
+//
+// flags: Z:Z N:0 H:0 C:0
 func TestOR(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0xB0_OR_A_B", test_0xB0_OR_A_B)
+	t.Run("0xB1_OR_A_C", test_0xB1_OR_A_C)
+	t.Run("0xB2_OR_A_D", test_0xB2_OR_A_D)
+	t.Run("0xB3_OR_A_E", test_0xB3_OR_A_E)
+	t.Run("0xB4_OR_A_H", test_0xB4_OR_A_H)
+	t.Run("0xB5_OR_A_L", test_0xB5_OR_A_L)
+	t.Run("0xB6_OR_A_HL", test_0xB6_OR_A_HL)
+	t.Run("0xB7_OR_A_A", test_0xB7_OR_A_A)
+	t.Run("0xF6_OR_A_n8", test_0xF6_OR_A_n8)
+}
+
+var testData_OR_A = []uint8{0x00, 0xFF, 0x0F, 0xF0, 0x0A, 0xA0, 0x55, 0xAA}
+var testData_OR_operand = []uint8{0xFF, 0x87, 0x1A, 0xDE, 0x35, 0x0A, 0x7F, 0xDD}
+
+func test_0xF6_OR_A_n8(t *testing.T) {
+	for idx, data := range testData_OR_A {
+		preconditions()
+		randomizeFlags()
+		n8 := testData_OR_operand[idx]
+		cpu.a = data
+		testProgram := []uint8{0xF6, n8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0xF6_OR_A_n8] TC%v> Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value
+		expectedValue := data | n8
+		if cpu.a != expectedValue {
+			t.Errorf("[test_0xF6_OR_A_n8] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedValue, cpu.a)
+		}
+		// check if the flags were set correctly
+		if cpu.getZFlag() != (expectedValue == 0x00) {
+			t.Errorf("[test_0xF6_OR_A_n8] TC%v> Expected Z flag to be %t", idx, expectedValue == 0x00)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xF6_OR_A_n8] TC%v> Expected N flag to be false", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xF6_OR_A_n8] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xF6_OR_A_n8] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0xB7_OR_A_A(t *testing.T) {
+	for idx, data := range testData_OR_A {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		testProgram := []uint8{0xB7, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB7_OR_A_A] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value
+		expectedValue := data | data
+		if cpu.a != expectedValue {
+			t.Errorf("[test_0xB7_OR_A_A] TC%v> Expected A register to be 0x%02X, got 0x%02X", idx, expectedValue, cpu.a)
+		}
+		// check if the flags were set correctly
+		if cpu.getZFlag() != (expectedValue == 0x00) {
+			t.Errorf("[test_0xB7_OR_A_A] TC%v> Expected Z flag to be %t", idx, expectedValue == 0x00)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xB7_OR_A_A] TC%v> Expected N flag to be false", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xB7_OR_A_A] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xB7_OR_A_A] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0xB0_OR_A_B(t *testing.T) {
+	for idx, data := range testData_OR_A {
+		preconditions()
+		randomizeFlags()
+		cpu.b = testData_OR_operand[idx]
+		cpu.a = data
+		testProgram := []uint8{0xB0, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB0_OR_A_B] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value
+		expectedValue := data | cpu.b
+		if cpu.a != expectedValue {
+			t.Errorf("[test_0xB0_OR_A_B] TC%v> Expected A register to be 0x%02X, got 0x%02X", idx, expectedValue, cpu.a)
+		}
+		// check if the B register was unaffected
+		if cpu.b != testData_OR_operand[idx] {
+			t.Errorf("[test_0xB0_OR_A_B] TC%v> Expected B register to be 0x%02X, got 0x%02X", idx, testData_OR_operand[idx], cpu.b)
+		}
+		// check if the flags were set correctly
+		if cpu.getZFlag() != (expectedValue == 0x00) {
+			t.Errorf("[test_0xB0_OR_A_B] TC%v> Expected Z flag to be %t", idx, expectedValue == 0x00)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xB0_OR_A_B] TC%v> Expected N flag to be false", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xB0_OR_A_B] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xB0_OR_A_B] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0xB1_OR_A_C(t *testing.T) {
+	for idx, data := range testData_OR_A {
+		preconditions()
+		randomizeFlags()
+		cpu.c = testData_OR_operand[idx]
+		cpu.a = data
+		testProgram := []uint8{0xB1, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB1_OR_A_C] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value
+		expectedValue := data | cpu.c
+		if cpu.a != expectedValue {
+			t.Errorf("[test_0xB1_OR_A_C] TC%v> Expected A register to be 0x%02X, got 0x%02X", idx, expectedValue, cpu.a)
+		}
+		// check if the C register was unaffected
+		if cpu.c != testData_OR_operand[idx] {
+			t.Errorf("[test_0xB1_OR_A_C] TC%v> Expected C register to be 0x%02X, got 0x%02X", idx, testData_OR_operand[idx], cpu.c)
+		}
+		// check if the flags were set correctly
+		if cpu.getZFlag() != (expectedValue == 0x00) {
+			t.Errorf("[test_0xB1_OR_A_C] TC%v> Expected Z flag to be %t", idx, expectedValue == 0x00)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xB1_OR_A_C] TC%v> Expected N flag to be false", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xB1_OR_A_C] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xB1_OR_A_C] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0xB2_OR_A_D(t *testing.T) {
+	for idx, data := range testData_OR_A {
+		preconditions()
+		randomizeFlags()
+		cpu.d = testData_OR_operand[idx]
+		cpu.a = data
+		testProgram := []uint8{0xB2, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB2_OR_A_D] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value
+		expectedValue := data | cpu.d
+		if cpu.a != expectedValue {
+			t.Errorf("[test_0xB2_OR_A_D] TC%v> Expected A register to be 0x%02X, got 0x%02X", idx, expectedValue, cpu.a)
+		}
+		// check if the D register was unaffected
+		if cpu.d != testData_OR_operand[idx] {
+			t.Errorf("[test_0xB2_OR_A_D] TC%v> Expected D register to be 0x%02X, got 0x%02X", idx, testData_OR_operand[idx], cpu.d)
+		}
+		// check if the flags were set correctly
+		if cpu.getZFlag() != (expectedValue == 0x00) {
+			t.Errorf("[test_0xB2_OR_A_D] TC%v> Expected Z flag to be %t", idx, expectedValue == 0x00)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xB2_OR_A_D] TC%v> Expected N flag to be false", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xB2_OR_A_D] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xB2_OR_A_D] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0xB3_OR_A_E(t *testing.T) {
+	for idx, data := range testData_OR_A {
+		preconditions()
+		randomizeFlags()
+		cpu.e = testData_OR_operand[idx]
+		cpu.a = data
+		testProgram := []uint8{0xB3, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB3_OR_A_E] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value
+		expectedValue := data | cpu.e
+		if cpu.a != expectedValue {
+			t.Errorf("[test_0xB3_OR_A_E] TC%v> Expected A register to be 0x%02X, got 0x%02X", idx, expectedValue, cpu.a)
+		}
+		// check if the E register was unaffected
+		if cpu.e != testData_OR_operand[idx] {
+			t.Errorf("[test_0xB3_OR_A_E] TC%v> Expected E register to be 0x%02X, got 0x%02X", idx, testData_OR_operand[idx], cpu.e)
+		}
+		// check if the flags were set correctly
+		if cpu.getZFlag() != (expectedValue == 0x00) {
+			t.Errorf("[test_0xB3_OR_A_E] TC%v> Expected Z flag to be %t", idx, expectedValue == 0x00)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xB3_OR_A_E] TC%v> Expected N flag to be false", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xB3_OR_A_E] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xB3_OR_A_E] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0xB4_OR_A_H(t *testing.T) {
+	for idx, data := range testData_OR_A {
+		preconditions()
+		randomizeFlags()
+		cpu.h = testData_OR_operand[idx]
+		cpu.a = data
+		testProgram := []uint8{0xB4, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB4_OR_A_H] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value
+		expectedValue := data | cpu.h
+		if cpu.a != expectedValue {
+			t.Errorf("[test_0xB4_OR_A_H] TC%v> Expected A register to be 0x%02X, got 0x%02X", idx, expectedValue, cpu.a)
+		}
+		// check if the H register was unaffected
+		if cpu.h != testData_OR_operand[idx] {
+			t.Errorf("[test_0xB4_OR_A_H] TC%v> Expected H register to be 0x%02X, got 0x%02X", idx, testData_OR_operand[idx], cpu.h)
+		}
+		// check if the flags were set correctly
+		if cpu.getZFlag() != (expectedValue == 0x00) {
+			t.Errorf("[test_0xB4_OR_A_H] TC%v> Expected Z flag to be %t", idx, expectedValue == 0x00)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xB4_OR_A_H] TC%v> Expected N flag to be false", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xB4_OR_A_H] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xB4_OR_A_H] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0xB5_OR_A_L(t *testing.T) {
+	for idx, data := range testData_OR_A {
+		preconditions()
+		randomizeFlags()
+		cpu.l = testData_OR_operand[idx]
+		cpu.a = data
+		testProgram := []uint8{0xB5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB5_OR_A_L] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value
+		expectedValue := data | cpu.l
+		if cpu.a != expectedValue {
+			t.Errorf("[test_0xB5_OR_A_L] TC%v> Expected A register to be 0x%02X, got 0x%02X", idx, expectedValue, cpu.a)
+		}
+		// check if the L register was unaffected
+		if cpu.l != testData_OR_operand[idx] {
+			t.Errorf("[test_0xB5_OR_A_L] TC%v> Expected L register to be 0x%02X, got 0x%02X", idx, testData_OR_operand[idx], cpu.l)
+		}
+		// check if the flags were set correctly
+		if cpu.getZFlag() != (expectedValue == 0x00) {
+			t.Errorf("[test_0xB5_OR_A_L] TC%v> Expected Z flag to be %t", idx, expectedValue == 0x00)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xB5_OR_A_L] TC%v> Expected N flag to be false", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xB5_OR_A_L] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xB5_OR_A_L] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0xB6_OR_A_HL(t *testing.T) {
+	for idx, data := range testData_OR_A {
+		preconditions()
+		randomizeFlags()
+		cpu.setHL(0x0002)
+		cpu.a = data
+		testProgram := []uint8{0xB6, 0x10, testData_OR_operand[idx]}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xB6_OR_A_HL] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value
+		expectedValue := data | testData_OR_operand[idx]
+		if cpu.a != expectedValue {
+			t.Errorf("[test_0xB6_OR_A_HL] TC%v> Expected A register to be 0x%02X, got 0x%02X", idx, expectedValue, cpu.a)
+		}
+		// check if the HL register was unaffected
+		if cpu.getHL() != 0x0002 {
+			t.Errorf("[test_0xB6_OR_A_HL] TC%v> Expected HL register to be 0x%02X, got 0x%02X", idx, 0x0002, cpu.getHL())
+		}
+		// check if the flags were set correctly
+		if cpu.getZFlag() != (expectedValue == 0x00) {
+			t.Errorf("[test_0xB6_OR_A_HL] TC%v> Expected Z flag to be %t", idx, expectedValue == 0x00)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xB6_OR_A_HL] TC%v> Expected N flag to be false", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0xB6_OR_A_HL] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xB6_OR_A_HL] TC%v> Expected C flag to be false", idx)
+		}
+	}
 }
 
 // XOR: should perform a bitwise XOR between the source and the destination

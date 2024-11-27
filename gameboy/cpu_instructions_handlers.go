@@ -1299,8 +1299,37 @@ func (c *CPU) SCF(instruction *Instruction) {
 	// update the number of cycles executed by the CPU
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
+// Stores into A register the result of the bitwise OR operation between A and the operand
+// opcodes:
+//   - 0xB0 = OR A, B
+//   - 0xB1 = OR A, C
+//   - 0xB2 = OR A, D
+//   - 0xB3 = OR A, E
+//   - 0xB4 = OR A, H
+//   - 0xB5 = OR A, L
+//   - 0xB6 = OR A, [HL]
+//   - 0xB7 = OR A, A
+//   - 0xF6 = OR A, n8
+//
+// flags: Z:Z N:0 H:0 C:0
 func (c *CPU) OR(instruction *Instruction) {
-	panic("OR not implemented")
+	c.a = (c.a | uint8(c.operand))
+	// update flags
+	if c.a == 0x00 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	// reset N, H and C flags
+	c.resetNFlag()
+	c.resetHFlag()
+	c.resetCFlag()
+
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
 /*
