@@ -140,11 +140,11 @@ func (c *CPU) updatepc() {
 // Push a value to the stack
 func (c *CPU) push(value uint16) {
 	// decrement the stack pointer
-	c.sp -= 1
+	c.sp = c.sp - 1
 	// write the high byte to the stack
 	c.bus.Write(c.sp, byte(value>>8))
 	// decrement the stack pointer
-	c.sp -= 1
+	c.sp = c.sp - 1
 	// write the low byte to the stack
 	c.bus.Write(c.sp, byte(value))
 }
@@ -257,6 +257,10 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 			value = uint16(c.l)
 		} else {
 			panic("Non immediate operand not implemented yet")
+		}
+	case "AF":
+		if operand.Immediate {
+			value = uint16(c.a)<<8 | uint16(c.f)
 		}
 	case "BC":
 		if operand.Immediate {
