@@ -2546,8 +2546,2903 @@ func TestRST(t *testing.T) {
 }
 
 // LD: should load the value from the source into the destination
+// opcodes:
+// > LD r8, n8
+//   - 0x3E = LD A, n8
+//   - 0x06 = LD B, n8
+//   - 0x0E = LD C, n8
+//   - 0x16 = LD D, n8
+//   - 0x1E = LD E, n8
+//   - 0x26 = LD H, n8
+//   - 0x2E = LD L, n8
+//
+// > LD r16, n16
+//   - 0x01 = LD BC, n16
+//   - 0x11 = LD DE, n16
+//   - 0x21 = LD HL, n16
+//   - 0x31 = LD SP, n16
+//
+// > LD r8 (A/B/C/D/E/H/L), r8
+//   - 0x7F = LD A, A
+//   - 0x78 = LD A, B
+//   - 0x79 = LD A, C
+//   - 0x7A = LD A, D
+//   - 0x7B = LD A, E
+//   - 0x7C = LD A, H
+//   - 0x7D = LD A, L
+//   - 0x47 = LD B, A
+//   - 0x40 = LD B, B
+//   - 0x41 = LD B, C
+//   - 0x42 = LD B, D
+//   - 0x43 = LD B, E
+//   - 0x44 = LD B, H
+//   - 0x45 = LD B, L
+//   - 0x4F = LD C, A
+//   - 0x48 = LD C, B
+//   - 0x49 = LD C, C
+//   - 0x4A = LD C, D
+//   - 0x4B = LD C, E
+//   - 0x4C = LD C, H
+//   - 0x4D = LD C, L
+//   - 0x57 = LD D, A
+//   - 0x50 = LD D, B
+//   - 0x51 = LD D, C
+//   - 0x52 = LD D, D
+//   - 0x53 = LD D, E
+//   - 0x54 = LD D, H
+//   - 0x55 = LD D, L
+//   - 0x5F = LD E, A
+//   - 0x58 = LD E, B
+//   - 0x59 = LD E, C
+//   - 0x5A = LD E, D
+//   - 0x5B = LD E, E
+//   - 0x5C = LD E, H
+//   - 0x5D = LD E, L
+//   - 0x67 = LD H, A
+//   - 0x60 = LD H, B
+//   - 0x61 = LD H, C
+//   - 0x62 = LD H, D
+//   - 0x63 = LD H, E
+//   - 0x64 = LD H, H
+//   - 0x65 = LD H, L
+//   - 0x6F = LD L, A
+//   - 0x68 = LD L, B
+//   - 0x69 = LD L, C
+//   - 0x6A = LD L, D
+//   - 0x6B = LD L, E
+//   - 0x6C = LD L, H
+//   - 0x6D = LD L, L
+//
+// > LD r8, [HL]
+//   - 0x7E = LD A, [HL]
+//   - 0x46 = LD B, [HL]
+//   - 0x4E = LD C, [HL]
+//   - 0x56 = LD D, [HL]
+//   - 0x5E = LD E, [HL]
+//   - 0x66 = LD H, [HL]
+//   - 0x6E = LD L, [HL]
+//
+// > LD [HL], n8/r8
+//   - 0x36 = LD [HL], n8
+//   - 0x77 = LD [HL], A
+//   - 0x70 = LD [HL], B
+//   - 0x71 = LD [HL], C
+//   - 0x72 = LD [HL], D
+//   - 0x73 = LD [HL], E
+//   - 0x74 = LD [HL], H
+//   - 0x75 = LD [HL], L
+//
+// > LD A, from address
+//   - 0xFA = LD A, [n16]
+//   - 0xF2 = LD A, [C]
+//   - 0x0A = LD A, [BC]
+//   - 0x1A = LD A, [DE]
+//   - 0x2A = LD A, [HL+]
+//   - 0x3A = LD A, [HL-]
+//
+// > LD to address, A
+//   - 0xEA = LD [n16], A
+//   - 0xE2 = LD [C], A
+//   - 0x02 = LD [BC], A
+//   - 0x12 = LD [DE], A
+//   - 0x22 = LD [HL+], A
+//   - 0x32 = LD [HL-], A
+//
+// > LD Stack Pointer
+//   - 0xF9 = LD SP, HL
+//   - 0x08 = LD [n16], SP
+//   - 0xF8 = LD HL, SP+r8
+//
+// flags: - - - - except for 0xF8 where Z:0 N:0 H:H C:C
 func TestLD(t *testing.T) {
-	t.Skip("not implemented yet")
+	// > LD r8, n8
+	t.Run("0x3E_LD_A_n8", test_0x3E_LD_A_n8)
+	t.Run("0x06_LD_B_n8", test_0x06_LD_B_n8)
+	t.Run("0x0E_LD_C_n8", test_0x0E_LD_C_n8)
+	t.Run("0x16_LD_D_n8", test_0x16_LD_D_n8)
+	t.Run("0x1E_LD_E_n8", test_0x1E_LD_E_n8)
+	t.Run("0x26_LD_H_n8", test_0x26_LD_H_n8)
+	t.Run("0x2E_LD_L_n8", test_0x2E_LD_L_n8)
+
+	// > LD r16, n16
+	t.Run("0x01_LD_BC_n16", test_0x01_LD_BC_n16)
+	t.Run("0x11_LD_DE_n16", test_0x11_LD_DE_n16)
+	t.Run("0x21_LD_HL_n16", test_0x21_LD_HL_n16)
+	t.Run("0x31_LD_SP_n16", test_0x31_LD_SP_n16)
+
+	// > LD r8 (A/B/C/D/E/H/L), r8
+	t.Run("0x7F_LD_A_A", test_0x7F_LD_A_A)
+	t.Run("0x78_LD_A_B", test_0x78_LD_A_B)
+	t.Run("0x79_LD_A_C", test_0x79_LD_A_C)
+	t.Run("0x7A_LD_A_D", test_0x7A_LD_A_D)
+	t.Run("0x7B_LD_A_E", test_0x7B_LD_A_E)
+	t.Run("0x7C_LD_A_H", test_0x7C_LD_A_H)
+	t.Run("0x7D_LD_A_L", test_0x7D_LD_A_L)
+
+	t.Run("0x47_LD_B_A", test_0x47_LD_B_A)
+	t.Run("0x40_LD_B_B", test_0x40_LD_B_B)
+	t.Run("0x41_LD_B_C", test_0x41_LD_B_C)
+	t.Run("0x42_LD_B_D", test_0x42_LD_B_D)
+	t.Run("0x43_LD_B_E", test_0x43_LD_B_E)
+	t.Run("0x44_LD_B_H", test_0x44_LD_B_H)
+	t.Run("0x45_LD_B_L", test_0x45_LD_B_L)
+
+	t.Run("0x4F_LD_C_A", test_0x4F_LD_C_A)
+	t.Run("0x48_LD_C_B", test_0x48_LD_C_B)
+	t.Run("0x49_LD_C_C", test_0x49_LD_C_C)
+	t.Run("0x4A_LD_C_D", test_0x4A_LD_C_D)
+	t.Run("0x4B_LD_C_E", test_0x4B_LD_C_E)
+	t.Run("0x4C_LD_C_H", test_0x4C_LD_C_H)
+	t.Run("0x4D_LD_C_L", test_0x4D_LD_C_L)
+
+	t.Run("0x57_LD_D_A", test_0x57_LD_D_A)
+	t.Run("0x50_LD_D_B", test_0x50_LD_D_B)
+	t.Run("0x51_LD_D_C", test_0x51_LD_D_C)
+	t.Run("0x52_LD_D_D", test_0x52_LD_D_D)
+	t.Run("0x53_LD_D_E", test_0x53_LD_D_E)
+	t.Run("0x54_LD_D_H", test_0x54_LD_D_H)
+	t.Run("0x55_LD_D_L", test_0x55_LD_D_L)
+
+	t.Run("0x5F_LD_E_A", test_0x5F_LD_E_A)
+	t.Run("0x58_LD_E_B", test_0x58_LD_E_B)
+	t.Run("0x59_LD_E_C", test_0x59_LD_E_C)
+	t.Run("0x5A_LD_E_D", test_0x5A_LD_E_D)
+	t.Run("0x5B_LD_E_E", test_0x5B_LD_E_E)
+	t.Run("0x5C_LD_E_H", test_0x5C_LD_E_H)
+	t.Run("0x5D_LD_E_L", test_0x5D_LD_E_L)
+
+	t.Run("0x67_LD_H_A", test_0x67_LD_H_A)
+	t.Run("0x60_LD_H_B", test_0x60_LD_H_B)
+	t.Run("0x61_LD_H_C", test_0x61_LD_H_C)
+	t.Run("0x62_LD_H_D", test_0x62_LD_H_D)
+	t.Run("0x63_LD_H_E", test_0x63_LD_H_E)
+	t.Run("0x64_LD_H_H", test_0x64_LD_H_H)
+	t.Run("0x65_LD_H_L", test_0x65_LD_H_L)
+
+	t.Run("0x6F_LD_L_A", test_0x6F_LD_L_A)
+	t.Run("0x68_LD_L_B", test_0x68_LD_L_B)
+	t.Run("0x69_LD_L_C", test_0x69_LD_L_C)
+	t.Run("0x6A_LD_L_D", test_0x6A_LD_L_D)
+	t.Run("0x6B_LD_L_E", test_0x6B_LD_L_E)
+	t.Run("0x6C_LD_L_H", test_0x6C_LD_L_H)
+	t.Run("0x6D_LD_L_L", test_0x6D_LD_L_L)
+
+	// > LD r8, [HL]
+	t.Run("0x7E_LD_A__HL", test_0x7E_LD_A__HL)
+	t.Run("0x46_LD_B__HL", test_0x46_LD_B__HL)
+	t.Run("0x4E_LD_C__HL", test_0x4E_LD_C__HL)
+	t.Run("0x56_LD_D__HL", test_0x56_LD_D__HL)
+	t.Run("0x5E_LD_E__HL", test_0x5E_LD_E__HL)
+	t.Run("0x66_LD_H__HL", test_0x66_LD_H__HL)
+	t.Run("0x6E_LD_L__HL", test_0x6E_LD_L__HL)
+
+	// > LD [HL], n8/r8
+	t.Run("0x36_LD__HL_n8", test_0x36_LD__HL_n8)
+	t.Run("0x77_LD__HL_A", test_0x77_LD__HL_A)
+	t.Run("0x70_LD__HL_B", test_0x70_LD__HL_B)
+	t.Run("0x71_LD__HL_C", test_0x71_LD__HL_C)
+	t.Run("0x72_LD__HL_D", test_0x72_LD__HL_D)
+	t.Run("0x73_LD__HL_E", test_0x73_LD__HL_E)
+	t.Run("0x74_LD__HL_H", test_0x74_LD__HL_H)
+	t.Run("0x75_LD__HL_L", test_0x75_LD__HL_L)
+
+	// > LD A, from address
+	t.Run("0xFA_LD_A__a16", test_0xFA_LD_A__a16)
+	t.Run("0xF2_LD_A__C", test_0xF2_LD_A__C)
+	t.Run("0x0A_LD_A__BC", test_0x0A_LD_A__BC)
+	t.Run("0x1A_LD_A__DE", test_0x1A_LD_A__DE)
+	t.Run("0x2A_LD_A__HL_", test_0x2A_LD_A__HLp)
+	t.Run("0x3A_LD_A__HL_", test_0x3A_LD_A__HLm)
+
+	// > LD to address, A
+	t.Run("0xEA_LD__a16_A", test_0xEA_LD__a16_A)
+	t.Run("0xE2_LD__C_A", test_0xE2_LD__C_A)
+	t.Run("0x02_LD__BC_A", test_0x02_LD__BC_A)
+	t.Run("0x12_LD__DE_A", test_0x12_LD__DE_A)
+	t.Run("0x22_LD__HLp_A", test_0x22_LD__HLp_A)
+	t.Run("0x32_LD__HLm_A", test_0x32_LD__HLm_A)
+
+	// > LD Stack Pointer
+	t.Run("0xF9_LD_SP_HL", test_0xF9_LD_SP_HL)
+	t.Run("0x08_LD__a16_SP", test_0x08_LD__a16_SP)
+	t.Run("0xF8_LD_HL_SP_e8", test_0xF8_LD_HL_SP_e8)
+}
+
+// > LD r8, n8
+var testData_LD_r8_n8 = []uint8{0x00, 0xFF, 0x0F, 0xF0, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE}
+
+func test_0x3E_LD_A_n8(t *testing.T) {
+	for idx, data := range testData_LD_r8_n8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = 0x77
+		testProgram := []uint8{0x3E, data, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0x3E_LD_A_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.a != data {
+			t.Errorf("[test_0x3E_LD_A_n8] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x3E_LD_A_n8] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x06_LD_B_n8(t *testing.T) {
+	for idx, data := range testData_LD_r8_n8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = 0x77
+		testProgram := []uint8{0x06, data, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0x06_LD_B_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.b != data {
+			t.Errorf("[test_0x06_LD_B_n8] %v> expected register B to be 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x06_LD_B_n8] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x0E_LD_C_n8(t *testing.T) {
+	for idx, data := range testData_LD_r8_n8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = 0x77
+		testProgram := []uint8{0x0E, data, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0x0E_LD_C_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.c != data {
+			t.Errorf("[test_0x0E_LD_C_n8] %v> expected register C to be 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x0E_LD_C_n8] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x16_LD_D_n8(t *testing.T) {
+	for idx, data := range testData_LD_r8_n8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = 0x77
+		testProgram := []uint8{0x16, data, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0x16_LD_D_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.d != data {
+			t.Errorf("[test_0x16_LD_D_n8] %v> expected register D to be 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x16_LD_D_n8] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x1E_LD_E_n8(t *testing.T) {
+	for idx, data := range testData_LD_r8_n8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = 0x77
+		testProgram := []uint8{0x1E, data, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0x1E_LD_E_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.e != data {
+			t.Errorf("[test_0x1E_LD_E_n8] %v> expected register E to be 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x1E_LD_E_n8] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x26_LD_H_n8(t *testing.T) {
+	for idx, data := range testData_LD_r8_n8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = 0x77
+		testProgram := []uint8{0x26, data, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0x26_LD_H_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.h != data {
+			t.Errorf("[test_0x26_LD_H_n8] %v> expected register H to be 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x26_LD_H_n8] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x2E_LD_L_n8(t *testing.T) {
+	for idx, data := range testData_LD_r8_n8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = 0x77
+		testProgram := []uint8{0x2E, data, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0x2E_LD_L_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.l != data {
+			t.Errorf("[test_0x2E_LD_L_n8] %v> expected register L to be 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x2E_LD_L_n8] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+var testData_LD_r16_n16 = []uint16{0x0000, 0xFFFF, 0x00FF, 0xFF00, 0x00AA, 0x00BB, 0x00CC, 0x00DD, 0x00EE, 0x00FF, 0x1234, 0x3456, 0x5678, 0x789A, 0x9ABC, 0xBCDE, 0xDEFF}
+
+// > LD r16, n16
+func test_0x01_LD_BC_n16(t *testing.T) {
+	for idx, data := range testData_LD_r16_n16 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setBC(0x7777)
+		testProgram := []uint8{0x01, uint8(data & 0x00FF), uint8((data & 0xFF00) >> 8), 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0003 {
+			t.Errorf("[test_0x01_LD_BC_n16] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		bc := cpu.getBC()
+		if bc != data {
+			t.Errorf("[test_0x01_LD_BC_n16] %v> expected register BC to be 0x%04X, got 0x%04X\n", idx, data, bc)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x01_LD_BC_n16] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x11_LD_DE_n16(t *testing.T) {
+	for idx, data := range testData_LD_r16_n16 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setDE(0x7777)
+		testProgram := []uint8{0x11, uint8(data & 0x00FF), uint8((data & 0xFF00) >> 8), 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0003 {
+			t.Errorf("[test_0x11_LD_DE_n16] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		de := cpu.getDE()
+		if de != data {
+			t.Errorf("[test_0x11_LD_DE_n16] %v> expected register DE to be 0x%04X, got 0x%04X\n", idx, data, de)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x11_LD_DE_n16] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x21_LD_HL_n16(t *testing.T) {
+	for idx, data := range testData_LD_r16_n16 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x7777)
+		testProgram := []uint8{0x21, uint8(data & 0x00FF), uint8((data & 0xFF00) >> 8), 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0003 {
+			t.Errorf("[test_0x21_LD_HL_n16] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		hl := cpu.getHL()
+		if hl != data {
+			t.Errorf("[test_0x21_LD_HL_n16] %v> expected register HL to be 0x%04X, got 0x%04X\n", idx, data, hl)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x21_LD_HL_n16] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x31_LD_SP_n16(t *testing.T) {
+	for idx, data := range testData_LD_r16_n16 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.sp = 0x7777
+		testProgram := []uint8{0x31, uint8(data & 0x00FF), uint8((data & 0xFF00) >> 8), 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0003 {
+			t.Errorf("[test_0x01_LD_BC_n16] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		sp := cpu.sp
+		if sp != data {
+			t.Errorf("[test_0x01_LD_BC_n16] %v> expected register SP to be 0x%04X, got 0x%04X\n", idx, data, sp)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x01_LD_BC_n16] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+var testData_LD_r8_r8 = []uint8{0x00, 0xFF, 0x0F, 0xF0, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE}
+
+// > LD r8 (A/B/C/D/E/H/L), r8
+func test_0x7F_LD_A_A(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = data
+		testProgram := []uint8{0x7F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x7F_LD_A_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.a != data {
+			t.Errorf("[test_0x7F_LD_A_A] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check that source register is unaffected
+		if cpu.a != data {
+			t.Errorf("[test_0x7F_LD_A_A] %v> expected source register A to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x7F_LD_A_A] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x78_LD_A_B(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = data
+		testProgram := []uint8{0x78, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x78_LD_A_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.a != data {
+			t.Errorf("[test_0x78_LD_A_B] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check that source register is unaffected
+		if cpu.b != data {
+			t.Errorf("[test_0x78_LD_A_B] %v> expected source register B to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x78_LD_A_B] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x79_LD_A_C(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = data
+		testProgram := []uint8{0x79, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x79_LD_A_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.a != data {
+			t.Errorf("[test_0x79_LD_A_C] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check that source register is unaffected
+		if cpu.c != data {
+			t.Errorf("[test_0x79_LD_A_C] %v> expected source register C to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x79_LD_A_C] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x7A_LD_A_D(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = data
+		testProgram := []uint8{0x7A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x7A_LD_A_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.a != data {
+			t.Errorf("[test_0x7A_LD_A_D] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check that source register is unaffected
+		if cpu.d != data {
+			t.Errorf("[test_0x7A_LD_A_D] %v> expected source register D to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x7A_LD_A_D] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x7B_LD_A_E(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = data
+		testProgram := []uint8{0x7B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x7B_LD_A_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.a != data {
+			t.Errorf("[test_0x7B_LD_A_E] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check that source register is unaffected
+		if cpu.e != data {
+			t.Errorf("[test_0x7B_LD_A_E] %v> expected source register E to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x7B_LD_A_E] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x7C_LD_A_H(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = data
+		testProgram := []uint8{0x7C, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x7C_LD_A_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.a != data {
+			t.Errorf("[test_0x7C_LD_A_H] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check that source register is unaffected
+		if cpu.h != data {
+			t.Errorf("[test_0x7C_LD_A_H] %v> expected source register H to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x7C_LD_A_H] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x7D_LD_A_L(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = data
+		testProgram := []uint8{0x7D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x7D_LD_A_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.a != data {
+			t.Errorf("[test_0x7D_LD_A_L] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check that source register is unaffected
+		if cpu.l != data {
+			t.Errorf("[test_0x7D_LD_A_L] %v> expected source register L to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x7D_LD_A_L] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+func test_0x47_LD_B_A(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = data
+		testProgram := []uint8{0x47, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x47_LD_B_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.b != data {
+			t.Errorf("[test_0x47_LD_B_A] %v> expected register B to be 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check that source register is unaffected
+		if cpu.a != data {
+			t.Errorf("[test_0x47_LD_B_A] %v> expected source register A to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x47_LD_B_A] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x40_LD_B_B(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = data
+		testProgram := []uint8{0x47, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x40_LD_B_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.b != data {
+			t.Errorf("[test_0x40_LD_B_B] %v> expected register B to be 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check that source register is unaffected
+		if cpu.a != data {
+			t.Errorf("[test_0x40_LD_B_B] %v> expected source register A to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x40_LD_B_B] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x41_LD_B_C(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = data
+		testProgram := []uint8{0x41, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x41_LD_B_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.b != data {
+			t.Errorf("[test_0x41_LD_B_C] %v> expected register B to be 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check that source register is unaffected
+		if cpu.c != data {
+			t.Errorf("[test_0x41_LD_B_C] %v> expected source register C to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x41_LD_B_C] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x42_LD_B_D(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = data
+		testProgram := []uint8{0x42, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x42_LD_B_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.b != data {
+			t.Errorf("[test_0x42_LD_B_D] %v> expected register B to be 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check that source register is unaffected
+		if cpu.d != data {
+			t.Errorf("[test_0x42_LD_B_D] %v> expected source register D to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x42_LD_B_D] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x43_LD_B_E(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = data
+		testProgram := []uint8{0x43, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x43_LD_B_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.b != data {
+			t.Errorf("[test_0x43_LD_B_E] %v> expected register B to be 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check that source register is unaffected
+		if cpu.e != data {
+			t.Errorf("[test_0x43_LD_B_E] %v> expected source register E to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x43_LD_B_E] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x44_LD_B_H(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = data
+		testProgram := []uint8{0x44, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x44_LD_B_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.b != data {
+			t.Errorf("[test_0x44_LD_B_H] %v> expected register B to be 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check that source register is unaffected
+		if cpu.h != data {
+			t.Errorf("[test_0x44_LD_B_H] %v> expected source register H to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x44_LD_B_H] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x45_LD_B_L(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = data
+		testProgram := []uint8{0x45, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x45_LD_B_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.b != data {
+			t.Errorf("[test_0x45_LD_B_L] %v> expected register B to be 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check that source register is unaffected
+		if cpu.l != data {
+			t.Errorf("[test_0x45_LD_B_L] %v> expected source register L to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x45_LD_B_L] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+func test_0x4F_LD_C_A(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = data
+		testProgram := []uint8{0x4F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x4F_LD_C_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.c != data {
+			t.Errorf("[test_0x4F_LD_C_A] %v> expected register C to be 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check that source register is unaffected
+		if cpu.a != data {
+			t.Errorf("[test_0x4F_LD_C_A] %v> expected source register A to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x4F_LD_C_A] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x48_LD_C_B(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = data
+		testProgram := []uint8{0x48, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x48_LD_C_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.c != data {
+			t.Errorf("[test_0x48_LD_C_B] %v> expected register C to be 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check that source register is unaffected
+		if cpu.b != data {
+			t.Errorf("[test_0x48_LD_C_B] %v> expected source register B to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x48_LD_C_B] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x49_LD_C_C(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = data
+		testProgram := []uint8{0x49, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x49_LD_C_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.c != data {
+			t.Errorf("[test_0x49_LD_C_C] %v> expected register C to be 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check that source register is unaffected
+		if cpu.c != data {
+			t.Errorf("[test_0x49_LD_C_C] %v> expected source register C to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x49_LD_C_C] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x4A_LD_C_D(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = data
+		testProgram := []uint8{0x4A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x4A_LD_C_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.c != data {
+			t.Errorf("[test_0x4A_LD_C_D] %v> expected register C to be 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check that source register is unaffected
+		if cpu.d != data {
+			t.Errorf("[test_0x4A_LD_C_D] %v> expected source register D to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x4A_LD_C_D] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x4B_LD_C_E(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = data
+		testProgram := []uint8{0x4B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x4B_LD_C_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.c != data {
+			t.Errorf("[test_0x4B_LD_C_E] %v> expected register C to be 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check that source register is unaffected
+		if cpu.e != data {
+			t.Errorf("[test_0x4B_LD_C_E] %v> expected source register E to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x4B_LD_C_E] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x4C_LD_C_H(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = data
+		testProgram := []uint8{0x4C, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x4C_LD_C_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.c != data {
+			t.Errorf("[test_0x4C_LD_C_H] %v> expected register C to be 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check that source register is unaffected
+		if cpu.h != data {
+			t.Errorf("[test_0x4C_LD_C_H] %v> expected source register H to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x4C_LD_C_H] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x4D_LD_C_L(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = data
+		testProgram := []uint8{0x4D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x4D_LD_C_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.c != data {
+			t.Errorf("[test_0x4D_LD_C_L] %v> expected register C to be 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check that source register is unaffected
+		if cpu.l != data {
+			t.Errorf("[test_0x4D_LD_C_L] %v> expected source register L to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x4D_LD_C_L] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+func test_0x57_LD_D_A(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = data
+		testProgram := []uint8{0x57, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x57_LD_D_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.d != data {
+			t.Errorf("[test_0x57_LD_D_A] %v> expected register D to be 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check that source register is unaffected
+		if cpu.a != data {
+			t.Errorf("[test_0x57_LD_D_A] %v> expected source register A to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x57_LD_D_A] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x50_LD_D_B(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = data
+		testProgram := []uint8{0x50, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x50_LD_D_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.d != data {
+			t.Errorf("[test_0x50_LD_D_B] %v> expected register D to be 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check that source register is unaffected
+		if cpu.b != data {
+			t.Errorf("[test_0x50_LD_D_B] %v> expected source register B to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x50_LD_D_B] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x51_LD_D_C(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = data
+		testProgram := []uint8{0x51, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x51_LD_D_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.d != data {
+			t.Errorf("[test_0x51_LD_D_C] %v> expected register D to be 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check that source register is unaffected
+		if cpu.c != data {
+			t.Errorf("[test_0x51_LD_D_C] %v> expected source register C to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x51_LD_D_C] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x52_LD_D_D(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = data
+		testProgram := []uint8{0x52, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x52_LD_D_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.d != data {
+			t.Errorf("[test_0x52_LD_D_D] %v> expected register D to be 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check that source register is unaffected
+		if cpu.d != data {
+			t.Errorf("[test_0x52_LD_D_D] %v> expected source register D to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x52_LD_D_D] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x53_LD_D_E(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = data
+		testProgram := []uint8{0x53, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x53_LD_D_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.d != data {
+			t.Errorf("[test_0x53_LD_D_E] %v> expected register D to be 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check that source register is unaffected
+		if cpu.e != data {
+			t.Errorf("[test_0x53_LD_D_E] %v> expected source register E to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x53_LD_D_E] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x54_LD_D_H(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = data
+		testProgram := []uint8{0x54, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x54_LD_D_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.d != data {
+			t.Errorf("[test_0x54_LD_D_H] %v> expected register D to be 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check that source register is unaffected
+		if cpu.h != data {
+			t.Errorf("[test_0x54_LD_D_H] %v> expected source register H to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x54_LD_D_H] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x55_LD_D_L(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = data
+		testProgram := []uint8{0x55, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x55_LD_D_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.d != data {
+			t.Errorf("[test_0x55_LD_D_L] %v> expected register D to be 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check that source register is unaffected
+		if cpu.l != data {
+			t.Errorf("[test_0x55_LD_D_L] %v> expected source register L to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x55_LD_D_L] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+func test_0x5F_LD_E_A(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = data
+		testProgram := []uint8{0x5F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x5F_LD_E_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.e != data {
+			t.Errorf("[test_0x5F_LD_E_A] %v> expected register E to be 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check that source register is unaffected
+		if cpu.a != data {
+			t.Errorf("[test_0x5F_LD_E_A] %v> expected source register A to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x5F_LD_E_A] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x58_LD_E_B(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = data
+		testProgram := []uint8{0x58, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x58_LD_E_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.e != data {
+			t.Errorf("[test_0x58_LD_E_B] %v> expected register E to be 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check that source register is unaffected
+		if cpu.b != data {
+			t.Errorf("[test_0x58_LD_E_B] %v> expected source register B to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x58_LD_E_B] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x59_LD_E_C(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = data
+		testProgram := []uint8{0x59, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x59_LD_E_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.e != data {
+			t.Errorf("[test_0x59_LD_E_C] %v> expected register E to be 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check that source register is unaffected
+		if cpu.c != data {
+			t.Errorf("[test_0x59_LD_E_C] %v> expected source register C to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x59_LD_E_C] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x5A_LD_E_D(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = data
+		testProgram := []uint8{0x5A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x5A_LD_E_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.e != data {
+			t.Errorf("[test_0x5A_LD_E_D] %v> expected register E to be 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check that source register is unaffected
+		if cpu.d != data {
+			t.Errorf("[test_0x5A_LD_E_D] %v> expected source register D to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x5A_LD_E_D] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x5B_LD_E_E(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = data
+		testProgram := []uint8{0x5B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x5B_LD_E_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.e != data {
+			t.Errorf("[test_0x5B_LD_E_E] %v> expected register E to be 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check that source register is unaffected
+		if cpu.e != data {
+			t.Errorf("[test_0x5B_LD_E_E] %v> expected source register E to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x5B_LD_E_E] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x5C_LD_E_H(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = data
+		testProgram := []uint8{0x5C, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x5C_LD_E_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.e != data {
+			t.Errorf("[test_0x5C_LD_E_H] %v> expected register E to be 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check that source register is unaffected
+		if cpu.h != data {
+			t.Errorf("[test_0x5C_LD_E_H] %v> expected source register H to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x5C_LD_E_H] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x5D_LD_E_L(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = data
+		testProgram := []uint8{0x5D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x5D_LD_E_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.e != data {
+			t.Errorf("[test_0x5D_LD_E_L] %v> expected register E to be 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check that source register is unaffected
+		if cpu.l != data {
+			t.Errorf("[test_0x5D_LD_E_L] %v> expected source register L to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x5D_LD_E_L] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+func test_0x67_LD_H_A(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = data
+		testProgram := []uint8{0x67, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x67_LD_H_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.h != data {
+			t.Errorf("[test_0x67_LD_H_A] %v> expected register H to be 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check that source register is unaffected
+		if cpu.a != data {
+			t.Errorf("[test_0x67_LD_H_A] %v> expected source register A to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x67_LD_H_A] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x60_LD_H_B(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = data
+		testProgram := []uint8{0x60, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x60_LD_H_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.h != data {
+			t.Errorf("[test_0x60_LD_H_B] %v> expected register H to be 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check that source register is unaffected
+		if cpu.b != data {
+			t.Errorf("[test_0x60_LD_H_B] %v> expected source register B to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x60_LD_H_B] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x61_LD_H_C(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = data
+		testProgram := []uint8{0x61, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x61_LD_H_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.h != data {
+			t.Errorf("[test_0x61_LD_H_C] %v> expected register H to be 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check that source register is unaffected
+		if cpu.c != data {
+			t.Errorf("[test_0x61_LD_H_C] %v> expected source register C to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x61_LD_H_C] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x62_LD_H_D(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = data
+		testProgram := []uint8{0x62, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x62_LD_H_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.h != data {
+			t.Errorf("[test_0x62_LD_H_D] %v> expected register H to be 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check that source register is unaffected
+		if cpu.d != data {
+			t.Errorf("[test_0x62_LD_H_D] %v> expected source register D to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x62_LD_H_D] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x63_LD_H_E(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = data
+		testProgram := []uint8{0x63, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x63_LD_H_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.h != data {
+			t.Errorf("[test_0x63_LD_H_E] %v> expected register H to be 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check that source register is unaffected
+		if cpu.e != data {
+			t.Errorf("[test_0x63_LD_H_E] %v> expected source register E to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x63_LD_H_E] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x64_LD_H_H(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = data
+		testProgram := []uint8{0x64, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x64_LD_H_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.h != data {
+			t.Errorf("[test_0x64_LD_H_H] %v> expected register H to be 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check that source register is unaffected
+		if cpu.h != data {
+			t.Errorf("[test_0x64_LD_H_H] %v> expected source register H to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x64_LD_H_H] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x65_LD_H_L(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = data
+		testProgram := []uint8{0x65, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x65_LD_H_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.h != data {
+			t.Errorf("[test_0x65_LD_H_L] %v> expected register H to be 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check that source register is unaffected
+		if cpu.l != data {
+			t.Errorf("[test_0x65_LD_H_L] %v> expected source register L to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x65_LD_H_L] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+func test_0x6F_LD_L_A(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = data
+		testProgram := []uint8{0x6F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x6F_LD_L_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.l != data {
+			t.Errorf("[test_0x6F_LD_L_A] %v> expected register L to be 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check that source register is unaffected
+		if cpu.a != data {
+			t.Errorf("[test_0x6F_LD_L_A] %v> expected source register A to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x6F_LD_L_A] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x68_LD_L_B(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = data
+		testProgram := []uint8{0x68, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x68_LD_L_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.l != data {
+			t.Errorf("[test_0x68_LD_L_B] %v> expected register L to be 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check that source register is unaffected
+		if cpu.b != data {
+			t.Errorf("[test_0x68_LD_L_B] %v> expected source register B to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x68_LD_L_B] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x69_LD_L_C(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = data
+		testProgram := []uint8{0x69, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x69_LD_L_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.l != data {
+			t.Errorf("[test_0x69_LD_L_C] %v> expected register L to be 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check that source register is unaffected
+		if cpu.c != data {
+			t.Errorf("[test_0x69_LD_L_C] %v> expected source register C to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x69_LD_L_C] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x6A_LD_L_D(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = data
+		testProgram := []uint8{0x6A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x6A_LD_L_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.l != data {
+			t.Errorf("[test_0x6A_LD_L_D] %v> expected register L to be 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check that source register is unaffected
+		if cpu.d != data {
+			t.Errorf("[test_0x6A_LD_L_D] %v> expected source register D to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x6A_LD_L_D] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x6B_LD_L_E(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = data
+		testProgram := []uint8{0x6B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x6B_LD_L_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.l != data {
+			t.Errorf("[test_0x6B_LD_L_E] %v> expected register L to be 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check that source register is unaffected
+		if cpu.e != data {
+			t.Errorf("[test_0x6B_LD_L_E] %v> expected source register E to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x6B_LD_L_E] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x6C_LD_L_H(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = data
+		testProgram := []uint8{0x6C, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x6C_LD_L_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.l != data {
+			t.Errorf("[test_0x6C_LD_L_H] %v> expected register L to be 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check that source register is unaffected
+		if cpu.h != data {
+			t.Errorf("[test_0x6C_LD_L_H] %v> expected source register H to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x6C_LD_L_H] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x6D_LD_L_L(t *testing.T) {
+	for idx, data := range testData_LD_r8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = data
+		testProgram := []uint8{0x6D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x6D_LD_L_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.l != data {
+			t.Errorf("[test_0x6D_LD_L_L] %v> expected register L to be 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check that source register is unaffected
+		if cpu.l != data {
+			t.Errorf("[test_0x6D_LD_L_L] %v> expected source register L to be unaffected 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x6D_LD_L_L] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// > LD r8, [HL]
+var testData_LD_r8__HL = []uint8{0x00, 0xFF, 0x0F, 0xF0, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE}
+
+func test_0x7E_LD_A__HL(t *testing.T) {
+	for idx, data := range testData_LD_r8__HL {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0x7E, 0x10, data}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x7E_LD_A__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.a != data {
+			t.Errorf("[test_0x7E_LD_A__HL] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, data, cpu.a)
+		}
+		// check that source register is unaffected
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x7E_LD_A__HL] %v> expected source value at memory location HL to be unaffected 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x7E_LD_A__HL] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x46_LD_B__HL(t *testing.T) {
+	for idx, data := range testData_LD_r8__HL {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0x46, 0x10, data}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x46_LD_B__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.b != data {
+			t.Errorf("[test_0x46_LD_B__HL] %v> expected register B to be 0x%02X, got 0x%02X\n", idx, data, cpu.b)
+		}
+		// check that source register is unaffected
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x46_LD_B__HL] %v> expected source value at memory location HL to be unaffected 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x46_LD_B__HL] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x4E_LD_C__HL(t *testing.T) {
+	for idx, data := range testData_LD_r8__HL {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0x4E, 0x10, data}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x4E_LD_C__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.c != data {
+			t.Errorf("[test_0x4E_LD_C__HL] %v> expected register C to be 0x%02X, got 0x%02X\n", idx, data, cpu.c)
+		}
+		// check that source register is unaffected
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x4E_LD_C__HL] %v> expected source value at memory location HL to be unaffected 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x4E_LD_C__HL] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x56_LD_D__HL(t *testing.T) {
+	for idx, data := range testData_LD_r8__HL {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0x56, 0x10, data}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x56_LD_D__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.d != data {
+			t.Errorf("[test_0x56_LD_D__HL] %v> expected register D to be 0x%02X, got 0x%02X\n", idx, data, cpu.d)
+		}
+		// check that source register is unaffected
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x56_LD_D__HL] %v> expected source value at memory location HL to be unaffected 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x56_LD_D__HL] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x5E_LD_E__HL(t *testing.T) {
+	for idx, data := range testData_LD_r8__HL {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0x5E, 0x10, data}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x5E_LD_E__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.e != data {
+			t.Errorf("[test_0x5E_LD_E__HL] %v> expected register E to be 0x%02X, got 0x%02X\n", idx, data, cpu.e)
+		}
+		// check that source register is unaffected
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x5E_LD_E__HL] %v> expected source value at memory location HL to be unaffected 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x5E_LD_E__HL] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x66_LD_H__HL(t *testing.T) {
+	for idx, data := range testData_LD_r8__HL {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0x66, 0x10, data}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x66_LD_H__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.h != data {
+			t.Errorf("[test_0x66_LD_H__HL] %v> expected register H to be 0x%02X, got 0x%02X\n", idx, data, cpu.h)
+		}
+		/* This test is not relevant here since we are loading data into the H register which was used as HL to locate the source data
+		 		// check that source register is unaffected
+				valueAtHL := cpu.bus.Read(cpu.getHL())
+				if valueAtHL != data {
+					t.Errorf("[test_0x66_LD_H__HL] %v> expected source value at memory location HL to be unaffected 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+				}
+		*/
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x66_LD_H__HL] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x6E_LD_L__HL(t *testing.T) {
+	for idx, data := range testData_LD_r8__HL {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0x6E, 0x10, data}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x6E_LD_L__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register
+		if cpu.l != data {
+			t.Errorf("[test_0x6E_LD_L__HL] %v> expected register L to be 0x%02X, got 0x%02X\n", idx, data, cpu.l)
+		}
+		/* This test is not relevant here since we are loading data into the L register which was used as HL to locate the source data
+		 		// check that source register is unaffected
+				valueAtHL := cpu.bus.Read(cpu.getHL())
+				if valueAtHL != data {
+					t.Errorf("[test_0x66_LD_H__HL] %v> expected source value at memory location HL to be unaffected 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+				}
+		*/
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x6E_LD_L__HL] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// > LD [HL], n8/r8
+var testData_LD__HL_n8_r8 = []uint8{0x00, 0xFF, 0x0F, 0xF0, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE}
+
+func test_0x36_LD__HL_n8(t *testing.T) {
+	for idx, data := range testData_LD__HL_n8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0x36, data, 0x10, 0x77}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0x36_LD__HL_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into memory location pointed by HL
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x36_LD__HL_n8] %v> expected memory location pointed by HL to be 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check that register HL is unaffected
+		if cpu.getHL() != 0x0003 {
+			t.Errorf("[test_0x36_LD__HL_n8] %v> expected address in register HL to be unaffected 0x%02X, got 0x%02X\n", idx, 0x0003, cpu.getHL())
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x36_LD__HL_n8] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x77_LD__HL_A(t *testing.T) {
+	for idx, data := range testData_LD__HL_n8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		cpu.a = data
+		testProgram := []uint8{0x77, 0x10, 0x77}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x77_LD__HL_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check that data has been correctly loaded into memory location pointed by HL
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x77_LD__HL_A] %v> expected memory location pointed by HL to be 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check that register HL is unaffected
+		if cpu.getHL() != 0x0002 {
+			t.Errorf("[test_0x77_LD__HL_A] %v> expected address in register HL to be unaffected 0x0002, got 0x%02X\n", idx, cpu.getHL())
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x77_LD__HL_A] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x70_LD__HL_B(t *testing.T) {
+	for idx, data := range testData_LD__HL_n8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		cpu.b = data
+		testProgram := []uint8{0x70, 0x10, 0x77}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x70_LD__HL_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check that data has been correctly loaded into memory location pointed by HL
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x70_LD__HL_B] %v> expected memory location pointed by HL to be 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check that register HL is unaffected
+		if cpu.getHL() != 0x0002 {
+			t.Errorf("[test_0x70_LD__HL_B] %v> expected address in register HL to be unaffected 0x0002, got 0x%02X\n", idx, cpu.getHL())
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x70_LD__HL_B] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x71_LD__HL_C(t *testing.T) {
+	for idx, data := range testData_LD__HL_n8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		cpu.c = data
+		testProgram := []uint8{0x71, 0x10, 0x77}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x71_LD__HL_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check that data has been correctly loaded into memory location pointed by HL
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x71_LD__HL_C] %v> expected memory location pointed by HL to be 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check that register HL is unaffected
+		if cpu.getHL() != 0x0002 {
+			t.Errorf("[test_0x71_LD__HL_C] %v> expected address in register HL to be unaffected 0x0002, got 0x%02X\n", idx, cpu.getHL())
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x71_LD__HL_C] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x72_LD__HL_D(t *testing.T) {
+	for idx, data := range testData_LD__HL_n8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		cpu.d = data
+		testProgram := []uint8{0x72, 0x10, 0x77}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x72_LD__HL_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check that data has been correctly loaded into memory location pointed by HL
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x72_LD__HL_D] %v> expected memory location pointed by HL to be 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check that register HL is unaffected
+		if cpu.getHL() != 0x0002 {
+			t.Errorf("[test_0x72_LD__HL_D] %v> expected address in register HL to be unaffected 0x0002, got 0x%02X\n", idx, cpu.getHL())
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x72_LD__HL_D] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x73_LD__HL_E(t *testing.T) {
+	for idx, data := range testData_LD__HL_n8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		cpu.e = data
+		testProgram := []uint8{0x73, 0x10, 0x77}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x73_LD__HL_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check that data has been correctly loaded into memory location pointed by HL
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x73_LD__HL_E] %v> expected memory location pointed by HL to be 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		// check that register HL is unaffected
+		if cpu.getHL() != 0x0002 {
+			t.Errorf("[test_0x73_LD__HL_E] %v> expected address in register HL to be unaffected 0x0002, got 0x%02X\n", idx, cpu.getHL())
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x73_LD__HL_E] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x74_LD__HL_H(t *testing.T) {
+	for idx, data := range testData_LD__HL_n8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		cpu.h = data
+		testProgram := []uint8{0x74, 0x10, 0x77}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x74_LD__HL_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check that data has been correctly loaded into memory location pointed by HL
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x74_LD__HL_H] %v> expected memory location pointed by HL to be 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		/* This test is not relevant here since we are loading data into the H register which was used as HL to locate the source data
+		// check that register HL is unaffected
+		if cpu.getHL() != 0x0002 {
+			t.Errorf("[test_0x74_LD__HL_H] %v> expected address in register HL to be unaffected 0x0002, got 0x%02X\n", idx, cpu.getHL())
+		}
+		*/
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x74_LD__HL_H] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x75_LD__HL_L(t *testing.T) {
+	for idx, data := range testData_LD__HL_n8_r8 {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0002)
+		cpu.l = data
+		testProgram := []uint8{0x75, 0x10, 0x77}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x75_LD__HL_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check that data has been correctly loaded into memory location pointed by HL
+		valueAtHL := cpu.bus.Read(cpu.getHL())
+		if valueAtHL != data {
+			t.Errorf("[test_0x75_LD__HL_L] %v> expected memory location pointed by HL to be 0x%02X, got 0x%02X\n", idx, data, valueAtHL)
+		}
+		/* This test is not relevant here since we are loading data into the L register which was used as HL to locate the source data
+		// check that register HL is unaffected
+		if cpu.getHL() != 0x0002 {
+			t.Errorf("[test_0x75_LD__HL_L] %v> expected address in register HL to be unaffected 0x0002, got 0x%02X\n", idx, cpu.getHL())
+		}
+		*/
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x75_LD__HL_L] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// > LD A, from address
+var fromToAddress = []uint16{0x0010, 0x002F, 0x0035, 0x004E, 0x1F5F, 0x3F6A, 0x0273, 0xFFFF}
+var value8bitAtAddress = []uint8{0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xFF}
+
+func test_0xFA_LD_A__a16(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		value := value8bitAtAddress[idx]
+		cpu.bus.Write(addr, value)
+		testProgram := []uint8{0xFA, uint8(addr & 0x00FF), uint8((addr & 0xFF00) >> 8), 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0003 {
+			t.Errorf("[test_0xFA_LD_A__a16] %v> expected PC to be 0x0003, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register A
+		if cpu.a != value {
+			t.Errorf("[test_0xFA_LD_A__a16] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xFA_LD_A__a16] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+	}
+}
+func test_0xF2_LD_A__C(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = uint8(addr & 0x00FF)
+		value := value8bitAtAddress[idx]
+		cpu.bus.Write(0xFF00+uint16(cpu.c), value)
+		testProgram := []uint8{0xF2, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xF2_LD_A__C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register A
+		if cpu.a != value {
+			t.Errorf("[test_0xF2_LD_A__C] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xF2_LD_A__C] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x0A_LD_A__BC(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setBC(addr)
+		value := value8bitAtAddress[idx]
+		cpu.bus.Write(cpu.getBC(), value)
+		testProgram := []uint8{0x0A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x0A_LD_A__BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register A
+		if cpu.a != value {
+			t.Errorf("[test_0x0A_LD_A__BC] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x0A_LD_A__BC] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x1A_LD_A__DE(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setDE(addr)
+		value := value8bitAtAddress[idx]
+		cpu.bus.Write(cpu.getDE(), value)
+		testProgram := []uint8{0x1A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x1A_LD_A__DE] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register A
+		if cpu.a != value {
+			t.Errorf("[test_0x1A_LD_A__DE] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x1A_LD_A__DE] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x2A_LD_A__HLp(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(addr)
+		value := value8bitAtAddress[idx]
+		cpu.bus.Write(cpu.getHL(), value)
+		testProgram := []uint8{0x2A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x2A_LD_A__HLp] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register A
+		if cpu.a != value {
+			t.Errorf("[test_0x2A_LD_A__HLp] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check that register HL has been incremented
+		if cpu.getHL() != addr+1 {
+			t.Errorf("[test_0x2A_LD_A__HLp] %v> expected register HL to be incremented to 0x%04X, got 0x%04X\n", idx, addr+1, cpu.getHL())
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x2A_LD_A__HLp] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x3A_LD_A__HLm(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(addr)
+		value := value8bitAtAddress[idx]
+		cpu.bus.Write(cpu.getHL(), value)
+		testProgram := []uint8{0x3A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x3A_LD_A__HLm] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into register A
+		if cpu.a != value {
+			t.Errorf("[test_0x3A_LD_A__HLm] %v> expected register A to be 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check that register HL has been decremented
+		if cpu.getHL() != addr-1 {
+			t.Errorf("[test_0x3A_LD_A__HLm] %v> expected register HL to be decremented to 0x%04X, got 0x%04X\n", idx, addr-1, cpu.getHL())
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x3A_LD_A__HLm] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// > LD to address, A
+func test_0xEA_LD__a16_A(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		value := value8bitAtAddress[idx]
+		cpu.a = value
+		testProgram := []uint8{0xEA, uint8(addr & 0x00FF), uint8((addr & 0xFF00) >> 8), 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0003 {
+			t.Errorf("[test_0xFA_LD_A__a16] %v> expected PC to be 0x0003, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into memory location
+		valueAtAddr := cpu.bus.Read(addr)
+		if valueAtAddr != value {
+			t.Errorf("[test_0xFA_LD_A__a16] %v> expected memory location pointed by n16 operand to be 0x%02X, got 0x%02X\n", idx, value, valueAtAddr)
+		}
+		// check if A register is unaffected
+		if cpu.a != value {
+			t.Errorf("[test_0xFA_LD_A__a16] %v> expected register A to be unaffected 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xFA_LD_A__a16] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xE2_LD__C_A(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		value := value8bitAtAddress[idx]
+		cpu.a = value
+		cpu.c = uint8(addr & 0x00FF)
+		testProgram := []uint8{0xE2, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xE2_LD__C_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into memory location
+		valueAtAddr := cpu.bus.Read(0xFF00 + (addr & 0x00FF))
+		if valueAtAddr != value {
+			t.Errorf("[test_0xE2_LD__C_A] %v> expected memory location pointed by 0xFF00 + C register to be 0x%02X, got 0x%02X\n", idx, value, valueAtAddr)
+		}
+		// check if A register is unaffected
+		if cpu.a != value {
+			t.Errorf("[test_0xE2_LD__C_A] %v> expected register A to be unaffected 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xE2_LD__C_A] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x02_LD__BC_A(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		value := value8bitAtAddress[idx]
+		cpu.a = value
+		cpu.setBC(addr)
+		testProgram := []uint8{0x02, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x02_LD__BC_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into memory location
+		valueAtAddr := cpu.bus.Read(addr)
+		if valueAtAddr != value {
+			t.Errorf("[test_0x02_LD__BC_A] %v> expected memory location pointed by LD register to be 0x%02X, got 0x%02X\n", idx, value, valueAtAddr)
+		}
+		// check if A register is unaffected
+		if cpu.a != value {
+			t.Errorf("[test_0x02_LD__BC_A] %v> expected register A to be unaffected 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x02_LD__BC_A] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x12_LD__DE_A(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		value := value8bitAtAddress[idx]
+		cpu.a = value
+		cpu.setDE(addr)
+		testProgram := []uint8{0x12, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x12_LD__DE_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into memory location
+		valueAtAddr := cpu.bus.Read(addr)
+		if valueAtAddr != value {
+			t.Errorf("[test_0x12_LD__DE_A] %v> expected memory location pointed by DE register to be 0x%02X, got 0x%02X\n", idx, value, valueAtAddr)
+		}
+		// check if A register is unaffected
+		if cpu.a != value {
+			t.Errorf("[test_0x12_LD__DE_A] %v> expected register A to be unaffected 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x12_LD__DE_A] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x22_LD__HLp_A(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		value := value8bitAtAddress[idx]
+		cpu.a = value
+		cpu.setHL(addr)
+		testProgram := []uint8{0x22, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x22_LD__HLp_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into memory location
+		valueAtAddr := cpu.bus.Read(addr)
+		if valueAtAddr != value {
+			t.Errorf("[test_0x22_LD__HLp_A] %v> expected memory location pointed by HL register to be 0x%02X, got 0x%02X\n", idx, value, valueAtAddr)
+		}
+		// check that register HL has been incremented
+		if cpu.getHL() != addr+1 {
+			t.Errorf("[test_0x22_LD__HLp_A] %v> expected register HL to be incremented to 0x%04X, got 0x%04X\n", idx, addr+1, cpu.getHL())
+		}
+		// check if A register is unaffected
+		if cpu.a != value {
+			t.Errorf("[test_0x22_LD__HLp_A] %v> expected register A to be unaffected 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x22_LD__HLp_A] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x32_LD__HLm_A(t *testing.T) {
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		value := value8bitAtAddress[idx]
+		cpu.a = value
+		cpu.setHL(addr)
+		testProgram := []uint8{0x32, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x32_LD__HLm_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into memory location
+		valueAtAddr := cpu.bus.Read(addr)
+		if valueAtAddr != value {
+			t.Errorf("[test_0x32_LD__HLm_A] %v> expected memory location pointed by HL register to be 0x%02X, got 0x%02X\n", idx, value, valueAtAddr)
+		}
+		// check that register HL has been decremented
+		if cpu.getHL() != addr-1 {
+			t.Errorf("[test_0x32_LD__HLm_A] %v> expected register HL to be decremented to 0x%04X, got 0x%04X\n", idx, addr-1, cpu.getHL())
+		}
+		// check if A register is unaffected
+		if cpu.a != value {
+			t.Errorf("[test_0x32_LD__HLm_A] %v> expected register A to be unaffected 0x%02X, got 0x%02X\n", idx, value, cpu.a)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x32_LD__HLm_A] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// > LD Stack Pointer
+var value16bitAtAddress = []uint16{0x0123, 0x4567, 0x89AB, 0xCDEF, 0xFFAA, 0x19A7, 0xD65C, 0x71B9}
+
+func test_0xF9_LD_SP_HL(t *testing.T) {
+	for idx, value := range value16bitAtAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(value)
+		testProgram := []uint8{0xF9, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xF9_LD_SP_HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into stack pointer
+		if cpu.sp != value {
+			t.Errorf("[test_0xF9_LD_SP_HL] %v> expected stack pointer to be 0x%02X, got 0x%02X\n", idx, value, cpu.sp)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xF9_LD_SP_HL] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0x08_LD__a16_SP(t *testing.T) {
+	// Stores SP & $FF at address a16 and SP >> 8 at address a16 + 1
+	for idx, addr := range fromToAddress {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		value := value16bitAtAddress[idx]
+		cpu.sp = value
+		testProgram := []uint8{0x08, uint8(addr & 0x00FF), uint8((addr & 0xFF00) >> 8), 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0003 {
+			t.Errorf("[test_0x08_LD__a16_SP] %v> expected PC to be 0x0003, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into memory location
+		valueAtAddr := cpu.bus.Read16(addr)
+		if valueAtAddr != value {
+			t.Errorf("[test_0x08_LD__a16_SP] %v> expected memory location pointed by a16 operand to be 0x%02X, got 0x%02X\n", idx, value, valueAtAddr)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0x08_LD__a16_SP] %v> expected flags to be unaffected 0x00, got 0x%02X\n", idx, cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xF8_LD_HL_SP_e8(t *testing.T) {
+	// this is the only LD instruction that affects the flags
+	// this is also the only LD instruction that uses an 8-bit signed operand
+	type TestDataEntry struct {
+		sp            uint16
+		e8            uint8
+		expectedHL    uint16
+		expectedHFlag bool
+		expectedCFlag bool
+	}
+	var testData = []TestDataEntry{
+		{0xFFF8, 0x10, 0x0008, false, true},  // 0> 0xFFF8 + 0x10 (+16) = 0x0008 - H = 0, C = 1
+		{0xFFF8, 0xF0, 0xFFE8, false, true},  // 1> 0xFFF8 + 0xF0 (-16) = 0xFFE8 - H = 1, C = 0
+		{0x0001, 0xFF, 0x0000, true, true},   // 2> 0x0001 + 0xFF (-1)  = 0x0000 - H = 1, C = 1
+		{0x00FF, 0x01, 0x0100, true, true},   // 3> 0x00FF + 0x01 (+1)  = 0x0100 - H = 0, C = 1
+		{0x0100, 0xFE, 0x00FE, false, false}, // 4> 0x0100 + 0xFE (-2)  = 0x00FE - H = 1, C = 1
+		{0x7FFF, 0x01, 0x8000, true, true},   // 5> 0x7FFF + 0x01 (+1)  = 0x8000 - H = 0, C = 0
+		{0x8000, 0xFF, 0x7FFF, false, false}, // 6> 0x8000 + 0xFF (-1)  = 0x7FFF - H = 1, C = 0
+		{0x1234, 0x20, 0x1254, false, false}, // 7> 0x1234 + 0x20 (+32) = 0x1254 - H = 0, C = 0
+		{0x00F0, 0x10, 0x0100, false, true},  // 8> 0x00F0 + 0x10 (+16) = 0x0100 - H = 1, C = 1
+		{0xABCD, 0x30, 0xABFD, false, false}, // 9> 0xABCD + 0x30 (+48) = 0xABFD - H = 1, C = 0
+	}
+
+	for idx, entry := range testData {
+		preconditions()
+		randomizeFlags()
+		cpu.sp = entry.sp
+		e8 := entry.e8
+		testProgram := []uint8{0xF8, e8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0xF9_LD_SP_HL] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into stack pointer
+		if cpu.getHL() != entry.expectedHL {
+			t.Errorf("[test_0xF9_LD_SP_HL] %v> expected HL register to be 0x%02X, got 0x%02X\n", idx, entry.expectedHL, cpu.getHL())
+		}
+		// check flags
+		if cpu.getZFlag() {
+			t.Errorf("[test_0xF9_LD_SP_HL] %v> expected Z flag to be 0, got 1\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xF9_LD_SP_HL] %v> expected N flag to be 0, got 1\n", idx)
+		}
+		if cpu.getHFlag() != entry.expectedHFlag {
+			t.Errorf("[test_0xF9_LD_SP_HL] %v> expected H flag to be %v, got %v\n", idx, entry.expectedHFlag, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != entry.expectedCFlag {
+			t.Errorf("[test_0xF9_LD_SP_HL] %v> expected C flag to be %v, got %v\n", idx, entry.expectedCFlag, cpu.getCFlag())
+		}
+		postconditions()
+	}
 }
 
 // LDH: should load the value from the source into the destination and not impact the flags
@@ -5030,16 +7925,16 @@ func TestDAA(t *testing.T) {
 
 // DEC: should decrement the value of the destination (register or memory)
 // opcodes:
-//	- 0x3D=DEC A
-//	- 0x05=DEC B
-//	- 0x0D=DEC C
-//	- 0x15=DEC D
-//	- 0x1D=DEC E
-//	- 0x25=DEC H
-//	- 0x2D=DEC L
-//	- 0x35=DEC [HL]
+//   - 0x3D=DEC A
+//   - 0x05=DEC B
+//   - 0x0D=DEC C
+//   - 0x15=DEC D
+//   - 0x1D=DEC E
+//   - 0x25=DEC H
+//   - 0x2D=DEC L
+//   - 0x35=DEC [HL]
+//
 // flags: Z:Z N:1 H:H C:-
-
 // - 0x0B=DEC BC
 // - 0x1B=DEC DE
 // - 0x2B=DEC HL

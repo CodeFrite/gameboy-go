@@ -546,21 +546,20 @@ func (c *CPU) LD(instruction *Instruction) {
 		if instruction.Operands[0].Immediate {
 			// LD HL, SP+e8 (0xF8)
 			if len(instruction.Operands) == 3 {
-				newValue := c.sp + c.operand
-				// set or reset the H flag
-				if newValue > 0x0F {
+				// set or reset the H flag if carry from bit 3 to bit 4
+				if (c.sp&0x000F + c.operand&0x000F) > 0x000F {
 					c.setHFlag()
 				} else {
 					c.resetHFlag()
 				}
-				// set or reset the C flag
-				if newValue > 0xFF {
+				// set or reset the C flag if carry from bit 7 to bit 8
+				if (c.sp&0x00FF)+(c.operand&0x00FF) > 0x00FF {
 					c.setCFlag()
 				} else {
 					c.resetCFlag()
 				}
 				// load the result into HL
-				c.setHL(newValue)
+				c.setHL(c.sp + uint16(int8(c.operand)))
 				// update flags
 				c.resetZFlag()
 				c.resetNFlag()
@@ -587,12 +586,12 @@ func (c *CPU) LD(instruction *Instruction) {
 		low := c.bus.Read(c.pc + 1)
 		high := c.bus.Read(c.pc + 2)
 		addr := uint16(high)<<8 | uint16(low)
-		err = c.bus.Write(addr, uint8(c.sp))
+		err = c.bus.Write(addr, uint8(c.operand))
 		if err != nil {
 			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
 			panic(err)
 		}
-		err = c.bus.Write(addr+1, uint8(c.sp>>8))
+		err = c.bus.Write(addr+1, uint8(c.operand>>8))
 		if err != nil {
 			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
 			panic(err)

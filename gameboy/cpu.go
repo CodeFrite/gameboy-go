@@ -231,7 +231,8 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 		if operand.Immediate {
 			value = uint16(c.c)
 		} else {
-			panic("Non immediate operand not implemented yet")
+			addr = 0xFF00 + uint16(c.c)
+			value = uint16(c.bus.Read(addr))
 		}
 	case "D":
 		if operand.Immediate {
@@ -274,6 +275,12 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 			value = c.getHL()
 		} else {
 			value = c.bus.Read16(c.getHL())
+		}
+		// increment or decrement the value of HL
+		if operand.Increment {
+			c.setHL(c.getHL() + 1)
+		} else if operand.Decrement {
+			c.setHL(c.getHL() - 1)
 		}
 	case "SP": // always immediate
 		value = c.sp
@@ -356,12 +363,10 @@ func (c *CPU) Step() error {
 	c.instruction = instruction
 	// get the operands of the instruction
 	operands := instruction.Operands
-	// fetch the operand value
-	if len(operands) == 1 {
-		c.operand = c.fetchOperandValue(operands[0])
-	} else if len(operands) == 2 {
-		// decode operand 2
-		c.operand = c.fetchOperandValue(operands[1])
+	// fetch the last operand value
+	idx := len(operands) - 1
+	if idx >= 0 {
+		c.operand = c.fetchOperandValue(operands[idx])
 	}
 
 	// Handle the IME
