@@ -655,21 +655,19 @@ func (c *CPU) PUSH(instruction *Instruction) {
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
-/*
-POP: Pop a 16-bit register pair from the stack
-opcodes:
-  - 0xC1 = POP BC
-  - 0xD1 = POP DE
-  - 0xE1 = POP HL
-  - 0xF1 = POP AF (flags are restored from the stack)
-
-flags: - except for 0xF1 where Z->Z N->N H->H C->C
-*/
+// POP: Pop a 16-bit register pair from the stack
+// opcodes:
+//   - 0xC1 = POP BC
+//   - 0xD1 = POP DE
+//   - 0xE1 = POP HL
+//   - 0xF1 = POP AF (flags are restored from the stack)
+//
+// flags: - except for 0xF1 where Z->Z N->N H->H C->C
 func (c *CPU) POP(instruction *Instruction) {
-	low := c.bus.Read(c.sp)
-	c.sp = (c.sp + 1)
-	high := c.bus.Read(c.sp)
-	c.sp = (c.sp + 1)
+	// using the cpu.pop method to pop the 16-bit register pair from the stack and increment the stack pointer twice after each 8bit pop operation
+	poppedValue := c.pop()
+	high := uint8(poppedValue >> 8)
+	low := uint8(poppedValue)
 	switch instruction.Operands[0].Name {
 	case "AF":
 		c.a = (high)
