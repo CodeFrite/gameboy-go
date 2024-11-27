@@ -5538,9 +5538,168 @@ func test_0xE0_LDH__a8_A(t *testing.T) {
 	postconditions()
 }
 
-// PUSH: should push the value from the source into the stack
+// PUSH: Push a 16-bit register pair onto the stack
+// opcodes:
+//   - 0xC5 = PUSH BC
+//   - 0xD5 = PUSH DE
+//   - 0xE5 = PUSH HL
+//   - 0xF5 = PUSH AF
+//
+// flags: -
 func TestPUSH(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0xC5_PUSH_BC", test_0xC5_PUSH_BC)
+	t.Run("0xD5_PUSH_DE", test_0xD5_PUSH_DE)
+	t.Run("0xE5_PUSH_HL", test_0xE5_PUSH_HL)
+	t.Run("0xF5_PUSH_AF", test_0xF5_PUSH_AF)
+}
+
+var pushTestData = []uint16{0x1234, 0x5678, 0x9ABC, 0xDEF0, 0xFFAA, 0x19A7, 0xD65C, 0x71B9, 0x0000, 0xFFFF}
+
+// pushing all the test data values one after the other into the stack without resetting the gameboy
+// and performing checks after each push
+func test_0xC5_PUSH_BC(t *testing.T) {
+	preconditions()
+	randomizeFlags()
+	saveFlags := cpu.f
+
+	for idx, value := range pushTestData {
+		// soft reset of the cpu after STOP instruction which blocks the cpu execution and set the offset and pc
+		cpu.stopped = false
+		cpu.offset = 0x0000
+		cpu.pc = 0x0000
+
+		cpu.setBC(value)
+		testProgram := []uint8{0xC5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xC5_PUSH_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into stack
+		valueAtSP := cpu.bus.Read16(cpu.sp)
+		if valueAtSP != value {
+			t.Errorf("[test_0xC5_PUSH_BC] %v> expected value saved @SP to be 0x%04X, got 0x%04X\n", idx, value, valueAtSP)
+		}
+		// check if stack pointer has been decremented
+		expectedSP := 0xFFFE - uint16(2*(idx+1))
+		if cpu.sp != expectedSP {
+			t.Errorf("[test_0xC5_PUSH_BC] %v> expected stack pointer to be decremented to 0x%04X, got 0x%04X\n", idx, expectedSP, cpu.sp)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xC5_PUSH_BC] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+	}
+	postconditions()
+}
+func test_0xD5_PUSH_DE(t *testing.T) {
+	preconditions()
+	randomizeFlags()
+	saveFlags := cpu.f
+
+	for idx, value := range pushTestData {
+		// soft reset of the cpu after STOP instruction which blocks the cpu execution and set the offset and pc
+		cpu.stopped = false
+		cpu.offset = 0x0000
+		cpu.pc = 0x0000
+
+		cpu.setDE(value)
+		testProgram := []uint8{0xD5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xD5_PUSH_DE] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into stack
+		valueAtSP := cpu.bus.Read16(cpu.sp)
+		if valueAtSP != value {
+			t.Errorf("[test_0xD5_PUSH_DE] %v> expected value saved @SP to be 0x%04X, got 0x%04X\n", idx, value, valueAtSP)
+		}
+		// check if stack pointer has been decremented
+		expectedSP := 0xFFFE - uint16(2*(idx+1))
+		if cpu.sp != expectedSP {
+			t.Errorf("[test_0xD5_PUSH_DE] %v> expected stack pointer to be decremented to 0x%04X, got 0x%04X\n", idx, expectedSP, cpu.sp)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xD5_PUSH_DE] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+	}
+	postconditions()
+}
+func test_0xE5_PUSH_HL(t *testing.T) {
+	preconditions()
+	randomizeFlags()
+	saveFlags := cpu.f
+
+	for idx, value := range pushTestData {
+		// soft reset of the cpu after STOP instruction which blocks the cpu execution and set the offset and pc
+		cpu.stopped = false
+		cpu.offset = 0x0000
+		cpu.pc = 0x0000
+
+		cpu.setHL(value)
+		testProgram := []uint8{0xE5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xE5_PUSH_HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into stack
+		valueAtSP := cpu.bus.Read16(cpu.sp)
+		if valueAtSP != value {
+			t.Errorf("[test_0xE5_PUSH_HL] %v> expected value saved @SP to be 0x%04X, got 0x%04X\n", idx, value, valueAtSP)
+		}
+		// check if stack pointer has been decremented
+		expectedSP := 0xFFFE - uint16(2*(idx+1))
+		if cpu.sp != expectedSP {
+			t.Errorf("[test_0xE5_PUSH_HL] %v> expected stack pointer to be decremented to 0x%04X, got 0x%04X\n", idx, expectedSP, cpu.sp)
+		}
+		// check if flags are unaffected
+		if cpu.f != saveFlags {
+			t.Errorf("[test_0xE5_PUSH_HL] %v> expected flags to be unaffected 0x%02X, got 0x%02X\n", idx, saveFlags, cpu.f)
+		}
+	}
+	postconditions()
+}
+func test_0xF5_PUSH_AF(t *testing.T) {
+	preconditions()
+	randomizeFlags()
+
+	for idx, value := range pushTestData {
+		// soft reset of the cpu after STOP instruction which blocks the cpu execution and set the offset and pc
+		cpu.stopped = false
+		cpu.offset = 0x0000
+		cpu.pc = 0x0000
+
+		cpu.a = uint8(value >> 8)
+		cpu.f = uint8(value)
+		testProgram := []uint8{0xF5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xF5_PUSH_AF] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into stack
+		valueAtSP := cpu.bus.Read16(cpu.sp)
+		if valueAtSP != value {
+			t.Errorf("[test_0xF5_PUSH_AF] %v> expected value saved @SP to be 0x%04X, got 0x%04X\n", idx, value, valueAtSP)
+		}
+		// check if stack pointer has been decremented
+		expectedSP := 0xFFFE - uint16(2*(idx+1))
+		if cpu.sp != expectedSP {
+			t.Errorf("[test_0xF5_PUSH_AF] %v> expected stack pointer to be decremented to 0x%04X, got 0x%04X\n", idx, expectedSP, cpu.sp)
+		}
+	}
+	postconditions()
 }
 
 // POP: should pop the value from the stack into the destination
