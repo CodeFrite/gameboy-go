@@ -638,70 +638,17 @@ func (c *CPU) LDH(instruction *Instruction) {
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
-/*
-PUSH: Push a 16-bit register pair onto the stack
-opcodes:
-  - 0xC5 = PUSH BC
-  - 0xD5 = PUSH DE
-  - 0xE5 = PUSH HL
-  - 0xF5 = PUSH AF
-
-flags: -
-*/
+// PUSH: Push a 16-bit register pair onto the stack
+// opcodes:
+//   - 0xC5 = PUSH BC
+//   - 0xD5 = PUSH DE
+//   - 0xE5 = PUSH HL
+//   - 0xF5 = PUSH AF
+//
+// flags: -
 func (c *CPU) PUSH(instruction *Instruction) {
-	c.sp = (c.sp - 1)
-	switch instruction.Operands[0].Name {
-	case "AF":
-		err := c.bus.Write(c.sp, c.a)
-		if err != nil {
-			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
-			panic(err)
-		}
-		c.sp = (c.sp - 1)
-		err = c.bus.Write(c.sp, c.f)
-		if err != nil {
-			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
-			panic(err)
-		}
-	case "BC":
-		err := c.bus.Write(c.sp, c.b)
-		if err != nil {
-			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
-			panic(err)
-		}
-		c.sp = (c.sp - 1)
-		err = c.bus.Write(c.sp, c.c)
-		if err != nil {
-			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
-			panic(err)
-		}
-	case "DE":
-		err := c.bus.Write(c.sp, c.d)
-		if err != nil {
-			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
-			panic(err)
-		}
-		c.sp = (c.sp - 1)
-		err = c.bus.Write(c.sp, c.e)
-		if err != nil {
-			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
-			panic(err)
-		}
-	case "HL":
-		err := c.bus.Write(c.sp, c.h)
-		if err != nil {
-			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
-			panic(err)
-		}
-		c.sp = (c.sp - 1)
-		err = c.bus.Write(c.sp, c.l)
-		if err != nil {
-			fmt.Printf("\n> Panic @0x%04X\n", c.pc)
-			panic(err)
-		}
-	default:
-		panic("PUSH: unknown operand")
-	}
+	// using the cpu.push method to push the 16-bit register pair onto the stack and decrement the stack pointer twice after each 8bit push operation
+	c.push(c.operand)
 	// update the program counter offset
 	c.offset = c.pc + uint16(instruction.Bytes)
 	// update the number of cycles executed by the CPU
