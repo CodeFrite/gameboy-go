@@ -1198,21 +1198,19 @@ func (c *CPU) INC(instruction *Instruction) {
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
-/*
-	 SUB: Subtract
-	 opcodes:
-		 	- 0x90 = SUB A, B
-			- 0x91 = SUB A, C
-			- 0x92 = SUB A, D
-			- 0x93 = SUB A, E
-			- 0x94 = SUB A, H
-			- 0x95 = SUB A, L
-			- 0x96 = SUB A, [HL]
-			- 0x97 = SUB A, A
-			- 0xD6 = SUB A, n8
-
-	 flags: Z->Z N->1 H->H C->C (except for 0x97 where Z->1 N->1 H->0 C->0)
-*/
+// SUB: Subtract register/memory 8bit value from A register
+// opcodes:
+//   - 0x90 = SUB A, B
+//   - 0x91 = SUB A, C
+//   - 0x92 = SUB A, D
+//   - 0x93 = SUB A, E
+//   - 0x94 = SUB A, H
+//   - 0x95 = SUB A, L
+//   - 0x96 = SUB A, [HL]
+//   - 0x97 = SUB A, A
+//   - 0xD6 = SUB A, n8
+//
+// flags: Z->Z N->1 H->H C->C (except for 0x97 where Z->1 N->1 H->0 C->0)
 func (c *CPU) SUB(instruction *Instruction) {
 
 	setFlag := func(minuend, subtrahend uint8) {
@@ -1234,42 +1232,8 @@ func (c *CPU) SUB(instruction *Instruction) {
 		}
 	}
 
-	switch instruction.Operands[1].Name {
-	case "A":
-		c.a -= c.a
-		c.setZFlag()
-		c.setNFlag()
-		c.resetHFlag()
-		c.resetCFlag()
-	case "B":
-		setFlag(c.a, c.b)
-		c.a -= c.b
-	case "C":
-		setFlag(c.a, c.c)
-		c.a -= c.c
-	case "D":
-		setFlag(c.a, c.d)
-		c.a -= c.d
-	case "E":
-		setFlag(c.a, c.e)
-		c.a -= c.e
-	case "H":
-		setFlag(c.a, c.h)
-		c.a -= c.h
-	case "L":
-		setFlag(c.a, c.l)
-		c.a -= c.l
-	case "[HL]":
-		subtrahend := c.bus.Read(c.getHL())
-		setFlag(c.a, subtrahend)
-		c.a -= subtrahend
-	case "n8":
-		subtrahend := uint8(c.operand)
-		setFlag(c.a, subtrahend)
-		c.a -= subtrahend
-	default:
-		panic("SUB: unknown operand")
-	}
+	setFlag(c.a, uint8(c.operand))
+	c.a -= uint8(c.operand)
 
 	// update the program counter offset
 	c.offset = c.pc + uint16(instruction.Bytes)
