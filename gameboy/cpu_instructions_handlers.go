@@ -759,11 +759,9 @@ func (c *CPU) CP(instruction *Instruction) {
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
-/*
- * CPL: Complement A (flip all bits)
- * opcodes: 0x2F=CPL
- * flags: Z:- N:1 H:1 C:-
- */
+// CPL: Complement A (flip all bits)
+// opcodes: 0x2F=CPL
+// flags: Z:- N:1 H:1 C:-
 func (c *CPU) CPL(instruction *Instruction) {
 	// flip all bits of the accumulator
 	c.a = ^c.a

@@ -8006,9 +8006,45 @@ func test_0xFE_CP_A_n8(t *testing.T) {
 	}
 }
 
-// CPL: should flip all bits of the destination
+// CPL: Complement A (flip all bits)
+// opcodes: 0x2F=CPL
+// flags: Z:- N:1 H:1 C:-
 func TestCPL(t *testing.T) {
-	t.Skip("not implemented yet")
+	var testData_CPL = []uint8{0b00000000, 0b11111111, 0b10101010, 0b01010101, 0b11001100, 0b00110011, 0b11110000, 0b00001111}
+	var expectedResults = []uint8{0b11111111, 0b00000000, 0b01010101, 0b10101010, 0b00110011, 0b11001100, 0b00001111, 0b11110000}
+
+	for idx, data := range testData_CPL {
+		preconditions()
+		randomizeFlags()
+		saveZFlag := cpu.getZFlag()
+		saveCFlag := cpu.getCFlag()
+		cpu.a = data
+		testProgram := []uint8{0x2F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[TestCPL] the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
+		}
+		// check that register A is left untouched
+		expectedValue := expectedResults[idx]
+		if cpu.a != expectedValue {
+			t.Errorf("[TestCPL] the value of register A should have been set to 0x%02X, got 0x%02X \n", expectedValue, cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() != saveZFlag {
+			t.Errorf("[TestCPL] expected Z flag to be unchanged %t, got %t \n", saveZFlag, cpu.getZFlag())
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[TestCPL] expected N flag to be set, got %t \n", cpu.getNFlag())
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[TestCPL] expected H flag to be set, got %t \n", cpu.getHFlag())
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("[TestCPL] expected C flag to be unchanged %t, got %t \n", saveCFlag, cpu.getCFlag())
+		}
+	}
 }
 
 // DAA: should adjust the destination to be a valid BCD number
