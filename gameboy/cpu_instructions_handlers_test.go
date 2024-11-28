@@ -8849,9 +8849,393 @@ func test_0x3B_DEC_SP(t *testing.T) {
 	}
 }
 
-// SUB: should subtract the value from the source to the destination
+// SUB: Subtract register/memory 8bit value from A register
+// opcodes:
+//   - 0xD6 = SUB A, n8
+//   - 0x97 = SUB A, A
+//   - 0x90 = SUB A, B
+//   - 0x91 = SUB A, C
+//   - 0x92 = SUB A, D
+//   - 0x93 = SUB A, E
+//   - 0x94 = SUB A, H
+//   - 0x95 = SUB A, L
+//   - 0x96 = SUB A, [HL]
+//
+// flags: Z->Z N->1 H->H C->C (except for 0x97 where Z->1 N->1 H->0 C->0)
 func TestSUB(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0xD6_SUB_A_n8", test_0xD6_SUB_A_n8)
+	t.Run("0x97_SUB_A_A", test_0x97_SUB_A_A)
+	t.Run("0x90_SUB_A_B", test_0x90_SUB_A_B)
+	t.Run("0x91_SUB_A_C", test_0x91_SUB_A_C)
+	t.Run("0x92_SUB_A_D", test_0x92_SUB_A_D)
+	t.Run("0x93_SUB_A_E", test_0x93_SUB_A_E)
+	t.Run("0x94_SUB_A_H", test_0x94_SUB_A_H)
+	t.Run("0x95_SUB_A_L", test_0x95_SUB_A_L)
+	t.Run("0x96_SUB_A__HL", test_0x96_SUB_A__HL)
+}
+
+var testData_SUB_A = []uint8{0x99, 0x00, 0x0F, 0x10, 0x0A, 0xA0, 0x55, 0xAA, 0x00, 0x01, 0x10, 0x0F, 0xF0, 0xFF, 0x11, 0xBA}
+var testData_SUB_8bit_operand = []uint8{0x00, 0x01, 0x10, 0x0F, 0xF0, 0xFF, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA}
+
+func test_0xD6_SUB_A_n8(t *testing.T) {
+	for idx, data := range testData_SUB_A {
+		preconditions()
+		randomizeFlags()
+		n8 := testData_SUB_8bit_operand[idx]
+		cpu.a = data
+		testProgram := []uint8{0xD6, n8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0xD6_SUB_A_n8] TC%v> Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value A - operand
+		expectedA := data - n8
+		if cpu.a != expectedA {
+			t.Errorf("[test_0xD6_SUB_A_n8] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedA, cpu.a)
+		}
+		// check flags
+		if expectedA == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xD6_SUB_A_n8] TC%v> Expected Z flag to be true", idx)
+		} else if expectedA != 0 && cpu.getZFlag() {
+			t.Errorf("[test_0xD6_SUB_A_n8] TC%v> Expected Z flag to be false", idx)
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0xD6_SUB_A_n8] TC%v> Expected N flag to be true", idx)
+		}
+		if (data&0x0F) < (n8&0x0F) && !cpu.getHFlag() {
+			t.Errorf("[test_0xD6_SUB_A_n8] TC%v> Expected H flag to be true", idx)
+		} else if (data&0x0F) >= (n8&0x0F) && cpu.getHFlag() {
+			t.Errorf("[test_0xD6_SUB_A_n8] TC%v> Expected H flag to be false", idx)
+		}
+		if data < n8 && !cpu.getCFlag() {
+			t.Errorf("[test_0xD6_SUB_A_n8] TC%v> Expected C flag to be true", idx)
+		} else if data >= n8 && cpu.getCFlag() {
+			t.Errorf("[test_0xD6_SUB_A_n8] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0x97_SUB_A_A(t *testing.T) {
+	for idx, data := range testData_SUB_A {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		testProgram := []uint8{0x97, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x97_SUB_A_A] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value A - operand
+		expectedA := uint8(0x00)
+		if cpu.a != expectedA {
+			t.Errorf("[test_0x97_SUB_A_A] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedA, cpu.a)
+		}
+		// check flags
+		if !cpu.getZFlag() {
+			t.Errorf("[test_0x97_SUB_A_A] TC%v> Expected Z flag to be true", idx)
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0x97_SUB_A_A] TC%v> Expected N flag to be true", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("[test_0x97_SUB_A_A] TC%v> Expected H flag to be false", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0x97_SUB_A_A] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0x90_SUB_A_B(t *testing.T) {
+	for idx, data := range testData_SUB_A {
+		preconditions()
+		randomizeFlags()
+		operand := testData_SUB_8bit_operand[idx]
+		cpu.b = operand
+		cpu.a = data
+		testProgram := []uint8{0x90, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x90_SUB_A_B] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value A - operand
+		expectedA := data - operand
+		if cpu.a != expectedA {
+			t.Errorf("[test_0x90_SUB_A_B] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedA, cpu.a)
+		}
+		// check flags
+		if expectedA == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0x90_SUB_A_B] TC%v> Expected Z flag to be true", idx)
+		} else if expectedA != 0 && cpu.getZFlag() {
+			t.Errorf("[test_0x90_SUB_A_B] TC%v> Expected Z flag to be false", idx)
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0x90_SUB_A_B] TC%v> Expected N flag to be true", idx)
+		}
+		if (data&0x0F) < (operand&0x0F) && !cpu.getHFlag() {
+			t.Errorf("[test_0x90_SUB_A_B] TC%v> Expected H flag to be true", idx)
+		} else if (data&0x0F) >= (operand&0x0F) && cpu.getHFlag() {
+			t.Errorf("[test_0x90_SUB_A_B] TC%v> Expected H flag to be false", idx)
+		}
+		if data < operand && !cpu.getCFlag() {
+			t.Errorf("[test_0x90_SUB_A_B] TC%v> Expected C flag to be true", idx)
+		} else if data >= operand && cpu.getCFlag() {
+			t.Errorf("[test_0x90_SUB_A_B] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0x91_SUB_A_C(t *testing.T) {
+	for idx, data := range testData_SUB_A {
+		preconditions()
+		randomizeFlags()
+		operand := testData_SUB_8bit_operand[idx]
+		cpu.c = operand
+		cpu.a = data
+		testProgram := []uint8{0x91, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x91_SUB_A_C] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value A - operand
+		expectedA := data - operand
+		if cpu.a != expectedA {
+			t.Errorf("[test_0x91_SUB_A_C] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedA, cpu.a)
+		}
+		// check flags
+		if expectedA == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0x91_SUB_A_C] TC%v> Expected Z flag to be true", idx)
+		} else if expectedA != 0 && cpu.getZFlag() {
+			t.Errorf("[test_0x91_SUB_A_C] TC%v> Expected Z flag to be false", idx)
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0x91_SUB_A_C] TC%v> Expected N flag to be true", idx)
+		}
+		if (data&0x0F) < (operand&0x0F) && !cpu.getHFlag() {
+			t.Errorf("[test_0x91_SUB_A_C] TC%v> Expected H flag to be true", idx)
+		} else if (data&0x0F) >= (operand&0x0F) && cpu.getHFlag() {
+			t.Errorf("[test_0x91_SUB_A_C] TC%v> Expected H flag to be false", idx)
+		}
+		if data < operand && !cpu.getCFlag() {
+			t.Errorf("[test_0x91_SUB_A_C] TC%v> Expected C flag to be true", idx)
+		} else if data >= operand && cpu.getCFlag() {
+			t.Errorf("[test_0x91_SUB_A_C] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0x92_SUB_A_D(t *testing.T) {
+	for idx, data := range testData_SUB_A {
+		preconditions()
+		randomizeFlags()
+		operand := testData_SUB_8bit_operand[idx]
+		cpu.d = operand
+		cpu.a = data
+		testProgram := []uint8{0x92, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x92_SUB_A_D] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value A - operand
+		expectedA := data - operand
+		if cpu.a != expectedA {
+			t.Errorf("[test_0x92_SUB_A_D] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedA, cpu.a)
+		}
+		// check flags
+		if expectedA == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0x92_SUB_A_D] TC%v> Expected Z flag to be true", idx)
+		} else if expectedA != 0 && cpu.getZFlag() {
+			t.Errorf("[test_0x92_SUB_A_D] TC%v> Expected Z flag to be false", idx)
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0x92_SUB_A_D] TC%v> Expected N flag to be true", idx)
+		}
+		if (data&0x0F) < (operand&0x0F) && !cpu.getHFlag() {
+			t.Errorf("[test_0x92_SUB_A_D] TC%v> Expected H flag to be true", idx)
+		} else if (data&0x0F) >= (operand&0x0F) && cpu.getHFlag() {
+			t.Errorf("[test_0x92_SUB_A_D] TC%v> Expected H flag to be false", idx)
+		}
+		if data < operand && !cpu.getCFlag() {
+			t.Errorf("[test_0x92_SUB_A_D] TC%v> Expected C flag to be true", idx)
+		} else if data >= operand && cpu.getCFlag() {
+			t.Errorf("[test_0x92_SUB_A_D] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0x93_SUB_A_E(t *testing.T) {
+	for idx, data := range testData_SUB_A {
+		preconditions()
+		randomizeFlags()
+		operand := testData_SUB_8bit_operand[idx]
+		cpu.e = operand
+		cpu.a = data
+		testProgram := []uint8{0x93, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x93_SUB_A_E] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value A - operand
+		expectedA := data - operand
+		if cpu.a != expectedA {
+			t.Errorf("[test_0x93_SUB_A_E] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedA, cpu.a)
+		}
+		// check flags
+		if expectedA == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0x93_SUB_A_E] TC%v> Expected Z flag to be true", idx)
+		} else if expectedA != 0 && cpu.getZFlag() {
+			t.Errorf("[test_0x93_SUB_A_E] TC%v> Expected Z flag to be false", idx)
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0x93_SUB_A_E] TC%v> Expected N flag to be true", idx)
+		}
+		if (data&0x0F) < (operand&0x0F) && !cpu.getHFlag() {
+			t.Errorf("[test_0x93_SUB_A_E] TC%v> Expected H flag to be true", idx)
+		} else if (data&0x0F) >= (operand&0x0F) && cpu.getHFlag() {
+			t.Errorf("[test_0x93_SUB_A_E] TC%v> Expected H flag to be false", idx)
+		}
+		if data < operand && !cpu.getCFlag() {
+			t.Errorf("[test_0x93_SUB_A_E] TC%v> Expected C flag to be true", idx)
+		} else if data >= operand && cpu.getCFlag() {
+			t.Errorf("[test_0x93_SUB_A_E] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0x94_SUB_A_H(t *testing.T) {
+	for idx, data := range testData_SUB_A {
+		preconditions()
+		randomizeFlags()
+		operand := testData_SUB_8bit_operand[idx]
+		cpu.h = operand
+		cpu.a = data
+		testProgram := []uint8{0x94, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x94_SUB_A_H] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value A - operand
+		expectedA := data - operand
+		if cpu.a != expectedA {
+			t.Errorf("[test_0x94_SUB_A_H] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedA, cpu.a)
+		}
+		// check flags
+		if expectedA == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0x94_SUB_A_H] TC%v> Expected Z flag to be true", idx)
+		} else if expectedA != 0 && cpu.getZFlag() {
+			t.Errorf("[test_0x94_SUB_A_H] TC%v> Expected Z flag to be false", idx)
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0x94_SUB_A_H] TC%v> Expected N flag to be true", idx)
+		}
+		if (data&0x0F) < (operand&0x0F) && !cpu.getHFlag() {
+			t.Errorf("[test_0x94_SUB_A_H] TC%v> Expected H flag to be true", idx)
+		} else if (data&0x0F) >= (operand&0x0F) && cpu.getHFlag() {
+			t.Errorf("[test_0x94_SUB_A_H] TC%v> Expected H flag to be false", idx)
+		}
+		if data < operand && !cpu.getCFlag() {
+			t.Errorf("[test_0x94_SUB_A_H] TC%v> Expected C flag to be true", idx)
+		} else if data >= operand && cpu.getCFlag() {
+			t.Errorf("[test_0x94_SUB_A_H] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0x95_SUB_A_L(t *testing.T) {
+	for idx, data := range testData_SUB_A {
+		preconditions()
+		randomizeFlags()
+		operand := testData_SUB_8bit_operand[idx]
+		cpu.l = operand
+		cpu.a = data
+		testProgram := []uint8{0x95, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x95_SUB_A_L] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value A - operand
+		expectedA := data - operand
+		if cpu.a != expectedA {
+			t.Errorf("[test_0x95_SUB_A_L] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedA, cpu.a)
+		}
+		// check flags
+		if expectedA == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0x95_SUB_A_L] TC%v> Expected Z flag to be true", idx)
+		} else if expectedA != 0 && cpu.getZFlag() {
+			t.Errorf("[test_0x95_SUB_A_L] TC%v> Expected Z flag to be false", idx)
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0x95_SUB_A_L] TC%v> Expected N flag to be true", idx)
+		}
+		if (data&0x0F) < (operand&0x0F) && !cpu.getHFlag() {
+			t.Errorf("[test_0x95_SUB_A_L] TC%v> Expected H flag to be true", idx)
+		} else if (data&0x0F) >= (operand&0x0F) && cpu.getHFlag() {
+			t.Errorf("[test_0x95_SUB_A_L] TC%v> Expected H flag to be false", idx)
+		}
+		if data < operand && !cpu.getCFlag() {
+			t.Errorf("[test_0x95_SUB_A_L] TC%v> Expected C flag to be true", idx)
+		} else if data >= operand && cpu.getCFlag() {
+			t.Errorf("[test_0x95_SUB_A_L] TC%v> Expected C flag to be false", idx)
+		}
+	}
+}
+func test_0x96_SUB_A__HL(t *testing.T) {
+	for idx, data := range testData_SUB_A {
+		preconditions()
+		randomizeFlags()
+		operand := testData_SUB_8bit_operand[idx]
+		cpu.setHL(0x0002)
+		cpu.a = data
+		testProgram := []uint8{0x96, 0x10, operand}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check if the program stopped at the right place
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x96_SUB_A__HL] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
+		}
+		// check if the A register now contains the correct value A - operand
+		expectedA := data - operand
+		if cpu.a != expectedA {
+			t.Errorf("[test_0x96_SUB_A__HL] TC%v> Expected A to be 0x%02X, got 0x%02X", idx, expectedA, cpu.a)
+		}
+		// check flags
+		if expectedA == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0x96_SUB_A__HL] TC%v> Expected Z flag to be true", idx)
+		} else if expectedA != 0 && cpu.getZFlag() {
+			t.Errorf("[test_0x96_SUB_A__HL] TC%v> Expected Z flag to be false", idx)
+		}
+		if !cpu.getNFlag() {
+			t.Errorf("[test_0x96_SUB_A__HL] TC%v> Expected N flag to be true", idx)
+		}
+		if (data&0x0F) < (operand&0x0F) && !cpu.getHFlag() {
+			t.Errorf("[test_0x96_SUB_A__HL] TC%v> Expected H flag to be true", idx)
+		} else if (data&0x0F) >= (operand&0x0F) && cpu.getHFlag() {
+			t.Errorf("[test_0x96_SUB_A__HL] TC%v> Expected H flag to be false", idx)
+		}
+		if data < operand && !cpu.getCFlag() {
+			t.Errorf("[test_0x96_SUB_A__HL] TC%v> Expected C flag to be true", idx)
+		} else if data >= operand && cpu.getCFlag() {
+			t.Errorf("[test_0x96_SUB_A__HL] TC%v> Expected C flag to be false", idx)
+		}
+	}
 }
 
 // SBC: should subtract the value from the source to the destination with the carry
