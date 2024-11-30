@@ -1240,8 +1240,57 @@ func (c *CPU) SUB(instruction *Instruction) {
 	// update the number of cycles executed by the CPU
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
+// SBC: Subtract register/memory 8bit plus carry flag from A register
+// opcodes:
+//   - 0x98 = SBC A, B
+//   - 0x99 = SBC A, C
+//   - 0x9A = SBC A, D
+//   - 0x9B = SBC A, E
+//   - 0x9C = SBC A, H
+//   - 0x9D = SBC A, L
+//   - 0x9E = SBC A, [HL]
+//   - 0x9F = SBC A, A
+//   - 0xDE = SBC A, n8
+//
+// flags: Z->Z N->1 H->H C->C (C is unaltered for SBC A, A)
 func (c *CPU) SBC(instruction *Instruction) {
-	panic("SBC not implemented")
+	// extracting data before they change
+	minuend := c.a
+	subtrahend := uint8(c.operand)
+	var carry uint8 = 0
+	if c.getCFlag() {
+		carry = 1
+	}
+
+	// changing flags
+	if minuend == (subtrahend + carry) {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	c.setNFlag()
+	if (minuend & 0x0F) < ((subtrahend + carry) & 0x0F) {
+		c.setHFlag()
+	} else {
+		c.resetHFlag()
+	}
+	// instruction SBC A, A does not affect C flag
+	if instruction.Operands[1].Name != "A" {
+		if minuend < (subtrahend + carry) {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+	}
+
+	// computing the new register A value
+	c.a -= (uint8(c.operand) + carry)
+
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
 /*
