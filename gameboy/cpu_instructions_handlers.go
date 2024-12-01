@@ -694,8 +694,89 @@ func (c *CPU) POP(instruction *Instruction) {
 func (c *CPU) ADC(instruction *Instruction) {
 	panic("ADC not implemented")
 }
+
+// Add both operands together (8/16 bits, direct/indirect) and store back to operand 1 location (direct/indirect)
+// opcodes:
+//   - 0x09 = ADD HL, BC
+//   - 0x19 = ADD HL, DE
+//   - 0x29 = ADD HL, HL
+//   - 0x39 = ADD HL, SP
+//
+// flags: Z:- N:0 H:H C:C
+//
+//   - 0x80 = ADD A, B
+//   - 0x81 = ADD A, C
+//   - 0x82 = ADD A, D
+//   - 0x83 = ADD A, E
+//   - 0x84 = ADD A, H
+//   - 0x85 = ADD A, L
+//   - 0x86 = ADD A, [HL]
+//   - 0x87 = ADD A, A
+//   - 0xC6 = ADD A, n8
+//
+// flags: Z:Z N:0 H:H C:C
+//
+//   - 0xE8 = ADD SP, e8
+//
+// flags: Z:0 N:0 H:H C:C
 func (c *CPU) ADD(instruction *Instruction) {
-	panic("ADD not implemented")
+	switch instruction.Operands[0].Name {
+	case "HL":
+		// set flags
+		c.resetNFlag()
+		if c.getHL()&0x0FFF+c.operand&0x0FFF > 0x0FFF {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+		if uint(c.getHL())+uint(c.operand) > 0xFFFF {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		// update the HL register
+		c.setHL(c.getHL() + c.operand)
+	case "A":
+		// set flags
+		if c.a+uint8(c.operand) == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+		c.resetNFlag()
+		if (c.a&0x0F)+uint8(c.operand)&0x0F > 0x0F {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+		if uint16(c.a)+c.operand > 0xFF {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		// update the A register
+		c.a += uint8(c.operand)
+	case "SP":
+		// set flags
+		c.resetZFlag()
+		c.resetNFlag()
+		if (c.sp&0x0FFF)+(c.operand&0x0FFF) > 0x0FFF {
+			c.setHFlag()
+		} else {
+			c.resetHFlag()
+		}
+		if uint(c.sp)+uint(c.operand) > 0xFFFF {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		// update the SP register
+		c.sp += uint16(int8(c.operand))
+	}
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 func (c *CPU) AND(instruction *Instruction) {
 	panic("AND not implemented")

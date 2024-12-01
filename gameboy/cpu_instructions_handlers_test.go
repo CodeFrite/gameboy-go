@@ -5923,9 +5923,534 @@ func test_0xF1_POP_AF(t *testing.T) {
 	postconditions()
 }
 
-// ADD: should add the value from the source to the destination
+// Add both operands together (8/16 bits, direct/indirect) and store back to operand 1 location (direct/indirect)
+// opcodes:
+//   - 0x09 = ADD HL, BC
+//   - 0x19 = ADD HL, DE
+//   - 0x29 = ADD HL, HL
+//   - 0x39 = ADD HL, SP
+//
+// flags: Z:- N:0 H:H C:C
+//
+//   - 0x80 = ADD A, B
+//   - 0x81 = ADD A, C
+//   - 0x82 = ADD A, D
+//   - 0x83 = ADD A, E
+//   - 0x84 = ADD A, H
+//   - 0x85 = ADD A, L
+//   - 0x86 = ADD A, [HL]
+//   - 0x87 = ADD A, A
+//   - 0xC6 = ADD A, n8
+//
+// flags: Z:Z N:0 H:H C:C
+//
+//   - 0xE8 = ADD SP, e8
+//
+// flags: Z:0 N:0 H:H C:C
 func TestADD(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0x09_ADD_HL_BC", test_0x09_ADD_HL_BC)
+	t.Run("0x19_ADD_HL_DE", test_0x19_ADD_HL_DE)
+	t.Run("0x29_ADD_HL_HL", test_0x29_ADD_HL_HL)
+	t.Run("0x39_ADD_HL_SP", test_0x39_ADD_HL_SP)
+	t.Run("0xC6_ADD_A_n8", test_0xC6_ADD_A_n8)
+	t.Run("0x87_ADD_A_A", test_0x87_ADD_A_A)
+	t.Run("0x80_ADD_A_B", test_0x80_ADD_A_B)
+	t.Run("0x81_ADD_A_C", test_0x81_ADD_A_C)
+	t.Run("0x82_ADD_A_D", test_0x82_ADD_A_D)
+	t.Run("0x83_ADD_A_E", test_0x83_ADD_A_E)
+	t.Run("0x84_ADD_A_H", test_0x84_ADD_A_H)
+	t.Run("0x85_ADD_A_L", test_0x85_ADD_A_L)
+	t.Run("0x86_ADD_A__HL", test_0x86_ADD_A__HL)
+	t.Run("0xE8_ADD_SP_e8", test_0xE8_ADD_SP_e8)
+}
+
+var testData_ADD_operand1_16bit = []uint16{0x0000, 0x00F0, 0xABCD, 0x1234, 0x5678, 0x9ABC, 0xDEF0, 0xFFAA, 0x19A7, 0xD65C, 0x71B9}
+var testData_ADD_operand2_16bit = []uint16{0xFFFF, 0x00F0, 0x1549, 0xF987, 0xB500, 0x0044, 0x5426, 0x0F0F, 0xFF0F, 0x0F0F, 0x0F0F}
+var expected_ADD_sum_16bit = []uint16{0xFFFF, 0x01E0, 0xC116, 0x0BBB, 0x0B78, 0x9B00, 0x3316, 0x0EB9, 0x18B6, 0xE56B, 0x80C8}
+var expected_ADD_HFlag = []bool{false, false, true, false, false, false, true, true, true, true, true}
+var expected_ADD_CFlag = []bool{false, false, false, true, true, false, true, true, true, false, false}
+
+func test_0x09_ADD_HL_BC(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_16bit {
+		preconditions()
+		randomizeFlags()
+		saveZFlag := cpu.getZFlag()
+		cpu.setHL(data)
+		cpu.setBC(testData_ADD_operand2_16bit[idx])
+		testProgram := []uint8{0x09, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into HL register
+		if cpu.getHL() != expected_ADD_sum_16bit[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected HL register to be 0x%04X, got 0x%04X\n", idx, expected_ADD_sum_16bit[idx], cpu.getHL())
+		}
+		// check flags
+		if cpu.getZFlag() != saveZFlag {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected Z flag to be unaffected %t, got %t\n", idx, saveZFlag, cpu.getZFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x19_ADD_HL_DE(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_16bit {
+		preconditions()
+		randomizeFlags()
+		saveZFlag := cpu.getZFlag()
+		cpu.setHL(data)
+		cpu.setDE(testData_ADD_operand2_16bit[idx])
+		testProgram := []uint8{0x19, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into HL register
+		if cpu.getHL() != expected_ADD_sum_16bit[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected HL register to be 0x%04X, got 0x%04X\n", idx, expected_ADD_sum_16bit[idx], cpu.getHL())
+		}
+		// check flags
+		if cpu.getZFlag() != saveZFlag {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected Z flag to be unaffected %t, got %t\n", idx, saveZFlag, cpu.getZFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x29_ADD_HL_HL(t *testing.T) {
+	var expectedHL = []uint16{0x0000, 0x01E0, 0x579A, 0x2468, 0xACF0, 0x3578, 0xBDE0, 0xFF54, 0x334E, 0xACB8, 0xE372}
+	var expectedHFlag = []bool{false, false, true, false, false, true, true, true, true, false, false}
+	var expectedCFlag = []bool{false, false, true, false, false, true, true, true, false, true, false}
+
+	for idx, data := range testData_ADD_operand1_16bit {
+		preconditions()
+		randomizeFlags()
+		saveZFlag := cpu.getZFlag()
+		cpu.setHL(data)
+		testProgram := []uint8{0x29, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into HL register
+		if cpu.getHL() != expectedHL[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected HL register to be 0x%04X, got 0x%04X\n", idx, expectedHL[idx], cpu.getHL())
+		}
+		// check flags
+		if cpu.getZFlag() != saveZFlag {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected Z flag to be unaffected %t, got %t\n", idx, saveZFlag, cpu.getZFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expectedHFlag[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected H flag to be %t, got %t\n", idx, expectedHFlag[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expectedCFlag[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected C flag to be %t, got %t\n", idx, expectedCFlag[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x39_ADD_HL_SP(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_16bit {
+		preconditions()
+		randomizeFlags()
+		saveZFlag := cpu.getZFlag()
+		cpu.setHL(data)
+		cpu.sp = testData_ADD_operand2_16bit[idx]
+		testProgram := []uint8{0x39, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into HL register
+		if cpu.getHL() != expected_ADD_sum_16bit[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected HL register to be 0x%04X, got 0x%04X\n", idx, expected_ADD_sum_16bit[idx], cpu.getHL())
+		}
+		// check flags
+		if cpu.getZFlag() != saveZFlag {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected Z flag to be unaffected %t, got %t\n", idx, saveZFlag, cpu.getZFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag[idx] {
+			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag[idx], cpu.getCFlag())
+		}
+	}
+}
+
+var testData_ADD_operand1_8bit = []uint8{0x00, 0xF0, 0xAB, 0x12, 0x56, 0xBC, 0xDE, 0xFF, 0xA7, 0xD6, 0x71}
+var testData_ADD_operand2_8bit = []uint8{0xFF, 0xF0, 0x15, 0xF9, 0xB5, 0x44, 0x54, 0x01, 0x0F, 0x0F, 0x0F}
+var expected_ADD_sum_8bit = []uint8{0xFF, 0xE0, 0xC0, 0x0B, 0x0B, 0x00, 0x32, 0x00, 0xB6, 0xE5, 0x80}
+var expected_ADD_HFlag_8bit = []bool{false, false, true, false, false, true, true, true, true, true, true}
+var expected_ADD_CFlag_8bit = []bool{false, true, false, true, true, true, true, true, false, false, false}
+
+func test_0xC6_ADD_A_n8(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_8bit {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		testProgram := []uint8{0xC6, testData_ADD_operand2_8bit[idx], 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0xC6_ADD_A_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_ADD_sum_8bit[idx] {
+			t.Errorf("[test_0xC6_ADD_A_n8] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_ADD_sum_8bit[idx], cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() && expected_ADD_sum_8bit[idx] != 0 {
+			t.Errorf("[test_0xC6_ADD_A_n8] %v> expected Z flag to be false, got true\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xC6_ADD_A_n8] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag_8bit[idx] {
+			t.Errorf("[test_0xC6_ADD_A_n8] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag_8bit[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag_8bit[idx] {
+			t.Errorf("[test_0xC6_ADD_A_n8] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag_8bit[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x87_ADD_A_A(t *testing.T) {
+	var expected_A = []uint8{0x00, 0xE0, 0x56, 0x24, 0xAC, 0x78, 0xBC, 0xFE, 0x4E, 0xAC, 0xE2}
+	var expected_HFlag = []bool{false, false, true, false, false, true, true, true, false, false, false}
+	var expected_CFlag = []bool{false, true, true, false, false, true, true, true, true, true, false}
+	for idx, data := range testData_ADD_operand1_8bit {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		testProgram := []uint8{0x87, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x87_ADD_A_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_A[idx] {
+			t.Errorf("[test_0x87_ADD_A_A] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_A[idx], cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() && expected_A[idx] != 0 {
+			t.Errorf("[test_0x87_ADD_A_A] %v> expected Z flag to be false, got true\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x87_ADD_A_A] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_HFlag[idx] {
+			t.Errorf("[test_0x87_ADD_A_A] %v> expected H flag to be %t, got %t\n", idx, expected_HFlag[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_CFlag[idx] {
+			t.Errorf("[test_0x87_ADD_A_A] %v> expected C flag to be %t, got %t\n", idx, expected_CFlag[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x80_ADD_A_B(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_8bit {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.b = testData_ADD_operand2_8bit[idx]
+		testProgram := []uint8{0x80, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x80_ADD_A_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_ADD_sum_8bit[idx] {
+			t.Errorf("[test_0x80_ADD_A_B] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_ADD_sum_8bit[idx], cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() && expected_ADD_sum_8bit[idx] != 0 {
+			t.Errorf("[test_0x80_ADD_A_B] %v> expected Z flag to be false, got true\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x80_ADD_A_B] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag_8bit[idx] {
+			t.Errorf("[test_0x80_ADD_A_B] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag_8bit[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag_8bit[idx] {
+			t.Errorf("[test_0x80_ADD_A_B] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag_8bit[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x81_ADD_A_C(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_8bit {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.c = testData_ADD_operand2_8bit[idx]
+		testProgram := []uint8{0x81, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x81_ADD_A_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_ADD_sum_8bit[idx] {
+			t.Errorf("[test_0x81_ADD_A_C] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_ADD_sum_8bit[idx], cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() && expected_ADD_sum_8bit[idx] != 0 {
+			t.Errorf("[test_0x81_ADD_A_C] %v> expected Z flag to be false, got true\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x81_ADD_A_C] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag_8bit[idx] {
+			t.Errorf("[test_0x81_ADD_A_C] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag_8bit[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag_8bit[idx] {
+			t.Errorf("[test_0x81_ADD_A_C] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag_8bit[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x82_ADD_A_D(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_8bit {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.d = testData_ADD_operand2_8bit[idx]
+		testProgram := []uint8{0x82, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x82_ADD_A_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_ADD_sum_8bit[idx] {
+			t.Errorf("[test_0x82_ADD_A_D] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_ADD_sum_8bit[idx], cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() && expected_ADD_sum_8bit[idx] != 0 {
+			t.Errorf("[test_0x82_ADD_A_D] %v> expected Z flag to be false, got true\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x82_ADD_A_D] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag_8bit[idx] {
+			t.Errorf("[test_0x82_ADD_A_D] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag_8bit[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag_8bit[idx] {
+			t.Errorf("[test_0x82_ADD_A_D] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag_8bit[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x83_ADD_A_E(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_8bit {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.e = testData_ADD_operand2_8bit[idx]
+		testProgram := []uint8{0x83, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x83_ADD_A_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_ADD_sum_8bit[idx] {
+			t.Errorf("[test_0x83_ADD_A_E] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_ADD_sum_8bit[idx], cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() && expected_ADD_sum_8bit[idx] != 0 {
+			t.Errorf("[test_0x83_ADD_A_E] %v> expected Z flag to be false, got true\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x83_ADD_A_E] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag_8bit[idx] {
+			t.Errorf("[test_0x83_ADD_A_E] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag_8bit[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag_8bit[idx] {
+			t.Errorf("[test_0x83_ADD_A_E] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag_8bit[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x84_ADD_A_H(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_8bit {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.h = testData_ADD_operand2_8bit[idx]
+		testProgram := []uint8{0x84, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x84_ADD_A_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_ADD_sum_8bit[idx] {
+			t.Errorf("[test_0x84_ADD_A_H] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_ADD_sum_8bit[idx], cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() && expected_ADD_sum_8bit[idx] != 0 {
+			t.Errorf("[test_0x84_ADD_A_H] %v> expected Z flag to be false, got true\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x84_ADD_A_H] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag_8bit[idx] {
+			t.Errorf("[test_0x84_ADD_A_H] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag_8bit[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag_8bit[idx] {
+			t.Errorf("[test_0x84_ADD_A_H] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag_8bit[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x85_ADD_A_L(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_8bit {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.l = testData_ADD_operand2_8bit[idx]
+		testProgram := []uint8{0x85, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x85_ADD_A_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_ADD_sum_8bit[idx] {
+			t.Errorf("[test_0x85_ADD_A_L] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_ADD_sum_8bit[idx], cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() && expected_ADD_sum_8bit[idx] != 0 {
+			t.Errorf("[test_0x85_ADD_A_L] %v> expected Z flag to be false, got true\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x85_ADD_A_L] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag_8bit[idx] {
+			t.Errorf("[test_0x85_ADD_A_L] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag_8bit[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag_8bit[idx] {
+			t.Errorf("[test_0x85_ADD_A_L] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag_8bit[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0x86_ADD_A__HL(t *testing.T) {
+	for idx, data := range testData_ADD_operand1_8bit {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0x86, 0x10, testData_ADD_operand2_8bit[idx]}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0x86_ADD_A__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_ADD_sum_8bit[idx] {
+			t.Errorf("[test_0x86_ADD_A__HL] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_ADD_sum_8bit[idx], cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() && expected_ADD_sum_8bit[idx] != 0 {
+			t.Errorf("[test_0x86_ADD_A__HL] %v> expected Z flag to be false, got true\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0x86_ADD_A__HL] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if cpu.getHFlag() != expected_ADD_HFlag_8bit[idx] {
+			t.Errorf("[test_0x86_ADD_A__HL] %v> expected H flag to be %t, got %t\n", idx, expected_ADD_HFlag_8bit[idx], cpu.getHFlag())
+		}
+		if cpu.getCFlag() != expected_ADD_CFlag_8bit[idx] {
+			t.Errorf("[test_0x86_ADD_A__HL] %v> expected C flag to be %t, got %t\n", idx, expected_ADD_CFlag_8bit[idx], cpu.getCFlag())
+		}
+	}
+}
+func test_0xE8_ADD_SP_e8(t *testing.T) {
+	type TestDataEntry struct {
+		sp            uint16
+		e8            uint8
+		expectedSP    uint16
+		expectedHFlag bool
+		expectedCFlag bool
+	}
+	var testData = []TestDataEntry{
+		{0xFFF8, 0x10, 0x0008, true, true},   // 0> 0xFFF8 + 0x10 (+16) = 0x0008 - H = 1, C = 1
+		{0xFFF8, 0xF0, 0xFFE8, true, true},   // 1> 0xFFF8 + 0xF0 (-16) = 0xFFE8 - H = 1, C = 1
+		{0x0001, 0xFF, 0x0000, false, false}, // 2> 0x0001 + 0xFF (-1)  = 0x0000 - H = 0, C = 0
+		{0x00FF, 0x01, 0x0100, false, false}, // 3> 0x00FF + 0x01 (+1)  = 0x0100 - H = 0, C = 0
+		{0x0100, 0xFE, 0x00FE, false, false}, // 4> 0x0100 + 0xFE (-2)  = 0x00FE - H = 1, C = 1
+		{0x7FFF, 0x01, 0x8000, true, false},  // 5> 0x7FFF + 0x01 (+1)  = 0x8000 - H = 1, C = 0
+		{0x8000, 0xFF, 0x7FFF, false, false}, // 6> 0x8000 + 0xFF (-1)  = 0x7FFF - H = 0, C = 0
+		{0x1234, 0x20, 0x1254, false, false}, // 7> 0x1234 + 0x20 (+32) = 0x1254 - H = 0, C = 0
+		{0x00F0, 0x10, 0x0100, false, false}, // 8> 0x00F0 + 0x10 (+16) = 0x0100 - H = 0, C = 0
+		{0xABCD, 0x30, 0xABFD, false, false}, // 9> 0xABCD + 0x30 (+48) = 0xABFD - H = 0, C = 0
+	}
+
+	for idx, data := range testData {
+		preconditions()
+		randomizeFlags()
+		cpu.sp = data.sp
+		testProgram := []uint8{0xE8, data.e8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0xE8_ADD_SP_e8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.sp != data.expectedSP {
+			t.Errorf("[test_0xE8_ADD_SP_e8] %v> expected SP register to be 0x%02X, got 0x%02X\n", idx, data.expectedSP, cpu.a)
+		}
+		// check flags
+		if cpu.getZFlag() {
+			t.Errorf("[test_0xE8_ADD_SP_e8] %v> expected Z flag to be reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xE8_ADD_SP_e8] %v> expected N flag to be reset\n", idx)
+		}
+		if cpu.getHFlag() != data.expectedHFlag {
+			t.Errorf("[test_0xE8_ADD_SP_e8] %v> expected H flag to be %t, got %t\n", idx, data.expectedHFlag, cpu.getHFlag())
+		}
+		if cpu.getCFlag() != data.expectedCFlag {
+			t.Errorf("[test_0xE8_ADD_SP_e8] %v> expected C flag to be %t, got %t\n", idx, data.expectedCFlag, cpu.getCFlag())
+		}
+	}
 }
 
 // ADC: should add the value from the source to the destination with the carry
