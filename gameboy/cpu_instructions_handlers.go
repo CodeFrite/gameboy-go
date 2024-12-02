@@ -823,8 +823,36 @@ func (c *CPU) ADD(instruction *Instruction) {
 	// update the number of cycles executed by the CPU
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
+// Bitwise AND operation between A register and operand (8 bits, direct/indirect) and store back to register A
+// opcodes:
+//   - 0xA0 = AND A, B
+//   - 0xA1 = AND A, C
+//   - 0xA2 = AND A, D
+//   - 0xA3 = AND A, E
+//   - 0xA4 = AND A, H
+//   - 0xA5 = AND A, L
+//   - 0xA6 = AND A, [HL]
+//   - 0xA7 = AND A, A
+//   - 0xE6 = AND A, n8
+//
+// flags: Z:Z N:0 H:1 C:0
 func (c *CPU) AND(instruction *Instruction) {
-	panic("AND not implemented")
+	// set flags
+	if c.a&uint8(c.operand) == 0 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	c.resetNFlag()
+	c.setHFlag()
+	c.resetCFlag()
+	// update the A register
+	c.a &= uint8(c.operand)
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
 /*

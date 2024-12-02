@@ -6819,9 +6819,320 @@ func test_0xCE_ADC_A_n8(t *testing.T) {
 	}
 }
 
-// AND: should perform a bitwise AND between the source and the destination
+// Bitwise AND operation between A register and operand (8 bits, direct/indirect) and store back to register A
+// opcodes:
+//   - 0xA0 = AND A, B
+//   - 0xA1 = AND A, C
+//   - 0xA2 = AND A, D
+//   - 0xA3 = AND A, E
+//   - 0xA4 = AND A, H
+//   - 0xA5 = AND A, L
+//   - 0xA6 = AND A, [HL]
+//   - 0xA7 = AND A, A
+//   - 0xE6 = AND A, n8
+//
+// flags: Z:Z N:0 H:1 C:0
 func TestAND(t *testing.T) {
-	t.Skip("not implemented yet")
+	t.Run("0xA0: AND A, B", test_0xA0_AND_A_B)
+	t.Run("0xA1: AND A, C", test_0xA1_AND_A_C)
+	t.Run("0xA2: AND A, D", test_0xA2_AND_A_D)
+	t.Run("0xA3: AND A, E", test_0xA3_AND_A_E)
+	t.Run("0xA4: AND A, H", test_0xA4_AND_A_H)
+	t.Run("0xA5: AND A, L", test_0xA5_AND_A_L)
+	t.Run("0xA6: AND A, [HL]", test_0xA6_AND_A__HL)
+	t.Run("0xA7: AND A, A", test_0xA7_AND_A_A)
+	t.Run("0xE6: AND A, n8", test_0xE6_AND_A_n8)
+}
+
+var testData_AND_operand1 = []uint8{0b00000000, 0b11111111, 0b00001111, 0b11110000, 0b11001100, 0b00110011, 0b10101010, 0b01010101}
+var testData_AND_operand2 = []uint8{0b11111111, 0b00001111, 0b11001100, 0b00110011, 0b10101010, 0b01010101, 0b10101010, 0b00110011}
+var expected_AND_result = []uint8{0b00000000, 0b00001111, 0b00001100, 0b00110000, 0b10001000, 0b00010001, 0b10101010, 0b00010001}
+
+func test_0xA0_AND_A_B(t *testing.T) {
+	for idx, data := range testData_AND_operand1 {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.b = testData_AND_operand2[idx]
+		testProgram := []uint8{0xA0, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA0_AND_A_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_AND_result[idx] {
+			t.Errorf("[test_0xA0_AND_A_B] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_AND_result[idx], cpu.a)
+		}
+		// check flags
+		if expected_AND_result[idx] == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xA0_AND_A_B] %v> expected Z flag to be set, got reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xA0_AND_A_B] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[test_0xA0_AND_A_B] %v> expected H flag to be set, got reset\n", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xA0_AND_A_B] %v> expected C flag to be reset, got set\n", idx)
+		}
+	}
+}
+func test_0xA1_AND_A_C(t *testing.T) {
+	for idx, data := range testData_AND_operand1 {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.c = testData_AND_operand2[idx]
+		testProgram := []uint8{0xA1, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA1_AND_A_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_AND_result[idx] {
+			t.Errorf("[test_0xA1_AND_A_C] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_AND_result[idx], cpu.a)
+		}
+		// check flags
+		if expected_AND_result[idx] == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xA1_AND_A_C] %v> expected Z flag to be set, got reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xA1_AND_A_C] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[test_0xA1_AND_A_C] %v> expected H flag to be set, got reset\n", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xA1_AND_A_C] %v> expected C flag to be reset, got set\n", idx)
+		}
+	}
+}
+func test_0xA2_AND_A_D(t *testing.T) {
+	for idx, data := range testData_AND_operand1 {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.d = testData_AND_operand2[idx]
+		testProgram := []uint8{0xA2, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA2_AND_A_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_AND_result[idx] {
+			t.Errorf("[test_0xA2_AND_A_D] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_AND_result[idx], cpu.a)
+		}
+		// check flags
+		if expected_AND_result[idx] == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xA2_AND_A_D] %v> expected Z flag to be set, got reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xA2_AND_A_D] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[test_0xA2_AND_A_D] %v> expected H flag to be set, got reset\n", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xA2_AND_A_D] %v> expected C flag to be reset, got set\n", idx)
+		}
+	}
+}
+func test_0xA3_AND_A_E(t *testing.T) {
+	for idx, data := range testData_AND_operand1 {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.e = testData_AND_operand2[idx]
+		testProgram := []uint8{0xA3, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA3_AND_A_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_AND_result[idx] {
+			t.Errorf("[test_0xA3_AND_A_E] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_AND_result[idx], cpu.a)
+		}
+		// check flags
+		if expected_AND_result[idx] == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xA3_AND_A_E] %v> expected Z flag to be set, got reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xA3_AND_A_E] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[test_0xA3_AND_A_E] %v> expected H flag to be set, got reset\n", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xA3_AND_A_E] %v> expected C flag to be reset, got set\n", idx)
+		}
+	}
+}
+func test_0xA4_AND_A_H(t *testing.T) {
+	for idx, data := range testData_AND_operand1 {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.h = testData_AND_operand2[idx]
+		testProgram := []uint8{0xA4, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA4_AND_A_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_AND_result[idx] {
+			t.Errorf("[test_0xA4_AND_A_H] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_AND_result[idx], cpu.a)
+		}
+		// check flags
+		if expected_AND_result[idx] == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xA4_AND_A_H] %v> expected Z flag to be set, got reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xA4_AND_A_H] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[test_0xA4_AND_A_H] %v> expected H flag to be set, got reset\n", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xA4_AND_A_H] %v> expected C flag to be reset, got set\n", idx)
+		}
+	}
+}
+func test_0xA5_AND_A_L(t *testing.T) {
+	for idx, data := range testData_AND_operand1 {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.l = testData_AND_operand2[idx]
+		testProgram := []uint8{0xA5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA5_AND_A_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_AND_result[idx] {
+			t.Errorf("[test_0xA5_AND_A_L] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_AND_result[idx], cpu.a)
+		}
+		// check flags
+		if expected_AND_result[idx] == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xA5_AND_A_L] %v> expected Z flag to be set, got reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xA5_AND_A_L] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[test_0xA5_AND_A_L] %v> expected H flag to be set, got reset\n", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xA5_AND_A_L] %v> expected C flag to be reset, got set\n", idx)
+		}
+	}
+}
+func test_0xA6_AND_A__HL(t *testing.T) {
+	for idx, data := range testData_AND_operand1 {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		cpu.setHL(0x0002)
+		testProgram := []uint8{0xA6, 0x10, testData_AND_operand2[idx]}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA6_AND_A__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_AND_result[idx] {
+			t.Errorf("[test_0xA6_AND_A__HL] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_AND_result[idx], cpu.a)
+		}
+		// check flags
+		if expected_AND_result[idx] == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xA6_AND_A__HL] %v> expected Z flag to be set, got reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xA6_AND_A__HL] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[test_0xA6_AND_A__HL] %v> expected H flag to be set, got reset\n", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xA6_AND_A__HL] %v> expected C flag to be reset, got set\n", idx)
+		}
+	}
+}
+func test_0xA7_AND_A_A(t *testing.T) {
+	for idx, data := range testData_AND_operand1 {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		testProgram := []uint8{0xA7, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0001 {
+			t.Errorf("[test_0xA7_AND_A_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != testData_AND_operand1[idx] {
+			t.Errorf("[test_0xA7_AND_A_A] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, testData_AND_operand1[idx], cpu.a)
+		}
+		// check flags
+		if expected_AND_result[idx] == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xA7_AND_A_A] %v> expected Z flag to be set, got reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xA7_AND_A_A] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[test_0xA7_AND_A_A] %v> expected H flag to be set, got reset\n", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xA7_AND_A_A] %v> expected C flag to be reset, got set\n", idx)
+		}
+	}
+}
+func test_0xE6_AND_A_n8(t *testing.T) {
+	for idx, data := range testData_AND_operand1 {
+		preconditions()
+		randomizeFlags()
+		cpu.a = data
+		testProgram := []uint8{0xE6, testData_AND_operand2[idx], 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check the final state of the cpu
+		if cpu.pc != 0x0002 {
+			t.Errorf("[test_0xE6_AND_A_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
+		}
+		// check data correctly loaded into A register
+		if cpu.a != expected_AND_result[idx] {
+			t.Errorf("[test_0xE6_AND_A_n8] %v> expected A register to be 0x%02X, got 0x%02X\n", idx, expected_AND_result[idx], cpu.a)
+		}
+		// check flags
+		if expected_AND_result[idx] == 0 && !cpu.getZFlag() {
+			t.Errorf("[test_0xE6_AND_A_n8] %v> expected Z flag to be set, got reset\n", idx)
+		}
+		if cpu.getNFlag() {
+			t.Errorf("[test_0xE6_AND_A_n8] %v> expected N flag to be reset, got set\n", idx)
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("[test_0xE6_AND_A_n8] %v> expected H flag to be set, got reset\n", idx)
+		}
+		if cpu.getCFlag() {
+			t.Errorf("[test_0xE6_AND_A_n8] %v> expected C flag to be reset, got set\n", idx)
+		}
+	}
 }
 
 // INC: Increment register or memory @[HL]
