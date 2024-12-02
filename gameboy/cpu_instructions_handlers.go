@@ -691,8 +691,53 @@ func (c *CPU) POP(instruction *Instruction) {
 }
 
 // Arithmetic / Logical instructions
+
+// Add both operand and carry flag to A register (8 bits, direct/indirect) and store back to register A
+// opcodes:
+//   - 0x88 = ADC A, B
+//   - 0x89 = ADC A, C
+//   - 0x8A = ADC A, D
+//   - 0x8B = ADC A, E
+//   - 0x8C = ADC A, H
+//   - 0x8D = ADC A, L
+//   - 0x8E = ADC A, [HL]
+//   - 0x8F = ADC A, A
+//   - 0xCE = ADC A, n8
+//
+// flags: Z:Z N:0 H:H C:C
 func (c *CPU) ADC(instruction *Instruction) {
-	panic("ADC not implemented")
+	// set flags
+	var carry uint8 = 0
+	if c.getCFlag() {
+		carry = 1
+	}
+
+	// z flag
+	if c.a+uint8(c.operand)+carry == 0 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	// n flag
+	c.resetNFlag()
+	// h flag
+	if (c.a&0x0F)+uint8(c.operand)&0x0F+carry > 0x0F {
+		c.setHFlag()
+	} else {
+		c.resetHFlag()
+	}
+	// c flag
+	if uint16(c.a)+uint16(c.operand)+uint16(carry) > 0xFF {
+		c.setCFlag()
+	} else {
+		c.resetCFlag()
+	}
+	// update the A register
+	c.a += uint8(c.operand) + carry
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
 // Add both operands together (8/16 bits, direct/indirect) and store back to operand 1 location (direct/indirect)
