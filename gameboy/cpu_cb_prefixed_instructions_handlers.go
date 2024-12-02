@@ -35,8 +35,140 @@ func (c *CPU) executeCBInstruction(instruction Instruction) {
 	}
 }
 
+// helper function that returns the left rotated value of a byte and the value of the carry flag
+func rotateLeft(value uint8) (uint8, bool) {
+	rotateValue := (value << 1) | (value >> 7)
+	carry := (value & 0x80) == 0x80
+	return rotateValue, carry
+}
+
+// Rotate r8 register left and save bit 7 to the Carry flag
+// opcodes:
+//   - 0x00 =	RLC B
+//   - 0x01 =	RLC C
+//   - 0x02 =	RLC D
+//   - 0x03 =	RLC E
+//   - 0x04 =	RLC H
+//   - 0x05 =	RLC L
+//   - 0x06 =	RLC [HL]
+//   - 0x07 =	RLC A
+//
+// flags: Z=Z N=0 H=0 C=C
 func (c *CPU) RLC(instruction *Instruction) {
-	panic("RLC not implemented")
+	switch instruction.Operands[0].Name {
+	case "A":
+		rotatedValue, carry := rotateLeft(c.a)
+		c.a = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "B":
+		rotatedValue, carry := rotateLeft(c.b)
+		c.b = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "C":
+		rotatedValue, carry := rotateLeft(c.c)
+		c.c = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "D":
+		rotatedValue, carry := rotateLeft(c.d)
+		c.d = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "E":
+		rotatedValue, carry := rotateLeft(c.e)
+		c.e = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "H":
+		rotatedValue, carry := rotateLeft(c.h)
+		c.h = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "L":
+		rotatedValue, carry := rotateLeft(c.l)
+		c.l = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "HL":
+		valueAtHL := c.bus.Read(c.getHL())
+		rotatedValue, carry := rotateLeft(valueAtHL)
+		c.bus.Write(c.getHL(), rotatedValue)
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	}
+
+	c.resetNFlag()
+	c.resetHFlag()
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 func (c *CPU) RRC(instruction *Instruction) {
 	panic("RRC not implemented")
