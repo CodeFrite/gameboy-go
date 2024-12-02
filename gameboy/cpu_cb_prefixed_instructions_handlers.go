@@ -170,8 +170,141 @@ func (c *CPU) RLC(instruction *Instruction) {
 	// update the number of cycles executed by the CPU
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
+// helper function that returns the right rotated value of a byte and the value of the carry flag
+func rotateRight(value uint8) (uint8, bool) {
+	rotateValue := (value >> 1) | (value << 7)
+	carry := (value & 0x01) == 0x01
+	return rotateValue, carry
+}
+
+// Rotate r8 register right and save bit 0 to the Carry flag
+// opcodes:
+//   - 0x08 =	RRC B
+//   - 0x09 =	RRC C
+//   - 0x0A =	RRC D
+//   - 0x0B =	RRC E
+//   - 0x0C =	RRC H
+//   - 0x0D =	RRC L
+//   - 0x0E =	RRC [HL]
+//   - 0x0F =	RRC A
+//
+// flags: Z=Z N=0 H=0 C=C
 func (c *CPU) RRC(instruction *Instruction) {
-	panic("RRC not implemented")
+	switch instruction.Operands[0].Name {
+	case "A":
+		rotatedValue, carry := rotateRight(c.a)
+		c.a = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "B":
+		rotatedValue, carry := rotateRight(c.b)
+		c.b = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "C":
+		rotatedValue, carry := rotateRight(c.c)
+		c.c = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "D":
+		rotatedValue, carry := rotateRight(c.d)
+		c.d = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "E":
+		rotatedValue, carry := rotateRight(c.e)
+		c.e = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "H":
+		rotatedValue, carry := rotateRight(c.h)
+		c.h = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "L":
+		rotatedValue, carry := rotateRight(c.l)
+		c.l = rotatedValue
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "HL":
+		valueAtHL := c.bus.Read(c.getHL())
+		rotatedValue, carry := rotateRight(valueAtHL)
+		c.bus.Write(c.getHL(), rotatedValue)
+		if carry {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		if rotatedValue == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	}
+
+	c.resetNFlag()
+	c.resetHFlag()
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
 /*
