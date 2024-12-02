@@ -308,7 +308,7 @@ func (c *CPU) RRC(instruction *Instruction) {
 }
 
 // RL r8 / [HL]
-// Rotate r8 or [HL] left through carry: old bit 7 to Carry flag, new bit 0 to bit 7.
+// Rotate r8 or [HL] left through carry: old bit 7 to Carry flag, new bit 0 from carry flag
 // opcodes:
 //   - 0x10:	RL B
 //   - 0x11:	RL C
@@ -437,8 +437,135 @@ func (c *CPU) RL(instruction *Instruction) {
 	// update the number of cycles executed by the CPU
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
+// RR r8 / [HL]
+// Rotate r8 or [HL] right through carry: old bit 0 to Carry flag, new bit 7 from carry flag
+// opcodes:
+//   - 0x18:	RR B
+//   - 0x19:	RR C
+//   - 0x1A:	RR D
+//   - 0x1B:	RR E
+//   - 0x1C:	RR H
+//   - 0x1D:	RR L
+//   - 0x1E:	RR [HL]
+//   - 0x1F:	RR A
+//
+// flags: Z=Z N=0 H=0 C=C
 func (c *CPU) RR(instruction *Instruction) {
-	panic("RR not implemented")
+	boolToUint8 := func(b bool) uint8 {
+		if b {
+			return 1
+		}
+		return 0
+	}
+
+	carry := boolToUint8(c.getCFlag())
+	switch instruction.Operands[0].Name {
+	case "A":
+		if c.a&0x01 == 0x01 {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		c.a = c.a>>1 | uint8(carry)<<7
+		if c.a == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "B":
+		if c.b&0x01 == 0x01 {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		c.b = c.b>>1 | uint8(carry)<<7
+		if c.b == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "C":
+		if c.c&0x01 == 0x01 {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		c.c = c.c>>1 | uint8(carry)<<7
+		if c.c == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "D":
+		if c.d&0x01 == 0x01 {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		c.d = c.d>>1 | uint8(carry)<<7
+		if c.d == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "E":
+		if c.e&0x01 == 0x01 {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		c.e = c.e>>1 | uint8(carry)<<7
+		if c.e == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "H":
+		if c.h&0x01 == 0x01 {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		c.h = c.h>>1 | uint8(carry)<<7
+		if c.h == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "L":
+		if c.l&0x01 == 0x01 {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		c.l = c.l>>1 | uint8(carry)<<7
+		if c.l == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	case "HL":
+		val := c.bus.Read(c.getHL())
+		if val&0x01 == 0x01 {
+			c.setCFlag()
+		} else {
+			c.resetCFlag()
+		}
+		newVal := val>>1 | uint8(carry)<<7
+		c.bus.Write(c.getHL(), newVal)
+		if newVal == 0 {
+			c.setZFlag()
+		} else {
+			c.resetZFlag()
+		}
+	}
+	c.resetNFlag()
+	c.resetHFlag()
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 func (c *CPU) SLA(instruction *Instruction) {
 	panic("SLA not implemented")
