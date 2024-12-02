@@ -307,20 +307,19 @@ func (c *CPU) RRC(instruction *Instruction) {
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
-/*
-	 RL r8 / [HL]
-	 Rotate r8 or [HL] left through carry: old bit 7 to Carry flag, new bit 0 to bit 7.
-	 opcodes:
-		- 0x10:	RL B
-		- 0x11:	RL C
-		- 0x12:	RL D
-		- 0x13:	RL E
-		- 0x14:	RL H
-		- 0x15:	RL L
-		- 0x16:	RL [HL]
-		- 0x17:	RL A
-		 flags: Z=Z N=0 H=0 C=C
-*/
+// RL r8 / [HL]
+// Rotate r8 or [HL] left through carry: old bit 7 to Carry flag, new bit 0 to bit 7.
+// opcodes:
+//   - 0x10:	RL B
+//   - 0x11:	RL C
+//   - 0x12:	RL D
+//   - 0x13:	RL E
+//   - 0x14:	RL H
+//   - 0x15:	RL L
+//   - 0x16:	RL [HL]
+//   - 0x17:	RL A
+//
+// flags: Z=Z N=0 H=0 C=C
 func (c *CPU) RL(instruction *Instruction) {
 
 	boolToUint8 := func(b bool) uint8 {
@@ -416,7 +415,7 @@ func (c *CPU) RL(instruction *Instruction) {
 		} else {
 			c.resetZFlag()
 		}
-	case "[HL]":
+	case "HL":
 		val := c.bus.Read(c.getHL())
 		if val&(1<<7) != 0 {
 			c.setCFlag()
