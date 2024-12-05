@@ -854,9 +854,106 @@ func (c *CPU) BIT(instruction *Instruction) {
 	// update the number of cycles executed by the CPU
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
+// Reset bit b in register r8 or [HL].
+// opcodes:
+//   - 0x80:	RES 0, B
+//   - 0x81:	RES 0, C
+//   - 0x82:	RES 0, D
+//   - 0x83:	RES 0, E
+//   - 0x84:	RES 0, H
+//   - 0x85:	RES 0, L
+//   - 0x86:	RES 0, [HL]
+//   - 0x87:	RES 0, A
+//   - 0x88:	RES 1, B
+//   - 0x89:	RES 1, C
+//   - 0x8A:	RES 1, D
+//   - 0x8B:	RES 1, E
+//   - 0x8C:	RES 1, H
+//   - 0x8D:	RES 1, L
+//   - 0x8E:	RES 1, [HL]
+//   - 0x8F:	RES 1, A
+//   - 0x90:	RES 2, B
+//   - 0x91:	RES 2, C
+//   - 0x92:	RES 2, D
+//   - 0x93:	RES 2, E
+//   - 0x94:	RES 2, H
+//   - 0x95:	RES 2, L
+//   - 0x96:	RES 2, [HL]
+//   - 0x97:	RES 2, A
+//   - 0x98:	RES 3, B
+//   - 0x99:	RES 3, C
+//   - 0x9A:	RES 3, D
+//   - 0x9B:	RES 3, E
+//   - 0x9C:	RES 3, H
+//   - 0x9D:	RES 3, L
+//   - 0x9E:	RES 3, [HL]
+//   - 0x9F:	RES 3, A
+//   - 0xA0:	RES 4, B
+//   - 0xA1:	RES 4, C
+//   - 0xA2:	RES 4, D
+//   - 0xA3:	RES 4, E
+//   - 0xA4:	RES 4, H
+//   - 0xA5:	RES 4, L
+//   - 0xA6:	RES 4, [HL]
+//   - 0xA7:	RES 4, A
+//   - 0xA8:	RES 5, B
+//   - 0xA9:	RES 5, C
+//   - 0xAA:	RES 5, D
+//   - 0xAB:	RES 5, E
+//   - 0xAC:	RES 5, H
+//   - 0xAD:	RES 5, L
+//   - 0xAE:	RES 5, [HL]
+//   - 0xAF:	RES 5, A
+//   - 0xB0:	RES 6, B
+//   - 0xB1:	RES 6, C
+//   - 0xB2:	RES 6, D
+//   - 0xB3:	RES 6, E
+//   - 0xB4:	RES 6, H
+//   - 0xB5:	RES 6, L
+//   - 0xB6:	RES 6, [HL]
+//   - 0xB7:	RES 6, A
+//   - 0xB8:	RES 7, B
+//   - 0xB9:	RES 7, C
+//   - 0xBA:	RES 7, D
+//   - 0xBB:	RES 7, E
+//   - 0xBC:	RES 7, H
+//   - 0xBD:	RES 7, L
+//   - 0xBE:	RES 7, [HL]
+//   - 0xBF:	RES 7, A
+//
+// flags: None affected
 func (c *CPU) RES(instruction *Instruction) {
-	panic("RES not implemented")
+	// get the bit position to test
+	position := instruction.Operands[0].Name[0] - '0' // the bit position to test is given as a string
+
+	switch instruction.Operands[1].Name {
+	case "A":
+		c.a &^= 1 << position
+	case "B":
+		c.b &^= 1 << position
+	case "C":
+		c.c &^= 1 << position
+	case "D":
+		c.d &^= 1 << position
+	case "E":
+		c.e &^= 1 << position
+	case "H":
+		c.h &^= 1 << position
+	case "L":
+		c.l &^= 1 << position
+	case "HL":
+		valueAtHL := c.bus.Read(c.getHL())
+		valueAtHL &^= 1 << position
+		c.bus.Write(c.getHL(), valueAtHL)
+	}
+
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
 func (c *CPU) SET(instruction *Instruction) {
 	panic("SET not implemented")
 }
