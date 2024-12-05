@@ -1768,3 +1768,358 @@ func test_0x27_SLA_A(t *testing.T) {
 		postconditions()
 	}
 }
+
+// Shift Right Arithmetically register r8 (bit 7 of r8 is unchanged).
+// ┃ b7 → ... → b0 ─╂→ Carry
+// opcodes:
+//   - 0x28:	SRA B
+//   - 0x29:	SRA C
+//   - 0x2A:	SRA D
+//   - 0x2B:	SRA E
+//   - 0x2C:	SRA H
+//   - 0x2D:	SRA L
+//   - 0x2E:	SRA [HL]
+//   - 0x2F:	SRA A
+//
+// flags: Z=Z N=0 H=0 C=b0
+func TestSRA(t *testing.T) {
+	t.Run("0x28 SRA B", test_0x28_SRA_B)
+	t.Run("0x29 SRA C", test_0x29_SRA_C)
+	t.Run("0x2A SRA D", test_0x2A_SRA_D)
+	t.Run("0x2B SRA E", test_0x2B_SRA_E)
+	t.Run("0x2C SRA H", test_0x2C_SRA_H)
+	t.Run("0x2D SRA L", test_0x2D_SRA_L)
+	t.Run("0x2E SRA [HL]", test_0x2E_SRA__HL)
+	t.Run("0x2F SRA A", test_0x2F_SRA_A)
+}
+
+type TestCaseSRA struct {
+	value         uint8
+	C             bool
+	expectedValue uint8
+	expectedCFlag bool
+}
+
+var testCaseSRA = []TestCaseSRA{
+	{0b00000000, false, 0b00000000, false}, // 0
+	{0b00000000, true, 0b00000000, false},  // 1
+	{0b11111111, false, 0b11111111, true},  // 2
+	{0b11111111, true, 0b11111111, true},   // 3
+	{0b10101010, false, 0b11010101, false}, // 4
+	{0b10101010, true, 0b11010101, false},  // 5
+	{0b01010101, true, 0b00101010, true},   // 6
+	{0b00110011, false, 0b00011001, true},  // 7
+	{0b00110011, true, 0b00011001, true},   // 8
+	{0b11001100, false, 0b11100110, false}, // 9
+	{0b11001100, true, 0b11100110, false},  // 10
+	{0b00010001, false, 0b00001000, true},  // 11
+	{0b00010001, true, 0b00001000, true},   // 12
+	{0b10001000, false, 0b11000100, false}, // 13
+	{0b10001000, true, 0b11000100, false},  // 14
+}
+
+func test_0x28_SRA_B(t *testing.T) {
+	for idx, tc := range testCaseSRA {
+		preconditions()
+		cpu.b = tc.value
+		randomizeFlags()
+		if tc.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		testProgram := []uint8{0xCB, 0x28, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check that the value was shifted correctly
+		if cpu.b != tc.expectedValue {
+			t.Errorf("Test case %d: Expected B register to be 0x%02X, got 0x%02X", idx, tc.expectedValue, cpu.b)
+		}
+		// check that the flags were set correctly
+		if cpu.getZFlag() != (tc.expectedValue == 0) {
+			t.Errorf("Test case %d: Expected Z flag to be %t, got %t", idx, tc.expectedValue == 0, cpu.getZFlag())
+		}
+		if cpu.getCFlag() != tc.expectedCFlag {
+			t.Errorf("Test case %d: Expected C flag to be %t, got %t", idx, tc.expectedCFlag, cpu.getCFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Test case %d: Expected N flag to be false, got true", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("Test case %d: Expected H flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x29_SRA_C(t *testing.T) {
+	for idx, tc := range testCaseSRA {
+		preconditions()
+		cpu.c = tc.value
+		randomizeFlags()
+		if tc.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		testProgram := []uint8{0xCB, 0x29, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check that the value was shifted correctly
+		if cpu.c != tc.expectedValue {
+			t.Errorf("Test case %d: Expected C register to be 0x%02X, got 0x%02X", idx, tc.expectedValue, cpu.c)
+		}
+		// check that the flags were set correctly
+		if cpu.getZFlag() != (tc.expectedValue == 0) {
+			t.Errorf("Test case %d: Expected Z flag to be %t, got %t", idx, tc.expectedValue == 0, cpu.getZFlag())
+		}
+		if cpu.getCFlag() != tc.expectedCFlag {
+			t.Errorf("Test case %d: Expected C flag to be %t, got %t", idx, tc.expectedCFlag, cpu.getCFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Test case %d: Expected N flag to be false, got true", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("Test case %d: Expected H flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x2A_SRA_D(t *testing.T) {
+	for idx, tc := range testCaseSRA {
+		preconditions()
+		cpu.d = tc.value
+		randomizeFlags()
+		if tc.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		testProgram := []uint8{0xCB, 0x2A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check that the value was shifted correctly
+		if cpu.d != tc.expectedValue {
+			t.Errorf("Test case %d: Expected D register to be 0x%02X, got 0x%02X", idx, tc.expectedValue, cpu.d)
+		}
+		// check that the flags were set correctly
+		if cpu.getZFlag() != (tc.expectedValue == 0) {
+			t.Errorf("Test case %d: Expected Z flag to be %t, got %t", idx, tc.expectedValue == 0, cpu.getZFlag())
+		}
+		if cpu.getCFlag() != tc.expectedCFlag {
+			t.Errorf("Test case %d: Expected C flag to be %t, got %t", idx, tc.expectedCFlag, cpu.getCFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Test case %d: Expected N flag to be false, got true", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("Test case %d: Expected H flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x2B_SRA_E(t *testing.T) {
+	for idx, tc := range testCaseSRA {
+		preconditions()
+		cpu.e = tc.value
+		randomizeFlags()
+		if tc.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		testProgram := []uint8{0xCB, 0x2B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check that the value was shifted correctly
+		if cpu.e != tc.expectedValue {
+			t.Errorf("Test case %d: Expected E register to be 0x%02X, got 0x%02X", idx, tc.expectedValue, cpu.e)
+		}
+		// check that the flags were set correctly
+		if cpu.getZFlag() != (tc.expectedValue == 0) {
+			t.Errorf("Test case %d: Expected Z flag to be %t, got %t", idx, tc.expectedValue == 0, cpu.getZFlag())
+		}
+		if cpu.getCFlag() != tc.expectedCFlag {
+			t.Errorf("Test case %d: Expected C flag to be %t, got %t", idx, tc.expectedCFlag, cpu.getCFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Test case %d: Expected N flag to be false, got true", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("Test case %d: Expected H flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x2C_SRA_H(t *testing.T) {
+	for idx, tc := range testCaseSRA {
+		preconditions()
+		cpu.h = tc.value
+		randomizeFlags()
+		if tc.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		testProgram := []uint8{0xCB, 0x2C, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check that the value was shifted correctly
+		if cpu.h != tc.expectedValue {
+			t.Errorf("Test case %d: Expected H register to be 0x%02X, got 0x%02X", idx, tc.expectedValue, cpu.h)
+		}
+		// check that the flags were set correctly
+		if cpu.getZFlag() != (tc.expectedValue == 0) {
+			t.Errorf("Test case %d: Expected Z flag to be %t, got %t", idx, tc.expectedValue == 0, cpu.getZFlag())
+		}
+		if cpu.getCFlag() != tc.expectedCFlag {
+			t.Errorf("Test case %d: Expected C flag to be %t, got %t", idx, tc.expectedCFlag, cpu.getCFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Test case %d: Expected N flag to be false, got true", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("Test case %d: Expected H flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x2D_SRA_L(t *testing.T) {
+	for idx, tc := range testCaseSRA {
+		preconditions()
+		cpu.l = tc.value
+		randomizeFlags()
+		if tc.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		testProgram := []uint8{0xCB, 0x2D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check that the value was shifted correctly
+		if cpu.l != tc.expectedValue {
+			t.Errorf("Test case %d: Expected L register to be 0x%02X, got 0x%02X", idx, tc.expectedValue, cpu.l)
+		}
+		// check that the flags were set correctly
+		if cpu.getZFlag() != (tc.expectedValue == 0) {
+			t.Errorf("Test case %d: Expected Z flag to be %t, got %t", idx, tc.expectedValue == 0, cpu.getZFlag())
+		}
+		if cpu.getCFlag() != tc.expectedCFlag {
+			t.Errorf("Test case %d: Expected C flag to be %t, got %t", idx, tc.expectedCFlag, cpu.getCFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Test case %d: Expected N flag to be false, got true", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("Test case %d: Expected H flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x2E_SRA__HL(t *testing.T) {
+	for idx, tc := range testCaseSRA {
+		preconditions()
+		cpu.setHL(0x0003)
+		randomizeFlags()
+		if tc.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		testProgram := []uint8{0xCB, 0x2E, 0x10, tc.value}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check that the value was shifted correctly
+		valueAtHL := cpu.bus.Read(0x0003)
+		if valueAtHL != tc.expectedValue {
+			t.Errorf("Test case %d: Expected value pointed by [HL] register to be 0x%02X, got 0x%02X", idx, tc.expectedValue, valueAtHL)
+		}
+		// check that the flags were set correctly
+		if cpu.getZFlag() != (tc.expectedValue == 0) {
+			t.Errorf("Test case %d: Expected Z flag to be %t, got %t", idx, tc.expectedValue == 0, cpu.getZFlag())
+		}
+		if cpu.getCFlag() != tc.expectedCFlag {
+			t.Errorf("Test case %d: Expected C flag to be %t, got %t", idx, tc.expectedCFlag, cpu.getCFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Test case %d: Expected N flag to be false, got true", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("Test case %d: Expected H flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}
+func test_0x2F_SRA_A(t *testing.T) {
+	for idx, tc := range testCaseSRA {
+		preconditions()
+		cpu.a = tc.value
+		randomizeFlags()
+		if tc.C {
+			cpu.setCFlag()
+		} else {
+			cpu.resetCFlag()
+		}
+		testProgram := []uint8{0xCB, 0x2F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
+		}
+		// check that the value was shifted correctly
+		if cpu.a != tc.expectedValue {
+			t.Errorf("Test case %d: Expected A register to be 0x%02X, got 0x%02X", idx, tc.expectedValue, cpu.a)
+		}
+		// check that the flags were set correctly
+		if cpu.getZFlag() != (tc.expectedValue == 0) {
+			t.Errorf("Test case %d: Expected Z flag to be %t, got %t", idx, tc.expectedValue == 0, cpu.getZFlag())
+		}
+		if cpu.getCFlag() != tc.expectedCFlag {
+			t.Errorf("Test case %d: Expected C flag to be %t, got %t", idx, tc.expectedCFlag, cpu.getCFlag())
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Test case %d: Expected N flag to be false, got true", idx)
+		}
+		if cpu.getHFlag() {
+			t.Errorf("Test case %d: Expected H flag to be false, got true", idx)
+		}
+		postconditions()
+	}
+}

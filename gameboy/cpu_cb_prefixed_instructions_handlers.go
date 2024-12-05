@@ -619,8 +619,57 @@ func (c *CPU) SLA(instruction *Instruction) {
 	// update the number of cycles executed by the CPU
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
+// Shift Right Arithmetically register r8 (bit 7 of r8 is unchanged).
+// ┃ b7 → ... → b0 ─╂→ Carry
+// opcodes:
+//   - 0x28:	SRA B
+//   - 0x29:	SRA C
+//   - 0x2A:	SRA D
+//   - 0x2B:	SRA E
+//   - 0x2C:	SRA H
+//   - 0x2D:	SRA L
+//   - 0x2E:	SRA [HL]
+//   - 0x2F:	SRA A
+//
+// flags: Z=Z N=0 H=0 C=b0
 func (c *CPU) SRA(instruction *Instruction) {
-	panic("SRA not implemented")
+	msb := uint8(c.operand) & 0x80
+	if c.operand&0x01 == 0x01 {
+		c.setCFlag()
+	} else {
+		c.resetCFlag()
+	}
+	if c.operand == 0 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	c.resetNFlag()
+	c.resetHFlag()
+	switch instruction.Operands[0].Name {
+	case "A":
+		c.a = c.a>>1 | msb
+	case "B":
+		c.b = c.b>>1 | msb
+	case "C":
+		c.c = c.c>>1 | msb
+	case "D":
+		c.d = c.d>>1 | msb
+	case "E":
+		c.e = c.e>>1 | msb
+	case "H":
+		c.h = c.h>>1 | msb
+	case "L":
+		c.l = c.l>>1 | msb
+	case "HL":
+		valueAtHL := c.bus.Read(c.getHL())
+		c.bus.Write(c.getHL(), valueAtHL>>1|msb)
+	}
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 func (c *CPU) SWAP(instruction *Instruction) {
 	panic("SWAP not implemented")
