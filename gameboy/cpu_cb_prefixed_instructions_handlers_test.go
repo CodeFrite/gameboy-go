@@ -2833,3 +2833,2409 @@ func test_0x3F_SRL_A(t *testing.T) {
 		postconditions()
 	}
 }
+
+// Test bit b in register r8 or [HL]: If bit b is 0, Z is set.
+// opcodes:
+//   - 0x40:	BIT 0, B
+//   - 0x41:	BIT 0, C
+//   - 0x42:	BIT 0, D
+//   - 0x43:	BIT 0, E
+//   - 0x44:	BIT 0, H
+//   - 0x45:	BIT 0, L
+//   - 0x46:	BIT 0, [HL]
+//   - 0x47:	BIT 0, A
+//   - 0x48:	BIT 1, B
+//   - 0x49:	BIT 1, C
+//   - 0x4A:	BIT 1, D
+//   - 0x4B:	BIT 1, E
+//   - 0x4C:	BIT 1, H
+//   - 0x4D:	BIT 1, L
+//   - 0x4E:	BIT 1, [HL]
+//   - 0x4F:	BIT 1, A
+//   - 0x50:	BIT 2, B
+//   - 0x51:	BIT 2, C
+//   - 0x52:	BIT 2, D
+//   - 0x53:	BIT 2, E
+//   - 0x54:	BIT 2, H
+//   - 0x55:	BIT 2, L
+//   - 0x56:	BIT 2, [HL]
+//   - 0x57:	BIT 2, A
+//   - 0x58:	BIT 3, B
+//   - 0x59:	BIT 3, C
+//   - 0x5A:	BIT 3, D
+//   - 0x5B:	BIT 3, E
+//   - 0x5C:	BIT 3, H
+//   - 0x5D:	BIT 3, L
+//   - 0x5E:	BIT 3, [HL]
+//   - 0x5F:	BIT 3, A
+//   - 0x60:	BIT 4, B
+//   - 0x61:	BIT 4, C
+//   - 0x62:	BIT 4, D
+//   - 0x63:	BIT 4, E
+//   - 0x64:	BIT 4, H
+//   - 0x65:	BIT 4, L
+//   - 0x66:	BIT 4, [HL]
+//   - 0x67:	BIT 4, A
+//   - 0x68:	BIT 5, B
+//   - 0x69:	BIT 5, C
+//   - 0x6A:	BIT 5, D
+//   - 0x6B:	BIT 5, E
+//   - 0x6C:	BIT 5, H
+//   - 0x6D:	BIT 5, L
+//   - 0x6E:	BIT 5, [HL]
+//   - 0x6F:	BIT 5, A
+//   - 0x70:	BIT 6, B
+//   - 0x71:	BIT 6, C
+//   - 0x72:	BIT 6, D
+//   - 0x73:	BIT 6, E
+//   - 0x74:	BIT 6, H
+//   - 0x75:	BIT 6, L
+//   - 0x76:	BIT 6, [HL]
+//   - 0x77:	BIT 6, A
+//   - 0x78:	BIT 7, B
+//   - 0x79:	BIT 7, C
+//   - 0x7A:	BIT 7, D
+//   - 0x7B:	BIT 7, E
+//   - 0x7C:	BIT 7, H
+//   - 0x7D:	BIT 7, L
+//   - 0x7E:	BIT 7, [HL]
+//   - 0x7F:	BIT 7, A
+//
+// flags: Z=Z N=0 H=1 C=-
+func TestBIT(t *testing.T) {
+	// BIT 0
+	t.Run("0x40 BIT 0, B", test_0x40_BIT_0_B)
+	t.Run("0x41 BIT 0, C", test_0x41_BIT_0_C)
+	t.Run("0x42 BIT 0, D", test_0x42_BIT_0_D)
+	t.Run("0x43 BIT 0, E", test_0x43_BIT_0_E)
+	t.Run("0x44 BIT 0, H", test_0x44_BIT_0_H)
+	t.Run("0x45 BIT 0, L", test_0x45_BIT_0_L)
+	t.Run("0x46 BIT 0, [HL]", test_0x46_BIT_0__HL)
+	t.Run("0x47 BIT 0, A", test_0x47_BIT_0_A)
+
+	// BIT 1
+	t.Run("0x48 BIT 1, B", test_0x48_BIT_1_B)
+	t.Run("0x49 BIT 1, C", test_0x49_BIT_1_C)
+	t.Run("0x4A BIT 1, D", test_0x4A_BIT_1_D)
+	t.Run("0x4B BIT 1, E", test_0x4B_BIT_1_E)
+	t.Run("0x4C BIT 1, H", test_0x4C_BIT_1_H)
+	t.Run("0x4D BIT 1, L", test_0x4D_BIT_1_L)
+	t.Run("0x4E BIT 1, [HL]", test_0x4E_BIT_1__HL)
+	t.Run("0x4F BIT 1, A", test_0x4F_BIT_1_A)
+
+	// BIT 2
+	t.Run("0x50 BIT 2, B", test_0x50_BIT_2_B)
+	t.Run("0x51 BIT 2, C", test_0x51_BIT_2_C)
+	t.Run("0x52 BIT 2, D", test_0x52_BIT_2_D)
+	t.Run("0x53 BIT 2, E", test_0x53_BIT_2_E)
+	t.Run("0x54 BIT 2, H", test_0x54_BIT_2_H)
+	t.Run("0x55 BIT 2, L", test_0x55_BIT_2_L)
+	t.Run("0x56 BIT 2, [HL]", test_0x56_BIT_2__HL)
+	t.Run("0x57 BIT 2, A", test_0x57_BIT_2_A)
+
+	// BIT 3
+	t.Run("0x58 BIT 3, B", test_0x58_BIT_3_B)
+	t.Run("0x59 BIT 3, C", test_0x59_BIT_3_C)
+	t.Run("0x5A BIT 3, D", test_0x5A_BIT_3_D)
+	t.Run("0x5B BIT 3, E", test_0x5B_BIT_3_E)
+	t.Run("0x5C BIT 3, H", test_0x5C_BIT_3_H)
+	t.Run("0x5D BIT 3, L", test_0x5D_BIT_3_L)
+	t.Run("0x5E BIT 3, [HL]", test_0x5E_BIT_3__HL)
+	t.Run("0x5F BIT 3, A", test_0x5F_BIT_3_A)
+
+	// BIT 4
+	t.Run("0x60 BIT 4, B", test_0x60_BIT_4_B)
+	t.Run("0x61 BIT 4, C", test_0x61_BIT_4_C)
+	t.Run("0x62 BIT 4, D", test_0x62_BIT_4_D)
+	t.Run("0x63 BIT 4, E", test_0x63_BIT_4_E)
+	t.Run("0x64 BIT 4, H", test_0x64_BIT_4_H)
+	t.Run("0x65 BIT 4, L", test_0x65_BIT_4_L)
+	t.Run("0x66 BIT 4, [HL]", test_0x66_BIT_4__HL)
+	t.Run("0x67 BIT 4, A", test_0x67_BIT_4_A)
+
+	// BIT 5
+	t.Run("0x68 BIT 5, B", test_0x68_BIT_5_B)
+	t.Run("0x69 BIT 5, C", test_0x69_BIT_5_C)
+	t.Run("0x6A BIT 5, D", test_0x6A_BIT_5_D)
+	t.Run("0x6B BIT 5, E", test_0x6B_BIT_5_E)
+	t.Run("0x6C BIT 5, H", test_0x6C_BIT_5_H)
+	t.Run("0x6D BIT 5, L", test_0x6D_BIT_5_L)
+	t.Run("0x6E BIT 5, [HL]", test_0x6E_BIT_5__HL)
+	t.Run("0x6F BIT 5, A", test_0x6F_BIT_5_A)
+
+	// BIT 6
+	t.Run("0x70 BIT 6, B", test_0x70_BIT_6_B)
+	t.Run("0x71 BIT 6, C", test_0x71_BIT_6_C)
+	t.Run("0x72 BIT 6, D", test_0x72_BIT_6_D)
+	t.Run("0x73 BIT 6, E", test_0x73_BIT_6_E)
+	t.Run("0x74 BIT 6, H", test_0x74_BIT_6_H)
+	t.Run("0x75 BIT 6, L", test_0x75_BIT_6_L)
+	t.Run("0x76 BIT 6, [HL]", test_0x76_BIT_6__HL)
+	t.Run("0x77 BIT 6, A", test_0x77_BIT_6_A)
+
+	// BIT 7
+	t.Run("0x78 BIT 7, B", test_0x78_BIT_7_B)
+	t.Run("0x79 BIT 7, C", test_0x79_BIT_7_C)
+	t.Run("0x7A BIT 7, D", test_0x7A_BIT_7_D)
+	t.Run("0x7B BIT 7, E", test_0x7B_BIT_7_E)
+	t.Run("0x7C BIT 7, H", test_0x7C_BIT_7_H)
+	t.Run("0x7D BIT 7, L", test_0x7D_BIT_7_L)
+	t.Run("0x7E BIT 7, [HL]", test_0x7E_BIT_7__HL)
+	t.Run("0x7F BIT 7, A", test_0x7F_BIT_7_A)
+}
+
+// BIT 0
+func test_0x40_BIT_0_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0x40, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&0x01 == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x41_BIT_0_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0x41, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&0x01 == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x42_BIT_0_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0x42, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&0x01 == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x43_BIT_0_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0x43, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&0x01 == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x44_BIT_0_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0x44, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&0x01 == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x45_BIT_0_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0x45, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&0x01 == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x46_BIT_0__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0x46, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&0x01 == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x47_BIT_0_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0x47, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&0x01 == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+
+// BIT 1
+func test_0x48_BIT_1_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0x48, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<1) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x49_BIT_1_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0x49, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<1) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x4A_BIT_1_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0x4A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<1) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x4B_BIT_1_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0x4B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<1) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x4C_BIT_1_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0x4C, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<1) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x4D_BIT_1_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0x4D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<1) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x4E_BIT_1__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0x4E, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<1) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x4F_BIT_1_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0x4F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<1) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+
+// BIT 2
+func test_0x50_BIT_2_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0x50, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<2) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x51_BIT_2_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0x51, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<2) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x52_BIT_2_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0x52, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<2) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x53_BIT_2_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0x53, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<2) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x54_BIT_2_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0x54, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<2) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x55_BIT_2_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0x55, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<2) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x56_BIT_2__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0x56, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<2) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x57_BIT_2_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0x57, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<2) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+
+// BIT 3
+func test_0x58_BIT_3_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0x58, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<3) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x59_BIT_3_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0x59, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<3) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x5A_BIT_3_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0x5A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<3) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x5B_BIT_3_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0x5B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<3) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x5C_BIT_3_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0x5C, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<3) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x5D_BIT_3_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0x5D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<3) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x5E_BIT_3__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0x5E, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<3) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x5F_BIT_3_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0x5F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<3) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+
+// BIT 4
+func test_0x60_BIT_4_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0x60, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<4) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x61_BIT_4_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0x61, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<4) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x62_BIT_4_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0x62, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<4) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x63_BIT_4_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0x63, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<4) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x64_BIT_4_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0x64, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<4) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x65_BIT_4_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0x65, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<4) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x66_BIT_4__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0x66, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<4) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x67_BIT_4_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0x67, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<4) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+
+// BIT 5
+func test_0x68_BIT_5_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0x68, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<5) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x69_BIT_5_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0x69, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<5) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x6A_BIT_5_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0x6A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<5) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x6B_BIT_5_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0x6B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<5) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x6C_BIT_5_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0x6C, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<5) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x6D_BIT_5_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0x6D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<5) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x6E_BIT_5__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0x6E, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<5) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x6F_BIT_5_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0x6F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<5) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+
+// BIT 6
+func test_0x70_BIT_6_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0x70, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<6) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x71_BIT_6_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0x71, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<6) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x72_BIT_6_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0x72, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<6) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x73_BIT_6_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0x73, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<6) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x74_BIT_6_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0x74, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<6) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x75_BIT_6_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0x75, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<6) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x76_BIT_6__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0x76, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<6) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x77_BIT_6_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0x77, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<6) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+
+// BIT 7
+func test_0x78_BIT_7_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0x78, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<7) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x79_BIT_7_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0x79, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<7) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x7A_BIT_7_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0x7A, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<7) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x7B_BIT_7_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0x7B, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<7) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x7C_BIT_7_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0x7C, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<7) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x7D_BIT_7_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0x7D, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<7) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x7E_BIT_7__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0x7E, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<7) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
+func test_0x7F_BIT_7_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveCFlag := cpu.getCFlag()
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0x7F, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the flags were set correctly
+		if uint8(i)&(1<<7) == 0 {
+			if !cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be true, got false")
+			}
+		} else {
+			if cpu.getZFlag() {
+				t.Errorf("Expected Z flag to be false, got true")
+			}
+		}
+		if cpu.getNFlag() {
+			t.Errorf("Expected N flag to be false, got true")
+		}
+		if !cpu.getHFlag() {
+			t.Errorf("Expected H flag to be true, got false")
+		}
+		if cpu.getCFlag() != saveCFlag {
+			t.Errorf("Expected C flag to be unchanged, got %t", cpu.getCFlag())
+		}
+		postconditions()
+	}
+}
