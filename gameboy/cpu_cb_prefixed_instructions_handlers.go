@@ -671,9 +671,53 @@ func (c *CPU) SRA(instruction *Instruction) {
 	// update the number of cycles executed by the CPU
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
+// Swap upper & lower nibles of r8 register
+// opcodes:
+//   - 0x30:	SWAP B
+//   - 0x31:	SWAP C
+//   - 0x32:	SWAP D
+//   - 0x33:	SWAP E
+//   - 0x34:	SWAP H
+//   - 0x35:	SWAP L
+//   - 0x36:	SWAP [HL]
+//   - 0x37:	SWAP A
+//
+// flags: Z=Z N=0 H=0 C=0
 func (c *CPU) SWAP(instruction *Instruction) {
-	panic("SWAP not implemented")
+	if c.operand == 0 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	c.resetNFlag()
+	c.resetHFlag()
+	c.resetCFlag()
+	switch instruction.Operands[0].Name {
+	case "A":
+		c.a = c.a<<4 | c.a>>4
+	case "B":
+		c.b = c.b<<4 | c.b>>4
+	case "C":
+		c.c = c.c<<4 | c.c>>4
+	case "D":
+		c.d = c.d<<4 | c.d>>4
+	case "E":
+		c.e = c.e<<4 | c.e>>4
+	case "H":
+		c.h = c.h<<4 | c.h>>4
+	case "L":
+		c.l = c.l<<4 | c.l>>4
+	case "HL":
+		valueAtHL := c.bus.Read(c.getHL())
+		c.bus.Write(c.getHL(), valueAtHL<<4|valueAtHL>>4)
+	}
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
+
 func (c *CPU) SRL(instruction *Instruction) {
 	panic("SRL not implemented")
 }
