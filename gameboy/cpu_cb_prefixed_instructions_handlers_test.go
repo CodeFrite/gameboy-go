@@ -6949,3 +6949,1713 @@ func test_0xBF_RES_7_A(t *testing.T) {
 		postconditions()
 	}
 }
+
+// Set bit b in register r8 or [HL].
+// opcodes:
+//   - 0xC0:	SET 0, B
+//   - 0xC1:	SET 0, C
+//   - 0xC2:	SET 0, D
+//   - 0xC3:	SET 0, E
+//   - 0xC4:	SET 0, H
+//   - 0xC5:	SET 0, L
+//   - 0xC6:	SET 0, [HL]
+//   - 0xC7:	SET 0, A
+//   - 0xC8:	SET 1, B
+//   - 0xC9:	SET 1, C
+//   - 0xCA:	SET 1, D
+//   - 0xCB:	SET 1, E
+//   - 0xCC:	SET 1, H
+//   - 0xCD:	SET 1, L
+//   - 0xCE:	SET 1, [HL]
+//   - 0xCF:	SET 1, A
+//   - 0xD0:	SET 2, B
+//   - 0xD1:	SET 2, C
+//   - 0xD2:	SET 2, D
+//   - 0xD3:	SET 2, E
+//   - 0xD4:	SET 2, H
+//   - 0xD5:	SET 2, L
+//   - 0xD6:	SET 2, [HL]
+//   - 0xD7:	SET 2, A
+//   - 0xD8:	SET 3, B
+//   - 0xD9:	SET 3, C
+//   - 0xDA:	SET 3, D
+//   - 0xDB:	SET 3, E
+//   - 0xDC:	SET 3, H
+//   - 0xDD:	SET 3, L
+//   - 0xDE:	SET 3, [HL]
+//   - 0xDF:	SET 3, A
+//   - 0xE0:	SET 4, B
+//   - 0xE1:	SET 4, C
+//   - 0xE2:	SET 4, D
+//   - 0xE3:	SET 4, E
+//   - 0xE4:	SET 4, H
+//   - 0xE5:	SET 4, L
+//   - 0xE6:	SET 4, [HL]
+//   - 0xE7:	SET 4, A
+//   - 0xE8:	SET 5, B
+//   - 0xE9:	SET 5, C
+//   - 0xEA:	SET 5, D
+//   - 0xEB:	SET 5, E
+//   - 0xEC:	SET 5, H
+//   - 0xED:	SET 5, L
+//   - 0xEE:	SET 5, [HL]
+//   - 0xEF:	SET 5, A
+//   - 0xF0:	SET 6, B
+//   - 0xF1:	SET 6, C
+//   - 0xF2:	SET 6, D
+//   - 0xF3:	SET 6, E
+//   - 0xF4:	SET 6, H
+//   - 0xF5:	SET 6, L
+//   - 0xF6:	SET 6, [HL]
+//   - 0xF7:	SET 6, A
+//   - 0xF8:	SET 7, B
+//   - 0xF9:	SET 7, C
+//   - 0xFA:	SET 7, D
+//   - 0xFB:	SET 7, E
+//   - 0xFC:	SET 7, H
+//   - 0xFD:	SET 7, L
+//   - 0xFE:	SET 7, [HL]
+//   - 0xFF:	SET 7, A
+//
+// flags: None affected
+func TestSET(t *testing.T) {
+	// BIT 0
+	t.Run("0xC0 SET 0, B", test_0xC0_SET_0_B)
+	t.Run("0xC1 SET 0, C", test_0xC1_SET_0_C)
+	t.Run("0xC2 SET 0, D", test_0xC2_SET_0_D)
+	t.Run("0xC3 SET 0, E", test_0xC3_SET_0_E)
+	t.Run("0xC4 SET 0, H", test_0xC4_SET_0_H)
+	t.Run("0xC5 SET 0, L", test_0xC5_SET_0_L)
+	t.Run("0xC6 SET 0, [HL]", test_0xC6_SET_0__HL)
+	t.Run("0xC7 SET 0, A", test_0xC7_SET_0_A)
+
+	// BIT 1
+	t.Run("0xC8 SET 1, B", test_0xC8_SET_1_B)
+	t.Run("0xC9 SET 1, C", test_0xC9_SET_1_C)
+	t.Run("0xCA SET 1, D", test_0xCA_SET_1_D)
+	t.Run("0xCB SET 1, E", test_0xCB_SET_1_E)
+	t.Run("0xCC SET 1, H", test_0xCC_SET_1_H)
+	t.Run("0xCD SET 1, L", test_0xCD_SET_1_L)
+	t.Run("0xCE SET 1, [HL]", test_0xCE_SET_1__HL)
+	t.Run("0xCF SET 1, A", test_0xCF_SET_1_A)
+
+	// BIT 2
+	t.Run("0xD0 SET 2, B", test_0xD0_SET_2_B)
+	t.Run("0xD1 SET 2, C", test_0xD1_SET_2_C)
+	t.Run("0xD2 SET 2, D", test_0xD2_SET_2_D)
+	t.Run("0xD3 SET 2, E", test_0xD3_SET_2_E)
+	t.Run("0xD4 SET 2, H", test_0xD4_SET_2_H)
+	t.Run("0xD5 SET 2, L", test_0xD5_SET_2_L)
+	t.Run("0xD6 SET 2, [HL]", test_0xD6_SET_2__HL)
+	t.Run("0xD7 SET 2, A", test_0xD7_SET_2_A)
+
+	// BIT 3
+	t.Run("0xD8 SET 3, B", test_0xD8_SET_3_B)
+	t.Run("0xD9 SET 3, C", test_0xD9_SET_3_C)
+	t.Run("0xDA SET 3, D", test_0xDA_SET_3_D)
+	t.Run("0xDB SET 3, E", test_0xDB_SET_3_E)
+	t.Run("0xDC SET 3, H", test_0xDC_SET_3_H)
+	t.Run("0xDD SET 3, L", test_0xDD_SET_3_L)
+	t.Run("0xDE SET 3, [HL]", test_0xDE_SET_3__HL)
+	t.Run("0xDF SET 3, A", test_0xDF_SET_3_A)
+
+	// BIT 4
+	t.Run("0xE0 SET 4, B", test_0xE0_SET_4_B)
+	t.Run("0xE1 SET 4, C", test_0xE1_SET_4_C)
+	t.Run("0xE2 SET 4, D", test_0xE2_SET_4_D)
+	t.Run("0xE3 SET 4, E", test_0xE3_SET_4_E)
+	t.Run("0xE4 SET 4, H", test_0xE4_SET_4_H)
+	t.Run("0xE5 SET 4, L", test_0xE5_SET_4_L)
+	t.Run("0xE6 SET 4, [HL]", test_0xE6_SET_4__HL)
+	t.Run("0xE7 SET 4, A", test_0xE7_SET_4_A)
+
+	// BIT 5
+	t.Run("0xE8 SET 5, B", test_0xE8_SET_5_B)
+	t.Run("0xE9 SET 5, C", test_0xE9_SET_5_C)
+	t.Run("0xEA SET 5, D", test_0xEA_SET_5_D)
+	t.Run("0xEB SET 5, E", test_0xEB_SET_5_E)
+	t.Run("0xEC SET 5, H", test_0xEC_SET_5_H)
+	t.Run("0xED SET 5, L", test_0xED_SET_5_L)
+	t.Run("0xEE SET 5, [HL]", test_0xEE_SET_5__HL)
+	t.Run("0xEF SET 5, A", test_0xEF_SET_5_A)
+
+	// BIT 6
+	t.Run("0xF0 SET 6, B", test_0xF0_SET_6_B)
+	t.Run("0xF1 SET 6, C", test_0xF1_SET_6_C)
+	t.Run("0xF2 SET 6, D", test_0xF2_SET_6_D)
+	t.Run("0xF3 SET 6, E", test_0xF3_SET_6_E)
+	t.Run("0xF4 SET 6, H", test_0xF4_SET_6_H)
+	t.Run("0xF5 SET 6, L", test_0xF5_SET_6_L)
+	t.Run("0xF6 SET 6, [HL]", test_0xF6_SET_6__HL)
+	t.Run("0xF7 SET 6, A", test_0xF7_SET_6_A)
+
+	// BIT 7
+	t.Run("0xF8 SET 7, B", test_0xF8_SET_7_B)
+	t.Run("0xF9 SET 7, C", test_0xF9_SET_7_C)
+	t.Run("0xFA SET 7, D", test_0xFA_SET_7_D)
+	t.Run("0xFB SET 7, E", test_0xFB_SET_7_E)
+	t.Run("0xFC SET 7, H", test_0xFC_SET_7_H)
+	t.Run("0xFD SET 7, L", test_0xFD_SET_7_L)
+	t.Run("0xFE SET 7, [HL]", test_0xFE_SET_7__HL)
+	t.Run("0xFF SET 7, A", test_0xFF_SET_7_A)
+}
+
+// BIT 0
+func test_0xC0_SET_0_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0xC0, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.b != (uint8(i) | (1 << 0)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<0), cpu.b)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xC1_SET_0_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0xC1, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.c != (uint8(i) | (1 << 0)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<0), cpu.c)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xC2_SET_0_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0xC2, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.d != (uint8(i) | (1 << 0)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<0), cpu.d)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xC3_SET_0_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0xC3, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.e != (uint8(i) | (1 << 0)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<0), cpu.e)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xC4_SET_0_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0xC4, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.h != (uint8(i) | (1 << 0)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<0), cpu.h)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xC5_SET_0_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0xC5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.l != (uint8(i) | (1 << 0)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<0), cpu.l)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xC6_SET_0__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0xC6, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		valueAtHL := memory1.Read(cpu.getHL())
+		if valueAtHL != (uint8(i) | (1 << 0)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<0), valueAtHL)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xC7_SET_0_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0xC7, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.a != (uint8(i) | (1 << 0)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<0), cpu.a)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// BIT 1
+func test_0xC8_SET_1_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0xC8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.b != (uint8(i) | (1 << 1)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<1), cpu.b)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xC9_SET_1_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0xC9, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.c != (uint8(i) | (1 << 1)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<1), cpu.c)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xCA_SET_1_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0xCA, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.d != (uint8(i) | (1 << 1)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<1), cpu.d)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xCB_SET_1_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0xCB, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.e != (uint8(i) | (1 << 1)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<1), cpu.e)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xCC_SET_1_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0xCC, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.h != (uint8(i) | (1 << 1)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<1), cpu.h)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xCD_SET_1_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0xCD, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.l != (uint8(i) | (1 << 1)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<1), cpu.l)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xCE_SET_1__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0xCE, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		valueAtHL := memory1.Read(cpu.getHL())
+		if valueAtHL != (uint8(i) | (1 << 1)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<1), valueAtHL)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xCF_SET_1_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0xCF, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.a != (uint8(i) | (1 << 1)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<1), cpu.a)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// BIT 2
+func test_0xD0_SET_2_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0xD0, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.b != (uint8(i) | (1 << 2)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<2), cpu.b)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xD1_SET_2_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0xD1, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.c != (uint8(i) | (1 << 2)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<2), cpu.c)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xD2_SET_2_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0xD2, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.d != (uint8(i) | (1 << 2)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<2), cpu.d)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xD3_SET_2_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0xD3, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.e != (uint8(i) | (1 << 2)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<2), cpu.e)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xD4_SET_2_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0xD4, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.h != (uint8(i) | (1 << 2)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<2), cpu.h)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xD5_SET_2_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0xD5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.l != (uint8(i) | (1 << 2)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<2), cpu.l)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xD6_SET_2__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0xD6, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		valueAtHL := memory1.Read(cpu.getHL())
+		if valueAtHL != (uint8(i) | (1 << 2)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<2), valueAtHL)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xD7_SET_2_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0xD7, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.a != (uint8(i) | (1 << 2)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<2), cpu.a)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// BIT 3
+func test_0xD8_SET_3_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0xD8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.b != (uint8(i) | (1 << 3)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<3), cpu.b)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xD9_SET_3_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0xD9, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.c != (uint8(i) | (1 << 3)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<3), cpu.c)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xDA_SET_3_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0xDA, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.d != (uint8(i) | (1 << 3)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<3), cpu.d)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xDB_SET_3_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0xDB, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.e != (uint8(i) | (1 << 3)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<3), cpu.e)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xDC_SET_3_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0xDC, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.h != (uint8(i) | (1 << 3)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<3), cpu.h)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xDD_SET_3_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0xDD, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.l != (uint8(i) | (1 << 3)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<3), cpu.l)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xDE_SET_3__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0xDE, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		valueAtHL := memory1.Read(cpu.getHL())
+		if valueAtHL != (uint8(i) | (1 << 3)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<3), valueAtHL)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xDF_SET_3_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0xDF, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.a != (uint8(i) | (1 << 3)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<3), cpu.a)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// BIT 4
+func test_0xE0_SET_4_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0xE0, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.b != (uint8(i) | (1 << 4)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<4), cpu.b)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xE1_SET_4_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0xE1, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.c != (uint8(i) | (1 << 4)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<4), cpu.c)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xE2_SET_4_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0xE2, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.d != (uint8(i) | (1 << 4)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<4), cpu.d)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xE3_SET_4_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0xE3, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.e != (uint8(i) | (1 << 4)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<4), cpu.e)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xE4_SET_4_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0xE4, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.h != (uint8(i) | (1 << 4)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<4), cpu.h)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xE5_SET_4_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0xE5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.l != (uint8(i) | (1 << 4)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<4), cpu.l)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xE6_SET_4__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0xE6, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		valueAtHL := memory1.Read(cpu.getHL())
+		if valueAtHL != (uint8(i) | (1 << 4)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<4), valueAtHL)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xE7_SET_4_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0xE7, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.a != (uint8(i) | (1 << 4)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<4), cpu.a)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// BIT 5
+func test_0xE8_SET_5_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0xE8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.b != (uint8(i) | (1 << 5)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<5), cpu.b)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xE9_SET_5_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0xE9, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.c != (uint8(i) | (1 << 5)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<5), cpu.c)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xEA_SET_5_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0xEA, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.d != (uint8(i) | (1 << 5)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<5), cpu.d)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xEB_SET_5_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0xEB, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.e != (uint8(i) | (1 << 5)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<5), cpu.e)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xEC_SET_5_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0xEC, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.h != (uint8(i) | (1 << 5)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<5), cpu.h)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xED_SET_5_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0xED, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.l != (uint8(i) | (1 << 5)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<5), cpu.l)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xEE_SET_5__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0xEE, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		valueAtHL := memory1.Read(cpu.getHL())
+		if valueAtHL != (uint8(i) | (1 << 5)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<5), valueAtHL)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xEF_SET_5_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0xEF, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.a != (uint8(i) | (1 << 5)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<5), cpu.a)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// BIT 6
+func test_0xF0_SET_6_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0xF0, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.b != (uint8(i) | (1 << 6)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<6), cpu.b)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xF1_SET_6_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0xF1, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.c != (uint8(i) | (1 << 6)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<6), cpu.c)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xF2_SET_6_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0xF2, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.d != (uint8(i) | (1 << 6)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<6), cpu.d)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xF3_SET_6_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0xF3, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.e != (uint8(i) | (1 << 6)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<6), cpu.e)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xF4_SET_6_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0xF4, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.h != (uint8(i) | (1 << 6)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<6), cpu.h)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xF5_SET_6_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0xF5, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.l != (uint8(i) | (1 << 6)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<6), cpu.l)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xF6_SET_6__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0xF6, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		valueAtHL := memory1.Read(cpu.getHL())
+		if valueAtHL != (uint8(i) | (1 << 6)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<6), valueAtHL)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xF7_SET_6_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0xF7, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.a != (uint8(i) | (1 << 6)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<6), cpu.a)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+
+// BIT 7
+func test_0xF8_SET_7_B(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.b = uint8(i)
+		testProgram := []uint8{0xCB, 0xF8, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.b != (uint8(i) | (1 << 7)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<7), cpu.b)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xF9_SET_7_C(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.c = uint8(i)
+		testProgram := []uint8{0xCB, 0xF9, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.c != (uint8(i) | (1 << 7)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<7), cpu.c)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xFA_SET_7_D(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.d = uint8(i)
+		testProgram := []uint8{0xCB, 0xFA, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.d != (uint8(i) | (1 << 7)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<7), cpu.d)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xFB_SET_7_E(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.e = uint8(i)
+		testProgram := []uint8{0xCB, 0xFB, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.e != (uint8(i) | (1 << 7)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<7), cpu.e)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xFC_SET_7_H(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.h = uint8(i)
+		testProgram := []uint8{0xCB, 0xFC, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.h != (uint8(i) | (1 << 7)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<7), cpu.h)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xFD_SET_7_L(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.l = uint8(i)
+		testProgram := []uint8{0xCB, 0xFD, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.l != (uint8(i) | (1 << 7)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<7), cpu.l)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xFE_SET_7__HL(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.setHL(0x0003)
+		testProgram := []uint8{0xCB, 0xFE, 0x10, uint8(i)}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		valueAtHL := memory1.Read(cpu.getHL())
+		if valueAtHL != (uint8(i) | (1 << 7)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<7), valueAtHL)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
+func test_0xFF_SET_7_A(t *testing.T) {
+	for i := 0; i <= 0xFF; i++ {
+		preconditions()
+		randomizeFlags()
+		saveFlags := cpu.f
+		cpu.a = uint8(i)
+		testProgram := []uint8{0xCB, 0xFF, 0x10}
+		loadProgramIntoMemory(memory1, testProgram)
+		cpu.Run()
+		// check that the program stopped at the right place
+		if cpu.pc != 0x0002 {
+			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
+		}
+		// check that the bit was reset
+		if cpu.a != (uint8(i) | (1 << 7)) {
+			t.Errorf("Expected B to be 0x%02X, got 0x%02X", uint8(i)|(1<<7), cpu.a)
+		}
+		// check that the flags were left unchanged
+		if cpu.f != saveFlags {
+			t.Errorf("Expected flags to be unchanged, got 0x%02X", cpu.f)
+		}
+		postconditions()
+	}
+}
