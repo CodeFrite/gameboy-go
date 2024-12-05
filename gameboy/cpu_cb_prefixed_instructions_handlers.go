@@ -718,8 +718,55 @@ func (c *CPU) SWAP(instruction *Instruction) {
 	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
+// Shift Right Logically register r8.
+// 0 ─╂→ b7 → ... → b0 ─╂→ Carry
+// opcodes:
+//   - 0x38:	SRL B
+//   - 0x39:	SRL C
+//   - 0x3A:	SRL D
+//   - 0x3B:	SRL E
+//   - 0x3C:	SRL H
+//   - 0x3D:	SRL L
+//   - 0x3E:	SRL [HL]
+//   - 0x3F:	SRL A
+//
+// flags: Z=Z N=0 H=0 C=b0
 func (c *CPU) SRL(instruction *Instruction) {
-	panic("SRL not implemented")
+	shiftedValue := uint8(c.operand) >> 1
+	if shiftedValue == 0 {
+		c.setZFlag()
+	} else {
+		c.resetZFlag()
+	}
+	if c.operand&0x01 == 0x01 {
+		c.setCFlag()
+	} else {
+		c.resetCFlag()
+	}
+	c.resetNFlag()
+	c.resetHFlag()
+	switch instruction.Operands[0].Name {
+	case "A":
+		c.a = shiftedValue
+	case "B":
+		c.b = shiftedValue
+	case "C":
+		c.c = shiftedValue
+	case "D":
+		c.d = shiftedValue
+	case "E":
+		c.e = shiftedValue
+	case "H":
+		c.h = shiftedValue
+	case "L":
+		c.l = shiftedValue
+	case "HL":
+		c.bus.Write(c.getHL(), shiftedValue)
+	}
+	// update the program counter offset
+	c.offset = c.pc + uint16(instruction.Bytes)
+	// update the number of cycles executed by the CPU
+	c.cpuCycles += uint64(instruction.Cycles[0])
 }
 
 /*
