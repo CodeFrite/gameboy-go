@@ -13,12 +13,12 @@ type GameboyInstructionsMap map[string]InstructionsMap // map of instructions "u
 type InstructionsMap map[Opcode]Instruction            // map of instructions by opcode
 type Opcode string                                     // instruction opcode in string format ["0x00"- "0xFF"]
 type Instruction struct {
-	Mnemonic  string    `json:"mnemonic"`  // instruction mnemonic
-	Bytes     int       `json:"bytes"`     // number of bytes the instruction takes
-	Cycles    []uint8   `json:"cycles"`    // number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
-	Operands  []Operand `json:"operands"`  // instruction operands used as function arguments
-	Immediate bool      `json:"immediate"` // is the operand an immediate value or should it be fetched from memory
-	Flags     Flags     `json:"flags"`     // cpu flags affected by the instruction
+	Mnemonic  string        `json:"mnemonic"`  // instruction mnemonic
+	Bytes     int           `json:"bytes"`     // number of bytes the instruction takes
+	Cycles    JSONableSlice `json:"cycles"`    // number of cycles the instruction takes to execute. The first element is the number of cycles the instruction takes when the condition is met, the second element is the number of cycles the instruction takes when the condition is not met (see RETZ for example)
+	Operands  []Operand     `json:"operands"`  // instruction operands used as function arguments
+	Immediate bool          `json:"immediate"` // is the operand an immediate value or should it be fetched from memory
+	Flags     Flags         `json:"flags"`     // cpu flags affected by the instruction
 }
 type Operand struct {
 	Name      string `json:"name"`                // operand name: register, n8/n16 (immediate unsigned value), e8 (immediate signed value), a8/a16 (memory location)
