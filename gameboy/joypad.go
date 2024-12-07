@@ -7,10 +7,10 @@ type JoypadState struct {
 }
 
 type Joypad struct {
-	eventchannel <-chan *JoypadState
+	eventchannel <-chan JoypadState
 }
 
-func NewJoypad(eventchannel <-chan *JoypadState) *Joypad {
+func NewJoypad(eventchannel <-chan JoypadState) *Joypad {
 	j := &Joypad{
 		eventchannel: eventchannel,
 	}
@@ -29,6 +29,6 @@ func (j *Joypad) initInterruptHandler() {
 	}()
 }
 
-func (j *Joypad) handleEvent(event *JoypadState) {
+func (j *Joypad) handleEvent(event JoypadState) {
 	fmt.Println("Joypad event received: ", event)
 }

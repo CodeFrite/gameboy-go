@@ -40,10 +40,10 @@ func newFifo[T any](maxNodeCount uint64) *fifo[T] {
 	return &fifo[T]{head: nil, maxNodeCount: maxNodeCount}
 }
 
-func (f *fifo[T]) push(value *T) {
+func (f *fifo[T]) push(value T) {
 	// the new node become the one the head is pointing to
 	saveHead := f.head
-	f.head = newNode(value, saveHead)
+	f.head = newNode(&value, saveHead)
 	if uint64(f.len()) > f.maxNodeCount {
 		// remove the oldest element
 		f.pop()

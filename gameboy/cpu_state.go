@@ -36,8 +36,8 @@ type CpuState struct {
 }
 
 // get the memories current content
-func (c *CPU) getState() *CpuState {
-	return &CpuState{
+func (c *CPU) getState() CpuState {
+	return CpuState{
 		CPU_CYCLES:    c.cpuCycles,
 		PC:            c.pc,
 		SP:            c.sp,

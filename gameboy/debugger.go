@@ -11,7 +11,7 @@ type Debugger struct {
 	cpuStateQueue    *fifo[CpuState]
 	ppuStateQueue    *fifo[PpuState]
 	apuStateQueue    *fifo[ApuState]
-	memoryStateQueue fifo[[]MemoryWrite]
+	memoryStateQueue *fifo[[]MemoryWrite]
 	joypadStateQueue *fifo[JoypadState]
 
 	// queue of program counter positions to render a diagram of the program flow
@@ -21,37 +21,37 @@ type Debugger struct {
 	breakpoints []uint16 // list of breakpoints addresses set by the user to pause the execution with a maximum of 100 breakpoints
 
 	// state channels received from the client meant to listen to the gameboy state
-	clientCpuStateChannel    chan<- *CpuState // v0.4.0
-	clientPpuStateChannel    chan<- *PpuState // v0.4.1
-	clientApuStateChannel    chan<- *ApuState // v0.4.2
+	clientCpuStateChannel    chan<- CpuState // v0.4.0
+	clientPpuStateChannel    chan<- PpuState // v0.4.1
+	clientApuStateChannel    chan<- ApuState // v0.4.2
 	clientMemoryStateChannel chan<- []MemoryWrite
-	clientJoypadStateChannel <-chan *JoypadState
+	clientJoypadStateChannel <-chan JoypadState
 	doneChannel              chan bool
 
 	// internal channels corresponding to the channels received from the client and used to intercept, store in a queue, and then relay the state changes
-	internalCpuStateChannel    chan *CpuState
-	internalPpuStateChannel    chan *PpuState
-	internalApuStateChannel    chan *ApuState
+	internalCpuStateChannel    chan CpuState
+	internalPpuStateChannel    chan PpuState
+	internalApuStateChannel    chan ApuState
 	internalMemoryStateChannel chan []MemoryWrite
-	internalJoypadStateChannel chan *JoypadState
+	internalJoypadStateChannel chan JoypadState
 }
 
 /**
  * creates a new debugger: instanciates a new gameboy and initializes the breakpoints list
  */
 func NewDebugger(
-	cpuStateChannel chan<- *CpuState,
-	ppuStateChannel chan<- *PpuState,
-	apuStateChannel chan<- *ApuState,
+	cpuStateChannel chan<- CpuState,
+	ppuStateChannel chan<- PpuState,
+	apuStateChannel chan<- ApuState,
 	memoryStateChannel chan<- []MemoryWrite,
-	joypadStateChannel <-chan *JoypadState,
+	joypadStateChannel <-chan JoypadState,
 ) *Debugger {
 
-	internalCpuStateChannel := make(chan *CpuState)
-	internalPpuStateChannel := make(chan *PpuState)
-	internalApuStateChannel := make(chan *ApuState)
+	internalCpuStateChannel := make(chan CpuState)
+	internalPpuStateChannel := make(chan PpuState)
+	internalApuStateChannel := make(chan ApuState)
 	internalMemoryStateChannel := make(chan []MemoryWrite)
-	internalJoypadStateChannel := make(chan *JoypadState)
+	internalJoypadStateChannel := make(chan JoypadState)
 	doneChannel := make(chan bool)
 
 	gb := NewGameboy(
@@ -68,7 +68,7 @@ func NewDebugger(
 		cpuStateQueue:              newFifo[CpuState](STATE_QUEUE_MAX_LENGTH),
 		ppuStateQueue:              newFifo[PpuState](STATE_QUEUE_MAX_LENGTH),
 		apuStateQueue:              newFifo[ApuState](STATE_QUEUE_MAX_LENGTH),
-		memoryStateQueue:           *newFifo[[]MemoryWrite](STATE_QUEUE_MAX_LENGTH),
+		memoryStateQueue:           newFifo[[]MemoryWrite](STATE_QUEUE_MAX_LENGTH),
 		joypadStateQueue:           newFifo[JoypadState](STATE_QUEUE_MAX_LENGTH),
 		clientCpuStateChannel:      cpuStateChannel,
 		clientPpuStateChannel:      ppuStateChannel,
@@ -93,10 +93,10 @@ func (d *Debugger) LoadRom(romName string) {
 	initialCpuState := d.gameboy.cpu.getState()
 	initialPpuState := d.gameboy.ppu.getState()
 	initialApuState := d.gameboy.apu.getState()
-	initialMemoryWrites := &d.gameboy.cpuBus.mmu.memoryWrites
+	initialMemoryWrites := d.gameboy.cpuBus.mmu.memoryWrites
 
 	// save the initial state
-	d.programFlow.push(&initialCpuState.PC)
+	d.programFlow.push(initialCpuState.PC)
 	d.cpuStateQueue.push(initialCpuState)
 	d.ppuStateQueue.push(initialPpuState)
 	d.apuStateQueue.push(initialApuState)
@@ -111,7 +111,7 @@ func (d *Debugger) Step() {
 	// add the new state to the queue and send it to the client if a channel is present
 	cpuState := <-d.internalCpuStateChannel
 	d.cpuStateQueue.push(cpuState)
-	d.programFlow.push(&cpuState.PC)
+	d.programFlow.push(cpuState.PC)
 	if d.clientCpuStateChannel != nil {
 		d.clientCpuStateChannel <- cpuState
 	}
@@ -126,7 +126,7 @@ func (d *Debugger) Step() {
 		d.clientApuStateChannel <- apuState
 	}
 	memoryState := <-d.internalMemoryStateChannel
-	d.memoryStateQueue.push(&memoryState)
+	d.memoryStateQueue.push(memoryState)
 	if d.clientMemoryStateChannel != nil {
 		d.clientMemoryStateChannel <- memoryState
 	}
@@ -169,12 +169,12 @@ func (d *Debugger) listenToGameboyState() {
 
 					if d.clientMemoryStateChannel != nil {
 						memoryState := <-d.internalMemoryStateChannel
-						d.memoryStateQueue.push(&memoryState)
+						d.memoryStateQueue.push(memoryState)
 						d.clientMemoryStateChannel <- memoryState
 					}
 
 					d.cpuStateQueue.push(cpuState)
-					d.programFlow.push(&cpuState.PC)
+					d.programFlow.push(cpuState.PC)
 					if d.clientCpuStateChannel != nil {
 						d.clientCpuStateChannel <- cpuState
 					}
@@ -182,7 +182,7 @@ func (d *Debugger) listenToGameboyState() {
 					break loop
 				} else {
 					d.cpuStateQueue.push(cpuState)
-					d.programFlow.push(&cpuState.PC)
+					d.programFlow.push(cpuState.PC)
 					if d.clientCpuStateChannel != nil {
 						d.clientCpuStateChannel <- cpuState
 					}
@@ -202,7 +202,7 @@ func (d *Debugger) listenToGameboyState() {
 				}
 			case memoryState := <-d.internalMemoryStateChannel:
 
-				d.memoryStateQueue.push(&memoryState)
+				d.memoryStateQueue.push(memoryState)
 				if d.clientMemoryStateChannel != nil {
 					d.clientMemoryStateChannel <- memoryState
 				}

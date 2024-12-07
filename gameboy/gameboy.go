@@ -19,16 +19,16 @@ type Gameboy struct {
 	cartridge   *Cartridge // 0x0000-0x7FFF (32KB switchable) - Cartridge ROM
 	joypad      *Joypad
 
-	// state channels
-	cpuStateChannel    chan<- *CpuState // v0.4.0
-	ppuStateChannel    chan<- *PpuState // v0.4.1
-	apuStateChannel    chan<- *ApuState // v0.4.2
+	// state channels (sharing concrete types to avoid pointer values being changed before being sent to the frontend by the server)
+	cpuStateChannel    chan<- CpuState
+	ppuStateChannel    chan<- PpuState
+	apuStateChannel    chan<- ApuState
 	memoryStateChannel chan<- []MemoryWrite
-	joypadStateChannel <-chan *JoypadState
+	joypadStateChannel <-chan JoypadState
 }
 
 // creates a new gameboy struct
-func NewGameboy(cpuStateChannel chan<- *CpuState, ppuStateChannel chan<- *PpuState, apuStateChannel chan<- *ApuState, memoryStateChannel chan<- []MemoryWrite, joypadStateChannel <-chan *JoypadState) *Gameboy {
+func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState, apuStateChannel chan<- ApuState, memoryStateChannel chan<- []MemoryWrite, joypadStateChannel <-chan JoypadState) *Gameboy {
 	gb := &Gameboy{
 		busyChannel:        make(chan bool, 1),
 		cpuStateChannel:    cpuStateChannel,

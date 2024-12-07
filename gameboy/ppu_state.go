@@ -8,8 +8,8 @@ type PpuState struct {
 	DOT_Y uint8 `json:"DOT_Y"`
 }
 
-func (p *PPU) getState() *PpuState {
-	return &PpuState{
+func (p *PPU) getState() PpuState {
+	return PpuState{
 		MODE:  p.mode,
 		DOT_X: p.dotX,
 		DOT_Y: p.dotY,

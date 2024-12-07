@@ -15,8 +15,8 @@ func NewAPU() *APU {
 	}
 }
 
-func (a *APU) getState() *ApuState {
-	return &ApuState{
+func (a *APU) getState() ApuState {
+	return ApuState{
 		SOUND: a.sound,
 	}
 }
