@@ -59,6 +59,9 @@ func (gb *Gameboy) onTick() {
 	// busy channel to prevent multiple ticks at the same time
 	gb.busyChannel <- true
 
+	// clear memory writes
+	gb.cpu.bus.mmu.clearMemoryWrites()
+
 	// wait group to wait for all goroutines to finish
 	var wg sync.WaitGroup
 	// tick the cpu 1 out of 3 ticks
