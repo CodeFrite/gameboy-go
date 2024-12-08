@@ -1008,46 +1008,66 @@ func (c *CPU) DEC(instruction *Instruction) {
 		// check H before DEC
 		if c.a&0x0F == 0x00 {
 			c.setHFlag()
+		} else {
+			c.resetHFlag()
 		}
 		c.a--
 		if c.a == 0x00 {
 			c.setZFlag()
+		} else {
+			c.resetZFlag()
 		}
 		c.setNFlag()
 	case "B":
 		if c.b&0x0F == 0x00 {
 			c.setHFlag()
+		} else {
+			c.resetHFlag()
 		}
 		c.b--
 		if c.b == 0x00 {
 			c.setZFlag()
+		} else {
+			c.resetZFlag()
 		}
 		c.setNFlag()
 	case "C":
 		if c.c&0x0F == 0x00 {
 			c.setHFlag()
+		} else {
+			c.resetHFlag()
 		}
 		c.c--
 		if c.c == 0x00 {
 			c.setZFlag()
+		} else {
+			c.resetZFlag()
 		}
 		c.setNFlag()
 	case "D":
 		if c.d&0x0F == 0x00 {
 			c.setHFlag()
+		} else {
+			c.resetHFlag()
 		}
 		c.d--
 		if c.d == 0x00 {
 			c.setZFlag()
+		} else {
+			c.resetZFlag()
 		}
 		c.setNFlag()
 	case "E":
 		if c.e&0x0F == 0x00 {
 			c.setHFlag()
+		} else {
+			c.resetHFlag()
 		}
 		c.e--
 		if c.e == 0x00 {
 			c.setZFlag()
+		} else {
+			c.resetZFlag()
 		}
 		c.setNFlag()
 	case "H":
@@ -1057,15 +1077,21 @@ func (c *CPU) DEC(instruction *Instruction) {
 		c.h--
 		if c.h == 0x00 {
 			c.setZFlag()
+		} else {
+			c.resetZFlag()
 		}
 		c.setNFlag()
 	case "L":
 		if c.l&0x0F == 0x00 {
 			c.setHFlag()
+		} else {
+			c.resetHFlag()
 		}
 		c.l--
 		if c.l == 0x00 {
 			c.setZFlag()
+		} else {
+			c.resetZFlag()
 		}
 		c.setNFlag()
 	case "BC":

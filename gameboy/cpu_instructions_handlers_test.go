@@ -9429,7 +9429,7 @@ var testData_DEC_8bit = []TestData_DEC_8bit{
 func test_0x3D_DEC_A(t *testing.T) {
 	for idx, data := range testData_DEC_8bit {
 		preconditions()
-		cpu.f = 0x00
+		randomizeFlags()
 		if data.C {
 			cpu.setCFlag()
 		} else {
@@ -9464,7 +9464,7 @@ func test_0x3D_DEC_A(t *testing.T) {
 func test_0x05_DEC_B(t *testing.T) {
 	for idx, data := range testData_DEC_8bit {
 		preconditions()
-		cpu.f = 0x00
+		randomizeFlags()
 		if data.C {
 			cpu.setCFlag()
 		} else {
@@ -9499,7 +9499,7 @@ func test_0x05_DEC_B(t *testing.T) {
 func test_0x0D_DEC_C(t *testing.T) {
 	for idx, data := range testData_DEC_8bit {
 		preconditions()
-		cpu.f = 0x00
+		randomizeFlags()
 		if data.C {
 			cpu.setCFlag()
 		} else {
@@ -9534,7 +9534,7 @@ func test_0x0D_DEC_C(t *testing.T) {
 func test_0x15_DEC_D(t *testing.T) {
 	for idx, data := range testData_DEC_8bit {
 		preconditions()
-		cpu.f = 0x00
+		randomizeFlags()
 		if data.C {
 			cpu.setCFlag()
 		} else {
@@ -9569,7 +9569,7 @@ func test_0x15_DEC_D(t *testing.T) {
 func test_0x1D_DEC_E(t *testing.T) {
 	for idx, data := range testData_DEC_8bit {
 		preconditions()
-		cpu.f = 0x00
+		randomizeFlags()
 		if data.C {
 			cpu.setCFlag()
 		} else {
@@ -9604,7 +9604,7 @@ func test_0x1D_DEC_E(t *testing.T) {
 func test_0x25_DEC_H(t *testing.T) {
 	for idx, data := range testData_DEC_8bit {
 		preconditions()
-		cpu.f = 0x00
+		randomizeFlags()
 		if data.C {
 			cpu.setCFlag()
 		} else {
@@ -9639,7 +9639,7 @@ func test_0x25_DEC_H(t *testing.T) {
 func test_0x2D_DEC_L(t *testing.T) {
 	for idx, data := range testData_DEC_8bit {
 		preconditions()
-		cpu.f = 0x00
+		randomizeFlags()
 		if data.C {
 			cpu.setCFlag()
 		} else {
@@ -9674,7 +9674,7 @@ func test_0x2D_DEC_L(t *testing.T) {
 func test_0x35_DEC_HL(t *testing.T) {
 	for idx, data := range testData_DEC_8bit {
 		preconditions()
-		cpu.f = 0x00
+		randomizeFlags()
 		if data.C {
 			cpu.setCFlag()
 		} else {
