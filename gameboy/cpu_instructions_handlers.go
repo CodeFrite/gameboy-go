@@ -1479,7 +1479,8 @@ func (c *CPU) SBC(instruction *Instruction) {
  * flags: Z:- N:0 H:0 C:1
  */
 func (c *CPU) SCF(instruction *Instruction) {
-	c.f |= 0b00010000
+	// set the C flag
+	c.setCFlag()
 
 	// reset the N and H flags and leave the Z flag unchanged
 	c.resetNFlag()
