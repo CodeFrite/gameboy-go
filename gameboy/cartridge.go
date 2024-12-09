@@ -33,7 +33,7 @@ func NewCartridge(uri string, name string) *Cartridge {
 		fmt.Println("Error loading ROM:", err)
 		return nil
 	}
-	c.rom = NewMemoryWithData(uint16(len(rom[0x0100:])), rom[0x0100:])
+	c.rom = NewMemoryWithData(uint16(len(rom)), rom)
 	c.cartridgePath = uri
 	c.cartridgeName = name
 	c.parseHeader(rom)

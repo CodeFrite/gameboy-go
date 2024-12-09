@@ -66,6 +66,12 @@ func (m *MMU) clearMemoryWrites() {
  * @return void
  */
 func (m *MMU) AttachMemory(name string, address uint16, memory Accessible) {
+	// TODO: check if the memory is already attached before attaching it (might need to pass a pointer to the memory instead of the memory itself or pool &memory in the AttachMemory method)
+	for _, memoryMap := range m.memoryMaps {
+		if &memoryMap.Memory == &memory {
+			return
+		}
+	}
 	m.memoryMaps = append(m.memoryMaps, MemoryMap{
 		Name:    name,
 		Address: address,

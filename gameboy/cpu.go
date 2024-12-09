@@ -60,49 +60,82 @@ type CPU struct {
 	ie           *Memory // 0xFFFF: Interrupt Enable
 }
 
-// Create a new CPU
+// Create a new CPU :
+// + initializes the memories and attaches them to the bus
+//   - HRAM: 127 bytes @ 0xFF80
+//   - VRAM: 8KB bytes @ 0x8000
+//   - WRAM: 8KB @ 0xC000
+//   - I/O Registers: 128 bytes @ 0xFF00
+//
+// + randomizes the CPU registers
+// + sets the cpuCycles count to 0
+// + sets the program counter to 0x0000
 func NewCPU(bus *Bus) *CPU {
+	// initialize memories
+	hram := NewMemory(HRAM_LEN)                 // High RAM (127 bytes)
+	io_registers := NewMemory(IO_REGISTERS_LEN) // I/O Registers (128 bytes)
+	ie := NewMemory(IE_FLAG_LEN)                // Interrupt Enable Register (1 byte)
 
-	randValue := func(base int, exponent int) int {
-		return rand.Intn(int(math.Pow(float64(base), float64(exponent))))
-	}
+	// attach memories to the bus
+	bus.AttachMemory("High RAM (HRAM)", HRAM_START, hram)
+	bus.AttachMemory("I/O Registers", IO_REGISTERS_START, io_registers)
+	bus.AttachMemory("Interrupt Enable Register", IE_FLAG_START, ie)
 
 	cpu := &CPU{
+		// make
 		busyChannel: make(chan bool, 1),
 		state:       CPU_EXECUTION_STATE_FREE,
-		bus:         bus,
+
 		// on startup, simulate the CPU registers being in an unknown state
-		cpuCycles: 0,
-		pc:        0x0000, // only value set by the cpu on startup, others are randomized
-		sp:        uint16(randValue(2, 16)),
-		a:         uint8(randValue(2, 8)),
-		f:         uint8(randValue(2, 8)),
-		b:         uint8(randValue(2, 8)),
-		c:         uint8(randValue(2, 8)),
-		d:         uint8(randValue(2, 8)),
-		e:         uint8(randValue(2, 8)),
-		h:         uint8(randValue(2, 8)),
-		l:         uint8(randValue(2, 8)),
+		sp: uint16(randValue(2, 16)),
+		a:  uint8(randValue(2, 8)),
+		f:  uint8(randValue(2, 8)),
+		b:  uint8(randValue(2, 8)),
+		c:  uint8(randValue(2, 8)),
+		d:  uint8(randValue(2, 8)),
+		e:  uint8(randValue(2, 8)),
+		h:  uint8(randValue(2, 8)),
+		l:  uint8(randValue(2, 8)),
+
+		// components
+		bus:          bus,
+		hram:         hram,
+		io_registers: io_registers,
+		ie:           ie,
 	}
 
 	return cpu
 }
 
-// initializes the memories and attaches them to the bus
-//   - HRAM: 127 bytes @ 0xFF80
-//   - VRAM: 8KB bytes @ 0x8000
-//   - WRAM: 8KB @ 0xC000
-//   - I/O Registers: 128 bytes @ 0xFF00
-func (c *CPU) init() {
-	// initialize memories
-	c.hram = NewMemory(HRAM_LEN)                 // High RAM (127 bytes)
-	c.io_registers = NewMemory(IO_REGISTERS_LEN) // I/O Registers (128 bytes)
-	c.ie = NewMemory(IE_FLAG_LEN)                // Interrupt Enable Register (1 byte)
+func (c *CPU) reset() {
+	// reset the program counter
+	c.pc = 0x0000
+	// reset the stack pointer
+	c.sp = uint16(randValue(2, 16))
+	// reset the registers
+	c.a = 0x00
+	c.f = 0x00
+	c.b = 0x00
+	c.c = 0x00
+	c.d = 0x00
+	c.e = 0x00
+	c.h = 0x00
+	c.l = 0x00
+	// reset the flags
+	c.ime = false
+	c.ime_enable_next_cycle = false
+	c.ime_disable_next_cycle = false
+	c.halted = false
+	c.stopped = false
+	// reset the memories
+	c.io_registers.ResetWithRandomData()
+	c.hram.ResetWithRandomData()
+	c.ie.ResetWithRandomData()
+}
 
-	// attach memories to the bus
-	c.bus.AttachMemory("High RAM (HRAM)", HRAM_START, c.hram)
-	c.bus.AttachMemory("I/O Registers", IO_REGISTERS_START, c.io_registers)
-	c.bus.AttachMemory("Interrupt Enable Register", IE_FLAG_START, c.ie)
+// randomize the value of a register
+func randValue(base int, exponent int) int {
+	return rand.Intn(int(math.Pow(float64(base), float64(exponent))))
 }
 
 // Increment the Program Counter by the given offset

@@ -16,7 +16,10 @@ const (
 // the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
 type Gameboy struct {
 	// state
-	ticks     uint64 // number of ticks since the gameboy started
+	ticks       uint64    // number of ticks since the gameboy started
+	busyChannel chan bool // used to prevent multiple clock ticks being processed by cpu/ppu/apu at the same time
+
+	// components
 	crystal   *Timer // crystal oscillator running at 4.194304MHz
 	cpuBus    *Bus
 	ppuBus    *Bus
@@ -30,7 +33,6 @@ type Gameboy struct {
 	joypad    *Joypad
 
 	// state channels (sharing concrete types to avoid pointer values being changed before being sent to the frontend by the server)
-	busyChannel        chan bool
 	cpuStateChannel    chan<- CpuState
 	ppuStateChannel    chan<- PpuState
 	apuStateChannel    chan<- ApuState
@@ -40,8 +42,26 @@ type Gameboy struct {
 
 // creates a new gameboy struct
 func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState, apuStateChannel chan<- ApuState, memoryStateChannel chan<- []MemoryWrite, joypadStateChannel <-chan JoypadState) *Gameboy {
+	// components
+	cpuBus := NewBus()
+	ppuBus := NewBus()
+	cpu := NewCPU(cpuBus)
+	ppu := NewPPU(cpu, ppuBus)
+	apu := NewAPU()
+
+	// load the bootrom once for all
+	bootrom := loadBootRom(ROMS_URI)
+	cpuBus.AttachMemory("Boot ROM", BOOT_ROM_START, bootrom)
+
+	// create the gameboy struct
 	gb := &Gameboy{
 		busyChannel:        make(chan bool, 1),
+		cpuBus:             cpuBus,
+		ppuBus:             ppuBus,
+		cpu:                cpu,
+		ppu:                ppu,
+		apu:                apu,
+		bootrom:            bootrom,
 		cpuStateChannel:    cpuStateChannel,
 		ppuStateChannel:    ppuStateChannel,
 		apuStateChannel:    apuStateChannel,
@@ -49,40 +69,21 @@ func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState
 		joypadStateChannel: joypadStateChannel,
 		joypad:             NewJoypad(joypadStateChannel),
 	}
+
+	// initialize memories and timer
+	gb.initMemory()
+	gb.initTimer()
+
 	return gb
 }
 
-// initializes the gameboy by creating the bus, bootrom, cpu, cartridge and the different memories
-func (gb *Gameboy) LoadRom(romName string) {
-	// buses
-	gb.cpuBus = NewBus()
-	gb.ppuBus = NewBus()
-	// cpu
-	gb.cpu = NewCPU(gb.cpuBus)
-	gb.cpu.init()
-	// ppu
-	gb.ppu = NewPPU(gb.cpu, gb.ppuBus)
-	// apu
-	gb.apu = NewAPU()
-	// bootrom
-	gb.initBootRom(ROMS_URI)
-	// cartridge
-	gb.cartridge = NewCartridge(ROMS_URI, romName)
-	gb.cpuBus.AttachMemory("Cartridge ROM", 0x0000, gb.cartridge.rom)
-	// vram & wram
-	gb.initMemory()
-	gb.initTimer()
-}
-
 // initializes the bootrom @ 0x0000 - 0x00FF
-func (gb *Gameboy) initBootRom(uri string) {
-	bootRom, err := LoadRom(uri + "/dmg_boot.bin")
+func loadBootRom(uri string) *Memory {
+	bootromData, err := LoadRom(uri + "/dmg_boot.bin")
 	if err != nil {
 		log.Fatal(err)
 	}
-	gb.bootrom = NewMemory(BOOT_ROM_LEN)
-	gb.cpuBus.AttachMemory("Boot ROM", BOOT_ROM_START, gb.bootrom)
-	gb.cpuBus.WriteBlob(BOOT_ROM_START, bootRom)
+	return NewMemoryWithData(BOOT_ROM_LEN, bootromData)
 }
 
 // initializes the memories and attaches them to the bus
@@ -93,7 +94,7 @@ func (gb *Gameboy) initBootRom(uri string) {
 func (gb *Gameboy) initMemory() {
 	// initialize memories
 	gb.vram = NewMemoryWithRandomData(0x2000) // VRAM (8KB)
-	gb.wram = NewMemory(0x2000)               // WRAM (8KB)
+	gb.wram = NewMemoryWithRandomData(0x2000) // WRAM (8KB)
 
 	// attach memories to the bus
 	gb.cpuBus.AttachMemory("Video RAM (VRAM)", 0x8000, gb.vram)
@@ -104,6 +105,22 @@ func (gb *Gameboy) initMemory() {
 func (gb *Gameboy) initTimer() {
 	gb.crystal = NewTimer(CRYSTAL_FREQUENCY)
 	gb.crystal.Subscribe(gb)
+}
+
+// initializes the gameboy by creating the bus, bootrom, cpu, cartridge and the different memories
+func (gb *Gameboy) LoadRom(romName string) {
+	// reset components cpu, ppu & apu
+	gb.cpu.reset() // all registers are randomized apart from PC which is set to 0x100
+	gb.ppu.reset()
+	gb.apu.reset()
+
+	// reset vram & wram
+	gb.vram.ResetWithRandomData()
+	gb.wram.ResetWithRandomData()
+
+	// load the cartridge rom
+	gb.cartridge = NewCartridge(ROMS_URI, romName)
+	gb.cpuBus.AttachMemory("Cartridge ROM", 0x0000, gb.cartridge.rom)
 }
 
 // runs the bootrom and then the game

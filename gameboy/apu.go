@@ -15,6 +15,10 @@ func NewAPU() *APU {
 	}
 }
 
+func (a *APU) reset() {
+	a.sound = false
+}
+
 func (a *APU) getState() ApuState {
 	return ApuState{
 		SOUND: a.sound,

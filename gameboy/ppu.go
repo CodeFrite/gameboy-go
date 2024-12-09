@@ -113,6 +113,14 @@ func NewPPU(cpu *CPU, bus *Bus) *PPU {
 	return ppu
 }
 
+func (p *PPU) reset() {
+	p.ticks = 0
+	p.dotX = 0
+	p.dotY = 0
+	p.mode = MODE_2_SEARCH_OVERLAP_OBJ_OAM
+	p.mode3Length = uint(rand.IntN(289-172) + 172) // random value for now TODO: remove this after processing mode3
+}
+
 func (p *PPU) updateLy() {
 	// increment y line counter
 	line := uint8(p.ticks / uint64(DOTS_PER_LINE))

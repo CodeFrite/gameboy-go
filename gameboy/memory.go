@@ -85,3 +85,17 @@ func (m *Memory) Write(addr uint16, value uint8) {
 	}
 	m.data[addr] = value
 }
+
+// reset with randomize the memory content
+func (m *Memory) ResetWithRandomData() {
+	for i := 0; i < len(m.data); i++ {
+		m.data[i] = uint8(rand.Intn(256))
+	}
+}
+
+// reset with all ones like when there is no cartridge inserted (high impedance reading from bus)
+func (m *Memory) ResetWithOnes() {
+	for i := 0; i < len(m.data); i++ {
+		m.data[i] = 0xFF
+	}
+}

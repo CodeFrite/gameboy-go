@@ -80,5 +80,4 @@ func (t *Timer) Tick() {
 	for _, subscriber := range t.Subscribers {
 		go subscriber.onTick()
 	}
-
 }
