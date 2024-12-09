@@ -1073,6 +1073,8 @@ func (c *CPU) DEC(instruction *Instruction) {
 	case "H":
 		if c.h&0x0F == 0x00 {
 			c.setHFlag()
+		} else {
+			c.resetHFlag()
 		}
 		c.h--
 		if c.h == 0x00 {
@@ -1106,6 +1108,8 @@ func (c *CPU) DEC(instruction *Instruction) {
 			val := c.bus.Read(addr)
 			if val&0x0F == 0x00 {
 				c.setHFlag()
+			} else {
+				c.resetHFlag()
 			}
 			err := c.bus.Write(addr, val-1)
 			if err != nil {
@@ -1114,6 +1118,8 @@ func (c *CPU) DEC(instruction *Instruction) {
 			}
 			if val-1 == 0x00 {
 				c.setZFlag()
+			} else {
+				c.resetZFlag()
 			}
 			c.setNFlag()
 		}
