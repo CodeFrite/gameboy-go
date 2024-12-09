@@ -3,15 +3,12 @@ package gameboy
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"math/rand"
 )
 
 const (
 	// start and length of the memory regions inside memory map
-	BOOT_ROM_START     uint16 = 0x0000
-	BOOT_ROM_LEN       uint16 = 0x0100
 	IO_REGISTERS_START uint16 = 0xFF00
 	IO_REGISTERS_LEN   uint16 = 0x0080
 	HRAM_START         uint16 = 0xFF80
@@ -58,7 +55,6 @@ type CPU struct {
 
 	// CPU SoC Internal Memories (not exported in json)
 	bus          *Bus    // reference to the bus
-	bootrom      *Memory // 0x0000-0x00FF: (256 bytes) - Boot ROM
 	io_registers *Memory // 0xFF00-0xFF7F: (128 bytes) - I/O Registers
 	hram         *Memory // 0xFF80-0xFFFE: (127 bytes) - High RAM
 	ie           *Memory // 0xFFFF: Interrupt Enable
@@ -92,33 +88,12 @@ func NewCPU(bus *Bus) *CPU {
 	return cpu
 }
 
-// initialize the bootrom & memories
-func (c *CPU) Init() {
-	c.initBootRom()
-	c.initMemory()
-}
-
-/**
- * initializes the bootrom @ 0x0000
- */
-func (c *CPU) initBootRom() {
-	bootRomData, err := LoadRom("/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms/dmg_boot.bin")
-	if err != nil {
-		log.Fatal(err)
-	}
-	c.bootrom = NewMemory(BOOT_ROM_LEN)
-	c.bus.AttachMemory("Boot ROM", BOOT_ROM_START, c.bootrom)
-	c.bus.WriteBlob(BOOT_ROM_START, bootRomData)
-}
-
-/**
- * initializes the memories and attaches them to the bus
- * HRAM: 127 bytes @ 0xFF80
- * VRAM: 8KB bytes @ 0x8000
- * WRAM: 8KB @ 0xC000
- * I/O Registers: 128 bytes @ 0xFF00
- */
-func (c *CPU) initMemory() {
+// initializes the memories and attaches them to the bus
+//   - HRAM: 127 bytes @ 0xFF80
+//   - VRAM: 8KB bytes @ 0x8000
+//   - WRAM: 8KB @ 0xC000
+//   - I/O Registers: 128 bytes @ 0xFF00
+func (c *CPU) init() {
 	// initialize memories
 	c.hram = NewMemory(HRAM_LEN)                 // High RAM (127 bytes)
 	c.io_registers = NewMemory(IO_REGISTERS_LEN) // I/O Registers (128 bytes)
