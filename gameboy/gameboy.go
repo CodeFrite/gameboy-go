@@ -7,10 +7,11 @@ import (
 
 // CONSTANTS
 const (
-	CRYSTAL_FREQUENCY        = 50000
-	BOOT_ROM_START    uint16 = 0x0000
-	BOOT_ROM_LEN      uint16 = 0x0100
-	ROMS_URI                 = "/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms"
+	CRYSTAL_FREQUENCY           = 50000
+	BOOT_ROM_MEMORY_NAME        = "Boot ROM"
+	BOOT_ROM_START       uint16 = 0x0000
+	BOOT_ROM_LEN         uint16 = 0x0100
+	ROMS_URI                    = "/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms"
 )
 
 // the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
@@ -51,7 +52,7 @@ func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState
 
 	// load the bootrom once for all
 	bootrom := loadBootRom(ROMS_URI)
-	cpuBus.AttachMemory("Boot ROM", BOOT_ROM_START, bootrom)
+	cpuBus.AttachMemory(BOOT_ROM_MEMORY_NAME, BOOT_ROM_START, bootrom)
 
 	// create the gameboy struct
 	gb := &Gameboy{

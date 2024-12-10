@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+const DISABLE_BOOT_ROM_REGISTER = 0xFF50
+
 type Accessible interface {
 	Read(uint16) uint8
 	Dump(uint16, uint16) []uint8
@@ -12,29 +14,23 @@ type Accessible interface {
 	Size() uint16
 }
 
-/**
- * represents a memory mapped to a specific address
- * @param Name: string name of the memory
- * @param Address: uint16 address where the memory is mapped
- * @param Memory: Accessible memory
- */
+// represents a memory mapped to a specific address
+// Name: string name of the memory
+// Address: uint16 address where the memory is mapped
+// Memory: Accessible memory
 type MemoryMap struct {
 	Name    string
 	Address uint16
 	Memory  Accessible
 }
 
-/**
- * the memory management unit (MMU) is responsible for routing memory accesses to the correct memory.
- */
+// the memory management unit (MMU) is responsible for routing memory accesses to the correct memory
 type MMU struct {
 	memoryMaps   []MemoryMap
 	memoryWrites []MemoryWrite
 }
 
-/**
- * constructor for the MMU struct
- */
+// constructor for the MMU struct
 func NewMMU() *MMU {
 	return &MMU{
 		memoryMaps:   []MemoryMap{},
@@ -56,15 +52,13 @@ func (m *MMU) clearMemoryWrites() {
 	m.memoryWrites = []MemoryWrite{}
 }
 
-/**
- * Attach a memory to the MMU at the given address.
- * At the moment, there is not check for overlapping memories: when reading from or writing to an address contained in
- * multiple memories, the first one found will be used. TODO: forbid overlapping memories to be attached.
- * @param name: string name of the memory
- * @param address: uint16 address where the memory will be attached
- * @param memory: Accessible memory to attach
- * @return void
- */
+// Attach a memory to the MMU at the given address.
+// At the moment, there is not check for overlapping memories: when reading from or writing to an address contained in
+// multiple memories, the first one found will be used.
+// name: string name of the memory
+// address: uint16 address where the memory will be attached
+// memory: Accessible memory to attach
+// return void
 func (m *MMU) AttachMemory(name string, address uint16, memory Accessible) {
 	// TODO: check if the memory is already attached before attaching it (might need to pass a pointer to the memory instead of the memory itself or pool &memory in the AttachMemory method)
 	for _, memoryMap := range m.memoryMaps {
@@ -79,10 +73,8 @@ func (m *MMU) AttachMemory(name string, address uint16, memory Accessible) {
 	})
 }
 
-/**
- * return the memory maps attached to the MMU as MemoryWrite[] (used by the debugger to display the memories)
- * @return []MemoryMap memory maps attached to the MMU
- */
+// return the memory maps attached to the MMU as MemoryWrite[] (used by the debugger to display the memories)
+// return []MemoryMap memory maps attached to the MMU
 func (b *MMU) GetMemoryMaps() []MemoryWrite {
 	memoryWrites := []MemoryWrite{}
 	for _, memoryMap := range b.memoryMaps {
@@ -97,13 +89,9 @@ func (b *MMU) GetMemoryMaps() []MemoryWrite {
 	return memoryWrites
 }
 
-// TODO: i could implement a detachMemory method to remove a memory from the MMU like the cartrige from the gameboy
-
-/**
- * Return the memory map that contains the address or returns an error if the address is not found/mapped.
- * @param address: uint16 address to look for
- * @return *MemoryMap memory map containing the address or an error if the address is not found
- */
+// Return the memory map that contains the address or returns an error if the address is not found/mapped.
+// address: uint16 address to look for
+// return *MemoryMap memory map containing the address or an error if the address is not found
 func (b *MMU) findMemory(address uint16) (*MemoryMap, error) {
 	for _, memoryMap := range b.memoryMaps {
 		memoryMapSize := memoryMap.Memory.Size() - 1
@@ -117,12 +105,10 @@ func (b *MMU) findMemory(address uint16) (*MemoryMap, error) {
 	return nil, errors.New(errMessage)
 }
 
-/**
- * Read the value at the given address.
- * @param addr: uint16 address where the value will be read
- * @return uint8 value at the given address
- * @panic if the address is not found
- */
+// Read the value at the given address.
+// addr: uint16 address where the value will be read
+// return uint8 value at the given address
+// panic if the address is not found
 func (b *MMU) Read(addr uint16) uint8 {
 	memoryMap, err := b.findMemory(addr)
 	if err == nil {
@@ -132,13 +118,11 @@ func (b *MMU) Read(addr uint16) uint8 {
 	}
 }
 
-/**
- * Dump memory from address 'from' to address 'to'
- * @param from: uint16 start address
- * @param to: uint16 end address
- * @return []uint8 (blob/memory dump)
- * @panic if the addresses are out of bounds.
- */
+// Dump memory from address 'from' to address 'to'
+// from: uint16 start address
+// to: uint16 end address
+// return []uint8 (blob/memory dump)
+// panic if the addresses are out of bounds.
 func (b *MMU) Dump(from uint16, to uint16) []uint8 {
 	memoryMap, err := b.findMemory(from)
 	if err == nil {
@@ -148,43 +132,49 @@ func (b *MMU) Dump(from uint16, to uint16) []uint8 {
 	}
 }
 
+// Reads the next 2 bytes from the given address and returns them as a uint16 little-endian value (HIGH LOW).
 func (b *MMU) Read16(addr uint16) uint16 {
 	return uint16(b.Read(addr+1))<<8 | uint16(b.Read(addr))
 }
 
-/**
- * Write the provided value at the given address.
- * @param addr: uint16 address where the value will be written
- * @param value: uint8 value to write
- * @return void
- * @panic if the address is not found
- */
+// Write the provided value at the given address.
+// addr: uint16 address where the value will be written
+// value: uint8 value to write
+// return void
+// panic if the address is not found
 func (b *MMU) Write(addr uint16, value uint8) error {
+	// on write to 0xFF50, disable the bootrom
+	if addr == DISABLE_BOOT_ROM_REGISTER {
+		b.DisableBootRom()
+	}
+
+	// find the memory map containing the address
 	memoryMap, err := b.findMemory(addr)
-	if err == nil {
-		memoryMap.Memory.Write(addr-memoryMap.Address, value)
-		memoryWrite := MemoryWrite{
-			Name:    memoryMap.Name,
-			Address: addr - memoryMap.Address,
-			Data:    []uint8{value},
-		}
-		b.addMemoryWrite(memoryWrite)
-		return nil
-	} else {
+
+	// if the address is not found, return an error
+	if err != nil {
 		return err
 	}
+
+	// write the value to the memory
+	memoryMap.Memory.Write(addr-memoryMap.Address, value)
+	memoryWrite := MemoryWrite{
+		Name:    memoryMap.Name,
+		Address: addr - memoryMap.Address,
+		Data:    []uint8{value},
+	}
+	b.addMemoryWrite(memoryWrite)
+	return nil
 }
 
-/**
- * Write the provided blob at the given address.
- * Please note that the entire blob should belong to the same memory otherwise,
- * the write process will panic once it reaches the end of the first memory,
- * resulting in the partial write of the blob.
- * @param addr: uint16 address where the blob will be written
- * @param blob: []uint8 blob to write
- * @return void
- * @panic if one of the addresses in the range (addr, addr+len(blob)) is not found
- */
+// Write the provided blob at the given address.
+// Please note that the entire blob should belong to the same memory otherwise,
+// the write process will panic once it reaches the end of the first memory,
+// resulting in the partial write of the blob.
+// param addr: uint16 address where the blob will be written
+// param blob: []uint8 blob to write
+// return void
+// panic if one of the addresses in the range (addr, addr+len(blob)) is not found
 func (b *MMU) WriteBlob(addr uint16, blob []uint8) {
 	memoryMap, err := b.findMemory(addr)
 	if err == nil {
@@ -201,5 +191,16 @@ func (b *MMU) WriteBlob(addr uint16, blob []uint8) {
 		b.addMemoryWrite(memoryWrite)
 	} else {
 		panic(err)
+	}
+}
+
+// Disable the bootrom by removing it from the memory maps if a write operation to 0xFF50 is detected.
+func (mmu *MMU) DisableBootRom() {
+	for idx, mem := range mmu.memoryMaps {
+		if mem.Name == BOOT_ROM_MEMORY_NAME {
+			// remove the bootrom from the memory maps
+			mmu.memoryMaps = append(mmu.memoryMaps[0:idx], mmu.memoryMaps[idx+1:]...)
+			return
+		}
 	}
 }
