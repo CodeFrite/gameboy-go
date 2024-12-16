@@ -47,7 +47,7 @@ type CPU struct {
 	cpuCycles   uint64      // number of cycles the CPU has executed since the last reset up to uint64 max value (18,446,744,073,709,551,615 =
 
 	// Interrupts
-	ime                    bool // interrupt master enable
+	ime                    bool // interrupt master enable (not mapped to memory 0x0000-0xFFFF, write only by CPU intructions EI, DI, RETI)
 	ime_enable_next_cycle  bool // enable the IME on the next cycle
 	ime_disable_next_cycle bool // disable the IME on the next cycle
 	halted                 bool // is the CPU halted (waiting for an interrupt to wake up)
@@ -450,4 +450,32 @@ func (c *CPU) Boot() {
 			panic(err)
 		}
 	}
+}
+
+// Synchronizable interface implementation
+func (cpu *CPU) onTick() {
+	// return if CPU is locked, otherwise lock CPU and run
+	cpu.busyChannel <- true
+	if cpu.state == CPU_EXECUTION_STATE_LOCKED {
+		fmt.Println("CPU is locked")
+		<-cpu.busyChannel
+		return
+	} else {
+		cpu.state = CPU_EXECUTION_STATE_LOCKED
+	}
+
+	// check if the CPU is halted
+	if cpu.halted {
+		// check if the interrupt master enable flag is set
+		if cpu.ime {
+			// wake up the CPU
+			cpu.halted = false
+		}
+	} else {
+		cpu.Step()
+	}
+	<-cpu.busyChannel
+
+	// unlock the CPU
+	cpu.state = CPU_EXECUTION_STATE_FREE
 }
