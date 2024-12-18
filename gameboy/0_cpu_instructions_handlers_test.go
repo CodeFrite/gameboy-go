@@ -105,6 +105,9 @@ func TestSTOP(t *testing.T) {
 	testData := []uint8{0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData)
 
+	// Write a value to the DIV register (0xFF04) to check if it was reset after the STOP instruction
+	bus.Write(REG_FF04_DIV, 0x77)
+
 	// run the program
 	cpu.Run()
 
@@ -117,11 +120,10 @@ func TestSTOP(t *testing.T) {
 	if finalState.PC != 0x0005 {
 		t.Errorf("[TestSTOP_CHK_2] Error> the program counter should have stopped at the STOP instruction @0x0005, got @0x%04X \n", finalState.PC)
 	}
-
-	/*
-		// debugging output
-		printCpuState(finalState)
-	*/
+	// check if the DIV register was reset after the STOP instruction
+	if bus.Read(REG_FF04_DIV) != 0x00 {
+		t.Errorf("[TestSTOP_CHK_3] Error> the DIV register should be reset after the STOP instruction\n")
+	}
 
 	postconditions()
 }

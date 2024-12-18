@@ -149,7 +149,9 @@ func (c *CPU) NOP(instruction *Instruction) {
 func (c *CPU) STOP(instruction *Instruction) {
 	// stop the CPU
 	c.stopped = true
-	// TODO: update the 0xFF04 register (DIV) to 0
+
+	// Update the DIV register (0xFF04) to 0
+	c.bus.Write(REG_FF04_DIV, 0x00)
 
 	// update the number of cycles executed by the CPU
 	c.cpuCycles += uint64(instruction.Cycles[0])
