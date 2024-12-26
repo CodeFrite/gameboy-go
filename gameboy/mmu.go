@@ -5,7 +5,10 @@ import (
 	"fmt"
 )
 
-const DISABLE_BOOT_ROM_REGISTER = 0xFF50
+const (
+	// Special Actions associated with certain memory addresses
+	DISABLE_BOOT_ROM_REGISTER = 0xFF50 // On Write, disable the bootrom
+)
 
 type Accessible interface {
 	Read(uint16) uint8
@@ -146,6 +149,9 @@ func (b *MMU) Write(addr uint16, value uint8) error {
 	// on write to 0xFF50, disable the bootrom
 	if addr == DISABLE_BOOT_ROM_REGISTER {
 		b.DisableBootRom()
+	} else if addr == REG_FF04_DIV {
+		// if the address is the divider register, reset it to 0
+		value = 0
 	}
 
 	// find the memory map containing the address
@@ -157,6 +163,7 @@ func (b *MMU) Write(addr uint16, value uint8) error {
 	}
 
 	// write the value to the memory
+
 	memoryMap.Memory.Write(addr-memoryMap.Address, value)
 	memoryWrite := MemoryWrite{
 		Name:    memoryMap.Name,
@@ -203,4 +210,18 @@ func (mmu *MMU) DisableBootRom() {
 			return
 		}
 	}
+}
+
+// Special write operation for the timer registers when called by the Timer itself
+// Allows the DIV register to be incremented, otherwise, any write for example from
+// cartridge program to DIV register will reset it to 0.
+func (mmu *MMU) timerWrite(addr uint16, value uint8) {
+	// find the memory map containing the address
+	memoryMap, err := mmu.findMemory(addr)
+	// if the address is not found, return an error
+	if err != nil {
+		panic(err)
+	}
+	// write the value to the memory
+	memoryMap.Memory.Write(addr-memoryMap.Address, value)
 }
