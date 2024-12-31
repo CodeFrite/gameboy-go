@@ -44,8 +44,9 @@ func TestDebuggerStateChannels(t *testing.T) {
 	// load the ROM
 	debugger.LoadRom("Tetris.gb")
 
+	// ! TODO: Step was removed from the debugger, replace with loop tick or rewrite Step func
 	// step the gameboy ...
-	debugger.Step()
+	// debugger.Step()
 
 	// ... and check that all channels do receive an updated state
 	cpuState := <-cpuStateChannel
