@@ -5,15 +5,11 @@ package gameboy
 // When TIMA overflows, it is reset to TMA and an interrupt is requested
 // TAC register is used to enable/disable the timer and set its frequency
 // TAC.2: timer enable
-// TAC.1-0: timer clock select
+// TAC.1-0: timer clock select = Frequency at which TIMA is incremented. If TMA = 0xFF, TIMA will overflow at the following frequencies:
 // 00:   4,096 Hz = 4.194,304 MHz / 1024 T-cycles (256 M-cycles)
 // 01: 262,144 Hz = 4.194,304 MHz /   16 T-cycles (  4 M-cycles)
 // 10:  65,536 Hz = 4.194,304 MHz /   64 T-cycles ( 16 M-cycles)
 // 11:  16,384 Hz	= 4.194,304 MHz /  256 T-cycles ( 64 M-cycles)
-
-type Synchronizable interface {
-	onTick()
-}
 
 const (
 	// Timer Special Registers
