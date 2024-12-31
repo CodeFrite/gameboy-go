@@ -13,22 +13,21 @@ const (
 	IO_REGISTERS_LEN   uint16 = 0x0080
 	HRAM_START         uint16 = 0xFF80
 	HRAM_LEN           uint16 = 0x007F
-	IE_FLAG_START      uint16 = 0xFFFF
-	IE_FLAG_LEN        uint16 = 0x0001
 
-	CPU_EXECUTION_STATE_FREE   CPU_EXECUTION_STATE = "free"
-	CPU_EXECUTION_STATE_LOCKED CPU_EXECUTION_STATE = "locked"
+	// CPU execution state : cycles through fetch -> decode -> execute -> fetch -> ...
+	CPU_EXECUTION_STATE_FETCH   CPU_EXECUTION_STATE = 0
+	CPU_EXECUTION_STATE_DECODE  CPU_EXECUTION_STATE = 1
+	CPU_EXECUTION_STATE_EXECUTE CPU_EXECUTION_STATE = 2
+	CPU_EXECUTION_STATE_STALL   CPU_EXECUTION_STATE = 3 // stall the CPU and wait for the gameboy clock to catch up with the cpu clock
 )
 
-type CPU_EXECUTION_STATE = string
+type CPU_EXECUTION_STATE = int8
 
 /*
  * CPU: executes instructions fetched from memory, reads and writes to memory (internal registers, flags & bus)
  */
 type CPU struct {
-	// lock the CPU to prevent concurrent access
-	busyChannel chan bool
-
+	clock uint64              // Gameboy clock (4.194304 MHz)
 	state CPU_EXECUTION_STATE // CPU state (locked, free)
 
 	// Work Registers (not mapped to memory)
@@ -74,18 +73,16 @@ func NewCPU(bus *Bus) *CPU {
 	// initialize memories
 	hram := NewMemory(HRAM_LEN)                 // High RAM (127 bytes)
 	io_registers := NewMemory(IO_REGISTERS_LEN) // I/O Registers (128 bytes)
-	ie := NewMemory(IE_FLAG_LEN)                // Interrupt Enable Register (1 byte)
+	ie := NewMemory(1)                          // Interrupt Enable Register (1 byte)
 
 	// attach memories to the bus
 	bus.AttachMemory("High RAM (HRAM)", HRAM_START, hram)
 	bus.AttachMemory("I/O Registers", IO_REGISTERS_START, io_registers)
-	bus.AttachMemory("Interrupt Enable Register", IE_FLAG_START, ie)
+	bus.AttachMemory("Interrupt Enable Register", IE_REGISTER, ie)
 
 	cpu := &CPU{
-		// make
-		busyChannel: make(chan bool, 1),
-		state:       CPU_EXECUTION_STATE_FREE,
-
+		// state
+		state: CPU_EXECUTION_STATE_FETCH,
 		// on startup, simulate the CPU registers being in an unknown state
 		sp: uint16(randValue(2, 16)),
 		a:  uint8(randValue(2, 8)),
@@ -108,6 +105,8 @@ func NewCPU(bus *Bus) *CPU {
 }
 
 func (c *CPU) reset() {
+	// reset the cpu cycle state
+	c.state = CPU_EXECUTION_STATE_FETCH
 	// reset the program counter
 	c.pc = 0x0000
 	// reset the stack pointer
@@ -345,15 +344,7 @@ func (c *CPU) fetchOperandValue(operand Operand) uint16 {
 	return value
 }
 
-// Execute one cycle of the CPU: fetch, decode and execute the next instruction
-// TODO: i am supposed to return an error but i am always returning nil. Chose an error handling strategy and implement it
-func (c *CPU) Step() error {
-
-	// return if the CPU is halted or stopped
-	if c.halted || c.stopped {
-		return nil
-	}
-
+func (c *CPU) fetch() {
 	// update the pc and reset the offset
 	c.updatepc()
 	c.offset = 0
@@ -365,7 +356,11 @@ func (c *CPU) Step() error {
 	opCode, prefixed := c.fetchOpcode()
 	c.prefixed = prefixed
 	c.ir = opCode
+	// advance execution state
+	c.state = CPU_EXECUTION_STATE_DECODE
+}
 
+func (c *CPU) decode() {
 	// Decode the instruction
 	// get instruction from opcodes.json file with IR used as key
 	instruction := GetInstruction(Opcode(fmt.Sprintf("0x%02X", c.ir)), c.prefixed)
@@ -377,14 +372,18 @@ func (c *CPU) Step() error {
 	if idx >= 0 {
 		c.operand = c.fetchOperandValue(operands[idx])
 	}
+	// advance execution state
+	c.state = CPU_EXECUTION_STATE_EXECUTE
+}
 
+func (c *CPU) execute() {
 	// Handle the IME
 	if c.ime_enable_next_cycle {
 		// Execute the instruction
 		if !c.prefixed {
-			c.executeInstruction(instruction)
+			c.executeInstruction(c.instruction)
 		} else {
-			c.executeCBInstruction(instruction)
+			c.executeCBInstruction(c.instruction)
 		}
 		// enable the IME
 		c.ime = true
@@ -392,9 +391,9 @@ func (c *CPU) Step() error {
 	} else if c.ime_disable_next_cycle {
 		// Execute the instruction
 		if !c.prefixed {
-			c.executeInstruction(instruction)
+			c.executeInstruction(c.instruction)
 		} else {
-			c.executeCBInstruction(instruction)
+			c.executeCBInstruction(c.instruction)
 		}
 		// disable the IME
 		c.ime = false
@@ -402,80 +401,52 @@ func (c *CPU) Step() error {
 	} else {
 		// Execute the instruction
 		if !c.prefixed {
-			c.executeInstruction(instruction)
+			c.executeInstruction(c.instruction)
 		} else {
-			c.executeCBInstruction(instruction)
+			c.executeCBInstruction(c.instruction)
 		}
 	}
-
-	return nil
+	// advance execution state
+	c.state = CPU_EXECUTION_STATE_STALL
 }
 
-// Run the CPU
-func (c *CPU) Run() {
-	// return if CPU is locked, otherwise lock CPU and run
-	if c.state == CPU_EXECUTION_STATE_LOCKED {
-		fmt.Println("CPU is locked")
-		return
-	} else {
-		c.state = CPU_EXECUTION_STATE_LOCKED
-	}
-	for {
-		if c.halted {
-			// if the CPU is halted, wait for an interrupt to wake it up
-			// TODO: implement the interrupt handling
-			// ! for the moment, we will break the loop to avoid an infinite loop
-			break
-		}
-		if c.stopped {
-			// if the CPU is stopped, wait for an interrupt from the joypad
-			break
-		}
-		// Execute the next instruction
-		if err := c.Step(); err != nil {
-			panic(err)
-		}
-	}
-
-	// unlock the CPU
-	c.state = CPU_EXECUTION_STATE_FREE
-}
-
-// Boot the CPU and returns when the boot process is done (pc=0x0100)
-func (c *CPU) Boot() {
-	c.pc = 0x0000
-	for c.pc != 0x0100 {
-		err := c.Step()
-		if err != nil {
-			panic(err)
-		}
+// Stall the CPU and wait for the gameboy clock to catch up with the cpu clock
+func (c *CPU) stall() {
+	// check if the gameboy clock has caught up with the cpu clock
+	if c.clock == c.cpuCycles {
+		// advance execution state
+		c.state = CPU_EXECUTION_STATE_FETCH
 	}
 }
 
-// Synchronizable interface implementation
-func (cpu *CPU) onTick() {
-	// return if CPU is locked, otherwise lock CPU and run
-	cpu.busyChannel <- true
-	if cpu.state == CPU_EXECUTION_STATE_LOCKED {
-		fmt.Println("CPU is locked")
-		<-cpu.busyChannel
-		return
-	} else {
-		cpu.state = CPU_EXECUTION_STATE_LOCKED
-	}
-
+// Ticks the CPU once
+func (c *CPU) Tick() {
 	// check if the CPU is halted
-	if cpu.halted {
+	if c.halted {
 		// check if the interrupt master enable flag is set
-		if cpu.ime {
+		if c.ime {
 			// wake up the CPU
-			cpu.halted = false
+			c.halted = false
 		}
+		// handle interrupts
+		c.handleInterrupts()
+		// increment the clocks
+		c.clock++
+		c.cpuCycles++
 	} else {
-		cpu.Step()
+		if c.state == CPU_EXECUTION_STATE_FETCH {
+			c.fetch()
+		} else if c.state == CPU_EXECUTION_STATE_DECODE {
+			c.decode()
+		} else if c.state == CPU_EXECUTION_STATE_EXECUTE {
+			c.execute()
+		} else if c.state == CPU_EXECUTION_STATE_STALL {
+			c.stall()
+			// handle interrupts when the CPU is done with the current instruction
+			if c.state == CPU_EXECUTION_STATE_FETCH {
+				c.handleInterrupts()
+			}
+		}
 	}
-	<-cpu.busyChannel
-
-	// unlock the CPU
-	cpu.state = CPU_EXECUTION_STATE_FREE
+	c.clock++
 }
