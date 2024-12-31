@@ -66,7 +66,9 @@ func test_0x00_RLC_B(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x00, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -104,7 +106,9 @@ func test_0x01_RLC_C(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x01, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -142,7 +146,9 @@ func test_0x02_RLC_D(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x02, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -180,7 +186,9 @@ func test_0x03_RLC_E(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x03, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -218,7 +226,9 @@ func test_0x04_RLC_H(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x04, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -256,7 +266,9 @@ func test_0x05_RLC_L(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x05, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -294,7 +306,9 @@ func test_0x06_RLC__HL(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x06, 0x10, tc.value}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -333,7 +347,9 @@ func test_0x07_RLC_A(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x07, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -420,7 +436,9 @@ func test_0x08_RRC_B(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x08, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -458,7 +476,9 @@ func test_0x09_RRC_C(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x09, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -496,7 +516,9 @@ func test_0x0A_RRC_D(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x0A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -534,7 +556,9 @@ func test_0x0B_RRC_E(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x0B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -572,7 +596,9 @@ func test_0x0C_RRC_H(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x0C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -610,7 +636,9 @@ func test_0x0D_RRC_L(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x0D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -648,7 +676,9 @@ func test_0x0E_RRC__HL(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x0E, 0x10, tc.value}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -687,7 +717,9 @@ func test_0x0F_RRC_A(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x0F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -775,7 +807,9 @@ func test_0x10_RL_B(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x10, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -813,7 +847,9 @@ func test_0x11_RL_C(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x11, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -851,7 +887,9 @@ func test_0x12_RL_D(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x12, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -889,7 +927,9 @@ func test_0x13_RL_E(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x13, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -927,7 +967,9 @@ func test_0x14_RL_H(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x14, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -965,7 +1007,9 @@ func test_0x15_RL_L(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x15, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1003,7 +1047,9 @@ func test_0x16_RL__HL(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x16, 0x10, tc.value}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1042,7 +1088,9 @@ func test_0x17_RL_A(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x17, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1130,7 +1178,9 @@ func test_0x18_RR_B(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x18, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1168,7 +1218,9 @@ func test_0x19_RR_C(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x19, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1206,7 +1258,9 @@ func test_0x1A_RR_D(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x1A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1244,7 +1298,9 @@ func test_0x1B_RR_E(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x1B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1282,7 +1338,9 @@ func test_0x1C_RR_H(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x1C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1320,7 +1378,9 @@ func test_0x1D_RR_L(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x1D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1358,7 +1418,9 @@ func test_0x1E_RR__HL(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x1E, 0x10, tc.value}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1397,7 +1459,9 @@ func test_0x1F_RR_A(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x1F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1485,7 +1549,9 @@ func test_0x20_SLA_B(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x20, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -1522,7 +1588,9 @@ func test_0x21_SLA_C(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x21, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -1559,7 +1627,9 @@ func test_0x22_SLA_D(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x22, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -1596,7 +1666,9 @@ func test_0x23_SLA_E(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x23, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -1633,7 +1705,9 @@ func test_0x24_SLA_H(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x24, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -1670,7 +1744,9 @@ func test_0x25_SLA_L(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x25, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -1707,7 +1783,9 @@ func test_0x26_SLA__HL(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x26, 0x10, tc.value}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -1745,7 +1823,9 @@ func test_0x27_SLA_A(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x27, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -1832,7 +1912,9 @@ func test_0x28_SRA_B(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x28, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1870,7 +1952,9 @@ func test_0x29_SRA_C(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x29, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1908,7 +1992,9 @@ func test_0x2A_SRA_D(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x2A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1946,7 +2032,9 @@ func test_0x2B_SRA_E(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x2B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -1984,7 +2072,9 @@ func test_0x2C_SRA_H(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x2C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -2022,7 +2112,9 @@ func test_0x2D_SRA_L(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x2D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -2060,7 +2152,9 @@ func test_0x2E_SRA__HL(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x2E, 0x10, tc.value}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -2099,7 +2193,9 @@ func test_0x2F_SRA_A(t *testing.T) {
 		}
 		testProgram := []uint8{0xCB, 0x2F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -2195,7 +2291,9 @@ func test_0x30_SWAP_B(t *testing.T) {
 		cpu.b = tc.value
 		testProgram := []uint8{0xCB, 0x30, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2232,7 +2330,9 @@ func test_0x31_SWAP_C(t *testing.T) {
 		cpu.c = tc.value
 		testProgram := []uint8{0xCB, 0x31, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2269,7 +2369,9 @@ func test_0x32_SWAP_D(t *testing.T) {
 		cpu.d = tc.value
 		testProgram := []uint8{0xCB, 0x32, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2306,7 +2408,9 @@ func test_0x33_SWAP_E(t *testing.T) {
 		cpu.e = tc.value
 		testProgram := []uint8{0xCB, 0x33, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2343,7 +2447,9 @@ func test_0x34_SWAP_H(t *testing.T) {
 		cpu.h = tc.value
 		testProgram := []uint8{0xCB, 0x34, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2380,7 +2486,9 @@ func test_0x35_SWAP_L(t *testing.T) {
 		cpu.l = tc.value
 		testProgram := []uint8{0xCB, 0x35, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2417,7 +2525,9 @@ func test_0x36_SWAP__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x36, 0x10, tc.value}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2455,7 +2565,9 @@ func test_0x37_SWAP_A(t *testing.T) {
 		cpu.a = tc.value
 		testProgram := []uint8{0xCB, 0x37, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2548,7 +2660,9 @@ func test_0x38_SRL_B(t *testing.T) {
 		cpu.b = tc.value
 		testProgram := []uint8{0xCB, 0x38, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2585,7 +2699,9 @@ func test_0x39_SRL_C(t *testing.T) {
 		cpu.c = tc.value
 		testProgram := []uint8{0xCB, 0x39, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2622,7 +2738,9 @@ func test_0x3A_SRL_D(t *testing.T) {
 		cpu.d = tc.value
 		testProgram := []uint8{0xCB, 0x3A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2659,7 +2777,9 @@ func test_0x3B_SRL_E(t *testing.T) {
 		cpu.e = tc.value
 		testProgram := []uint8{0xCB, 0x3B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2696,7 +2816,9 @@ func test_0x3C_SRL_H(t *testing.T) {
 		cpu.h = tc.value
 		testProgram := []uint8{0xCB, 0x3C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2733,7 +2855,9 @@ func test_0x3D_SRL_L(t *testing.T) {
 		cpu.l = tc.value
 		testProgram := []uint8{0xCB, 0x3D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2770,7 +2894,9 @@ func test_0x3E_SRL__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x3E, 0x10, tc.value}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2808,7 +2934,9 @@ func test_0x3F_SRL_A(t *testing.T) {
 		cpu.a = tc.value
 		testProgram := []uint8{0xCB, 0x3F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Test case %d: Expected PC to be 0x0002, got 0x%04X", idx, cpu.pc)
@@ -2993,7 +3121,9 @@ func test_0x40_BIT_0_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x40, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3028,7 +3158,9 @@ func test_0x41_BIT_0_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x41, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3063,7 +3195,9 @@ func test_0x42_BIT_0_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x42, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3098,7 +3232,9 @@ func test_0x43_BIT_0_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x43, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3133,7 +3269,9 @@ func test_0x44_BIT_0_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x44, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3168,7 +3306,9 @@ func test_0x45_BIT_0_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x45, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3203,7 +3343,9 @@ func test_0x46_BIT_0__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x46, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3238,7 +3380,9 @@ func test_0x47_BIT_0_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x47, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3275,7 +3419,9 @@ func test_0x48_BIT_1_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x48, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3310,7 +3456,9 @@ func test_0x49_BIT_1_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x49, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3345,7 +3493,9 @@ func test_0x4A_BIT_1_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x4A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3380,7 +3530,9 @@ func test_0x4B_BIT_1_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x4B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3415,7 +3567,9 @@ func test_0x4C_BIT_1_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x4C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3450,7 +3604,9 @@ func test_0x4D_BIT_1_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x4D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3485,7 +3641,9 @@ func test_0x4E_BIT_1__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x4E, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3520,7 +3678,9 @@ func test_0x4F_BIT_1_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x4F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3557,7 +3717,9 @@ func test_0x50_BIT_2_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x50, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3592,7 +3754,9 @@ func test_0x51_BIT_2_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x51, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3627,7 +3791,9 @@ func test_0x52_BIT_2_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x52, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3662,7 +3828,9 @@ func test_0x53_BIT_2_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x53, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3697,7 +3865,9 @@ func test_0x54_BIT_2_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x54, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3732,7 +3902,9 @@ func test_0x55_BIT_2_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x55, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3767,7 +3939,9 @@ func test_0x56_BIT_2__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x56, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3802,7 +3976,9 @@ func test_0x57_BIT_2_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x57, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3839,7 +4015,9 @@ func test_0x58_BIT_3_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x58, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3874,7 +4052,9 @@ func test_0x59_BIT_3_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x59, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3909,7 +4089,9 @@ func test_0x5A_BIT_3_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x5A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3944,7 +4126,9 @@ func test_0x5B_BIT_3_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x5B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -3979,7 +4163,9 @@ func test_0x5C_BIT_3_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x5C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4014,7 +4200,9 @@ func test_0x5D_BIT_3_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x5D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4049,7 +4237,9 @@ func test_0x5E_BIT_3__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x5E, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4084,7 +4274,9 @@ func test_0x5F_BIT_3_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x5F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4121,7 +4313,9 @@ func test_0x60_BIT_4_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x60, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4156,7 +4350,9 @@ func test_0x61_BIT_4_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x61, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4191,7 +4387,9 @@ func test_0x62_BIT_4_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x62, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4226,7 +4424,9 @@ func test_0x63_BIT_4_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x63, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4261,7 +4461,9 @@ func test_0x64_BIT_4_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x64, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4296,7 +4498,9 @@ func test_0x65_BIT_4_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x65, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4331,7 +4535,9 @@ func test_0x66_BIT_4__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x66, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4366,7 +4572,9 @@ func test_0x67_BIT_4_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x67, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4403,7 +4611,9 @@ func test_0x68_BIT_5_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x68, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4438,7 +4648,9 @@ func test_0x69_BIT_5_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x69, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4473,7 +4685,9 @@ func test_0x6A_BIT_5_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x6A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4508,7 +4722,9 @@ func test_0x6B_BIT_5_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x6B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4543,7 +4759,9 @@ func test_0x6C_BIT_5_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x6C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4578,7 +4796,9 @@ func test_0x6D_BIT_5_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x6D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4613,7 +4833,9 @@ func test_0x6E_BIT_5__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x6E, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4648,7 +4870,9 @@ func test_0x6F_BIT_5_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x6F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4685,7 +4909,9 @@ func test_0x70_BIT_6_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x70, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4720,7 +4946,9 @@ func test_0x71_BIT_6_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x71, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4755,7 +4983,9 @@ func test_0x72_BIT_6_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x72, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4790,7 +5020,9 @@ func test_0x73_BIT_6_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x73, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4825,7 +5057,9 @@ func test_0x74_BIT_6_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x74, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4860,7 +5094,9 @@ func test_0x75_BIT_6_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x75, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4895,7 +5131,9 @@ func test_0x76_BIT_6__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x76, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4930,7 +5168,9 @@ func test_0x77_BIT_6_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x77, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -4967,7 +5207,9 @@ func test_0x78_BIT_7_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x78, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5002,7 +5244,9 @@ func test_0x79_BIT_7_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x79, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5037,7 +5281,9 @@ func test_0x7A_BIT_7_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x7A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5072,7 +5318,9 @@ func test_0x7B_BIT_7_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x7B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5107,7 +5355,9 @@ func test_0x7C_BIT_7_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x7C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5142,7 +5392,9 @@ func test_0x7D_BIT_7_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x7D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5177,7 +5429,9 @@ func test_0x7E_BIT_7__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x7E, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5212,7 +5466,9 @@ func test_0x7F_BIT_7_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x7F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5399,7 +5655,9 @@ func test_0x80_RES_0_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x80, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5423,7 +5681,9 @@ func test_0x81_RES_0_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x81, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5447,7 +5707,9 @@ func test_0x82_RES_0_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x82, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5471,7 +5733,9 @@ func test_0x83_RES_0_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x83, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5495,7 +5759,9 @@ func test_0x84_RES_0_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x84, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5519,7 +5785,9 @@ func test_0x85_RES_0_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x85, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5543,7 +5811,9 @@ func test_0x86_RES_0__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x86, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5568,7 +5838,9 @@ func test_0x87_RES_0_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x87, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5594,7 +5866,9 @@ func test_0x88_RES_1_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x88, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5618,7 +5892,9 @@ func test_0x89_RES_1_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x89, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5642,7 +5918,9 @@ func test_0x8A_RES_1_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x8A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5666,7 +5944,9 @@ func test_0x8B_RES_1_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x8B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5690,7 +5970,9 @@ func test_0x8C_RES_1_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x8C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5714,7 +5996,9 @@ func test_0x8D_RES_1_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x8D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5738,7 +6022,9 @@ func test_0x8E_RES_1__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x8E, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5763,7 +6049,9 @@ func test_0x8F_RES_1_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x8F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5789,7 +6077,9 @@ func test_0x90_RES_2_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x90, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5813,7 +6103,9 @@ func test_0x91_RES_2_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x91, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5837,7 +6129,9 @@ func test_0x92_RES_2_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x92, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5861,7 +6155,9 @@ func test_0x93_RES_2_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x93, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5885,7 +6181,9 @@ func test_0x94_RES_2_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x94, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5909,7 +6207,9 @@ func test_0x95_RES_2_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x95, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5933,7 +6233,9 @@ func test_0x96_RES_2__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x96, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5958,7 +6260,9 @@ func test_0x97_RES_2_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x97, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -5984,7 +6288,9 @@ func test_0x98_RES_3_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0x98, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6008,7 +6314,9 @@ func test_0x99_RES_3_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0x99, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6032,7 +6340,9 @@ func test_0x9A_RES_3_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0x9A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6056,7 +6366,9 @@ func test_0x9B_RES_3_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0x9B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6080,7 +6392,9 @@ func test_0x9C_RES_3_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0x9C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6104,7 +6418,9 @@ func test_0x9D_RES_3_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0x9D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6128,7 +6444,9 @@ func test_0x9E_RES_3__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0x9E, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6153,7 +6471,9 @@ func test_0x9F_RES_3_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0x9F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6179,7 +6499,9 @@ func test_0xA0_RES_4_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xA0, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6203,7 +6525,9 @@ func test_0xA1_RES_4_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xA1, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6227,7 +6551,9 @@ func test_0xA2_RES_4_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xA2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6251,7 +6577,9 @@ func test_0xA3_RES_4_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xA3, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6275,7 +6603,9 @@ func test_0xA4_RES_4_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xA4, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6299,7 +6629,9 @@ func test_0xA5_RES_4_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xA5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6323,7 +6655,9 @@ func test_0xA6_RES_4__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xA6, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6348,7 +6682,9 @@ func test_0xA7_RES_4_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xA7, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6374,7 +6710,9 @@ func test_0xA8_RES_5_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xA8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6398,7 +6736,9 @@ func test_0xA9_RES_5_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xA9, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6422,7 +6762,9 @@ func test_0xAA_RES_5_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xAA, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6446,7 +6788,9 @@ func test_0xAB_RES_5_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xAB, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6470,7 +6814,9 @@ func test_0xAC_RES_5_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xAC, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6494,7 +6840,9 @@ func test_0xAD_RES_5_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xAD, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6518,7 +6866,9 @@ func test_0xAE_RES_5__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xAE, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6543,7 +6893,9 @@ func test_0xAF_RES_5_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xAF, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6569,7 +6921,9 @@ func test_0xB0_RES_6_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xB0, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6593,7 +6947,9 @@ func test_0xB1_RES_6_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xB1, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6617,7 +6973,9 @@ func test_0xB2_RES_6_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xB2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6641,7 +6999,9 @@ func test_0xB3_RES_6_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xB3, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6665,7 +7025,9 @@ func test_0xB4_RES_6_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xB4, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6689,7 +7051,9 @@ func test_0xB5_RES_6_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xB5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6713,7 +7077,9 @@ func test_0xB6_RES_6__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xB6, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6738,7 +7104,9 @@ func test_0xB7_RES_6_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xB7, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6764,7 +7132,9 @@ func test_0xB8_RES_7_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xB8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6788,7 +7158,9 @@ func test_0xB9_RES_7_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xB9, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6812,7 +7184,9 @@ func test_0xBA_RES_7_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xBA, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6836,7 +7210,9 @@ func test_0xBB_RES_7_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xBB, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6860,7 +7236,9 @@ func test_0xBC_RES_7_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xBC, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6884,7 +7262,9 @@ func test_0xBD_RES_7_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xBD, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6908,7 +7288,9 @@ func test_0xBE_RES_7__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xBE, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -6933,7 +7315,9 @@ func test_0xBF_RES_7_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xBF, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7109,7 +7493,9 @@ func test_0xC0_SET_0_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xC0, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7133,7 +7519,9 @@ func test_0xC1_SET_0_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xC1, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7157,7 +7545,9 @@ func test_0xC2_SET_0_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xC2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7181,7 +7571,9 @@ func test_0xC3_SET_0_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xC3, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7205,7 +7597,9 @@ func test_0xC4_SET_0_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xC4, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7229,7 +7623,9 @@ func test_0xC5_SET_0_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xC5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7253,7 +7649,9 @@ func test_0xC6_SET_0__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xC6, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7278,7 +7676,9 @@ func test_0xC7_SET_0_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xC7, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7304,7 +7704,9 @@ func test_0xC8_SET_1_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xC8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7328,7 +7730,9 @@ func test_0xC9_SET_1_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xC9, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7352,7 +7756,9 @@ func test_0xCA_SET_1_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xCA, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7376,7 +7782,9 @@ func test_0xCB_SET_1_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xCB, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7400,7 +7808,9 @@ func test_0xCC_SET_1_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xCC, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7424,7 +7834,9 @@ func test_0xCD_SET_1_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xCD, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7448,7 +7860,9 @@ func test_0xCE_SET_1__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xCE, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7473,7 +7887,9 @@ func test_0xCF_SET_1_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xCF, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7499,7 +7915,9 @@ func test_0xD0_SET_2_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xD0, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7523,7 +7941,9 @@ func test_0xD1_SET_2_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xD1, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7547,7 +7967,9 @@ func test_0xD2_SET_2_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xD2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7571,7 +7993,9 @@ func test_0xD3_SET_2_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xD3, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7595,7 +8019,9 @@ func test_0xD4_SET_2_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xD4, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7619,7 +8045,9 @@ func test_0xD5_SET_2_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xD5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7643,7 +8071,9 @@ func test_0xD6_SET_2__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xD6, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7668,7 +8098,9 @@ func test_0xD7_SET_2_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xD7, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7694,7 +8126,9 @@ func test_0xD8_SET_3_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xD8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7718,7 +8152,9 @@ func test_0xD9_SET_3_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xD9, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7742,7 +8178,9 @@ func test_0xDA_SET_3_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xDA, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7766,7 +8204,9 @@ func test_0xDB_SET_3_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xDB, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7790,7 +8230,9 @@ func test_0xDC_SET_3_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xDC, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7814,7 +8256,9 @@ func test_0xDD_SET_3_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xDD, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7838,7 +8282,9 @@ func test_0xDE_SET_3__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xDE, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7863,7 +8309,9 @@ func test_0xDF_SET_3_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xDF, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7889,7 +8337,9 @@ func test_0xE0_SET_4_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xE0, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7913,7 +8363,9 @@ func test_0xE1_SET_4_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xE1, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7937,7 +8389,9 @@ func test_0xE2_SET_4_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xE2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7961,7 +8415,9 @@ func test_0xE3_SET_4_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xE3, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -7985,7 +8441,9 @@ func test_0xE4_SET_4_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xE4, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8009,7 +8467,9 @@ func test_0xE5_SET_4_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xE5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8033,7 +8493,9 @@ func test_0xE6_SET_4__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xE6, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8058,7 +8520,9 @@ func test_0xE7_SET_4_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xE7, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8084,7 +8548,9 @@ func test_0xE8_SET_5_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xE8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8108,7 +8574,9 @@ func test_0xE9_SET_5_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xE9, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8132,7 +8600,9 @@ func test_0xEA_SET_5_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xEA, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8156,7 +8626,9 @@ func test_0xEB_SET_5_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xEB, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8180,7 +8652,9 @@ func test_0xEC_SET_5_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xEC, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8204,7 +8678,9 @@ func test_0xED_SET_5_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xED, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8228,7 +8704,9 @@ func test_0xEE_SET_5__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xEE, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8253,7 +8731,9 @@ func test_0xEF_SET_5_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xEF, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8279,7 +8759,9 @@ func test_0xF0_SET_6_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xF0, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8303,7 +8785,9 @@ func test_0xF1_SET_6_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xF1, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8327,7 +8811,9 @@ func test_0xF2_SET_6_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xF2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8351,7 +8837,9 @@ func test_0xF3_SET_6_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xF3, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8375,7 +8863,9 @@ func test_0xF4_SET_6_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xF4, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8399,7 +8889,9 @@ func test_0xF5_SET_6_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xF5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8423,7 +8915,9 @@ func test_0xF6_SET_6__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xF6, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8448,7 +8942,9 @@ func test_0xF7_SET_6_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xF7, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8474,7 +8970,9 @@ func test_0xF8_SET_7_B(t *testing.T) {
 		cpu.b = uint8(i)
 		testProgram := []uint8{0xCB, 0xF8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8498,7 +8996,9 @@ func test_0xF9_SET_7_C(t *testing.T) {
 		cpu.c = uint8(i)
 		testProgram := []uint8{0xCB, 0xF9, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8522,7 +9022,9 @@ func test_0xFA_SET_7_D(t *testing.T) {
 		cpu.d = uint8(i)
 		testProgram := []uint8{0xCB, 0xFA, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8546,7 +9048,9 @@ func test_0xFB_SET_7_E(t *testing.T) {
 		cpu.e = uint8(i)
 		testProgram := []uint8{0xCB, 0xFB, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8570,7 +9074,9 @@ func test_0xFC_SET_7_H(t *testing.T) {
 		cpu.h = uint8(i)
 		testProgram := []uint8{0xCB, 0xFC, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8594,7 +9100,9 @@ func test_0xFD_SET_7_L(t *testing.T) {
 		cpu.l = uint8(i)
 		testProgram := []uint8{0xCB, 0xFD, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8618,7 +9126,9 @@ func test_0xFE_SET_7__HL(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0xCB, 0xFE, 0x10, uint8(i)}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)
@@ -8643,7 +9153,9 @@ func test_0xFF_SET_7_A(t *testing.T) {
 		cpu.a = uint8(i)
 		testProgram := []uint8{0xCB, 0xFF, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check that the program stopped at the right place
 		if cpu.pc != 0x0002 {
 			t.Errorf("Expected PC to be 0x0002, got 0x%04X", cpu.pc)

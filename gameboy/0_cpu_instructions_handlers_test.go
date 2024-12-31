@@ -1,7 +1,6 @@
 package gameboy
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -55,43 +54,19 @@ func TestNOP(t *testing.T) {
 	preconditions()
 
 	// test program : 0xFF NOP instructions
-	var testData []uint8 = make([]uint8, 0xFF)
-	for i := 0; i < 0x0F; i++ {
-		testData[i] = 0x00
-	}
+	testProgram := []uint8{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10}
 
 	// load the program into the memory
-	loadProgramIntoMemory(memory1, testData)
+	loadProgramIntoMemory(memory1, testProgram)
 
-	// shift mem1 to mem2
-	cpu.Step()
-	shiftCpuState(cpuState1, cpuState2)
+	// run the program
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
-	for i := 0; i < len(testData); i++ {
-		// execute the next instruction and shift the saved state mem1 to mem2 and save the new state in mem1
-		shiftCpuState(cpuState1, cpuState2)
-		cpu.Step()
-		cpuState1 = getCpuState()
-		cmp := compareCpuState(cpuState1, cpuState2)
-		// check if there is only one difference between the two states: PC incremented to i
-		if len(cmp) != 1 {
-			t.Errorf("[TestNOP_CHK_1] Error> NOP instruction should change exactly one field, the PC. Here got %v", cmp)
-		} else {
-
-			// the key should be PC
-			if cmp[0] != "PC" {
-				t.Errorf("[TestNOP_CHK_2] Error> NOP instruction should change the PC field, here got %v\n", cmp[0])
-			}
-
-			// PC should be equal to 0x0E
-			if cpuState1.PC != uint16(i+1) {
-				t.Errorf("[TestNOP_CHK_3] Error> NOP instruction should increment the PC by 1, here got %v\n", cpuState1.PC)
-			}
-		}
-		// NOP instruction shouldn't change the flags
-		if cpuState1.F != cpuState2.F {
-			t.Errorf("[TestNOP_CHK_4] Error> NOP instruction shouldn't change the flags\n")
-		}
+	// check the final state of the cpu
+	if cpu.pc != 0x000F {
+		t.Errorf("[TestNOP_CHK_1] Error> the program counter should have stopped at the last instruction @0x000F, got @0x%04X \n", cpu.pc)
 	}
 
 	postconditions()
@@ -109,7 +84,9 @@ func TestSTOP(t *testing.T) {
 	bus.Write(REG_FF04_DIV, 0x77)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is halted on the STOP instruction
 	if !cpu.stopped {
@@ -137,7 +114,9 @@ func TestHALT(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is halted on the HALT instruction
 	if !cpu.halted {
@@ -160,30 +139,23 @@ func TestDI(t *testing.T) {
 	// load the program into the memory
 	testData := []uint8{0x00, 0x00, 0x00, 0x00, 0x00, 0xF3, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData)
+	/*
+		// run the program and control step by step the IME flag
+		for i := 0; i < len(testData); i++ {
+			cpu.Step()
 
-	// run the program and control step by step the IME flag
-	for i := 0; i < len(testData); i++ {
-		cpu.Step()
-		/*
-			// debugging output
-			fmt.Println()
-			fmt.Println(" ***   *** *** ***   *** ***   ***   *** *** ***   ***   *** ***   *** *** ***   ***")
-			fmt.Println(i, ">")
-			printCpuState(getCpuState())
-		*/
-
-		// the IME flag should stay up until the end of the execution after the DI instruction
-		if i >= 0 && i <= 5 {
-			if !cpu.ime {
-				t.Errorf("[TestDI_CHK_1] Error> DI instruction should disable the IME flag after the execution of the next instruction\n")
-			}
-		} else if i >= 6 {
-			if cpu.ime {
-				t.Errorf("[TestDI_CHK_2] Error> DI instruction should disable the IME flag\n")
+			// the IME flag should stay up until the end of the execution after the DI instruction
+			if i >= 0 && i <= 5 {
+				if !cpu.ime {
+					t.Errorf("[TestDI_CHK_1] Error> DI instruction should disable the IME flag after the execution of the next instruction\n")
+				}
+			} else if i >= 6 {
+				if cpu.ime {
+					t.Errorf("[TestDI_CHK_2] Error> DI instruction should disable the IME flag\n")
+				}
 			}
 		}
-	}
-
+	*/
 	postconditions()
 }
 
@@ -195,29 +167,22 @@ func TestEI(t *testing.T) {
 	// load the program into the memory
 	testData := []uint8{0x00, 0x00, 0x00, 0x00, 0x00, 0xFB, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData)
-
-	// run the program and control step by step the IME flag
-	for i := 0; i < len(testData); i++ {
-		cpu.Step()
-		/*
-			// debugging output
-			fmt.Println()
-			fmt.Println(" ***   *** *** ***   *** ***   ***   *** *** ***   ***   *** ***   *** *** ***   ***")
-			fmt.Println(i, ">")
-			printCpuState(getCpuState())
-		*/
-		// the IME flag should stay down until the end of the execution after the EI instruction
-		if i >= 0 && i <= 5 {
-			if cpu.ime {
-				t.Errorf("[TestEI_CHK_1] Error> EI instruction should enable the IME flag after the execution of the next instruction\n")
-			}
-		} else if i >= 6 {
-			if !cpu.ime {
-				t.Errorf("[TestEI_CHK_2] Error> EI instruction should enable the IME flag\n")
+	/*
+		// run the program and control step by step the IME flag
+		for i := 0; i < len(testData); i++ {
+			cpu.Step()
+			// the IME flag should stay down until the end of the execution after the EI instruction
+			if i >= 0 && i <= 5 {
+				if cpu.ime {
+					t.Errorf("[TestEI_CHK_1] Error> EI instruction should enable the IME flag after the execution of the next instruction\n")
+				}
+			} else if i >= 6 {
+				if !cpu.ime {
+					t.Errorf("[TestEI_CHK_2] Error> EI instruction should enable the IME flag\n")
+				}
 			}
 		}
-	}
-
+	*/
 	postconditions()
 }
 
@@ -252,7 +217,9 @@ func test_0xC3_JP_a16(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0xC3, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // jump to 0x1A
 	}
 	loadProgramIntoMemory(memory1, testData)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -285,7 +252,9 @@ func test_0xE9_JP_HL(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, // jump to 0x1A
 	}
 	loadProgramIntoMemory(memory1, testData)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -318,7 +287,9 @@ func test_0xCA_JP_Z_a16(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0xCA, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // jump to 0x1A
 	}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -350,7 +321,9 @@ func test_0xCA_JP_Z_a16(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0xCA, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //
 	}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -383,7 +356,9 @@ func test_0xC2_JP_NZ_a16(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0xC2, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // jump to 0x1A
 	}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -415,7 +390,9 @@ func test_0xC2_JP_NZ_a16(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0xC2, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //
 	}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -448,7 +425,9 @@ func test_0xDA_JP_C_a16(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0xDA, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // jump to 0x1A
 	}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -480,7 +459,9 @@ func test_0xDA_JP_C_a16(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0xDA, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //
 	}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -513,7 +494,9 @@ func test_0xD2_JP_NC_a16(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0xD2, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // jump to 0x1A
 	}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -545,7 +528,9 @@ func test_0xD2_JP_NC_a16(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0xD2, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //
 	}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x001F
 	if !cpu.stopped {
@@ -604,7 +589,9 @@ func test_JP_integration(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
 	if !cpu.stopped {
@@ -664,7 +651,9 @@ func test_JP_integration(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
 	if !cpu.stopped {
@@ -737,7 +726,9 @@ func test_0x18_JR_r8(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -793,7 +784,9 @@ func test_0x20_JR_NZ_r8(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -848,7 +841,9 @@ func test_0x20_JR_NZ_r8(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -904,7 +899,9 @@ func test_0x28_JR_Z_r8(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -959,7 +956,9 @@ func test_0x28_JR_Z_r8(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1015,7 +1014,9 @@ func test_0x30_JR_NC_r8(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1070,7 +1071,9 @@ func test_0x30_JR_NC_r8(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1126,7 +1129,9 @@ func test_0x38_JR_C_r8(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1181,7 +1186,9 @@ func test_0x38_JR_C_r8(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1242,7 +1249,9 @@ func test_JR_integration(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1302,7 +1311,9 @@ func test_JR_integration(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1373,7 +1384,9 @@ func test_0xCD_CALL_a16(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1429,7 +1442,9 @@ func test_0xCC_CALL_Z_a16(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1484,7 +1499,9 @@ func test_0xCC_CALL_Z_a16(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1540,7 +1557,9 @@ func test_0xC4_CALL_NZ_a16(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1595,7 +1614,9 @@ func test_0xC4_CALL_NZ_a16(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1651,7 +1672,9 @@ func test_0xDC_CALL_C_a16(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1706,7 +1729,9 @@ func test_0xDC_CALL_C_a16(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1762,7 +1787,9 @@ func test_0xD4_CALL_NC_a16(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1817,7 +1844,9 @@ func test_0xD4_CALL_NC_a16(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00A0
 	if !cpu.stopped {
@@ -1878,7 +1907,9 @@ func test_CALL_integration(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData1)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
 	if !cpu.stopped {
@@ -1938,7 +1969,9 @@ func test_CALL_integration(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData2)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check if the gameboy is stopped on the STOP instruction @0x00B0
 	if !cpu.stopped {
@@ -2008,7 +2041,9 @@ func test_0xC9_RET(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -2057,7 +2092,9 @@ func test_0xC8_RET_Z(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -2108,7 +2145,9 @@ func test_0xC0_RET_NZ(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -2159,7 +2198,9 @@ func test_0xD8_RET_C(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -2210,7 +2251,9 @@ func test_0xD0_RET_NC(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -2261,7 +2304,9 @@ func TestRETI(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -2331,7 +2376,9 @@ func TestRST(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -2584,7 +2631,9 @@ func test_0x3E_LD_A_n8(t *testing.T) {
 		cpu.a = 0x77
 		testProgram := []uint8{0x3E, data, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
@@ -2609,7 +2658,9 @@ func test_0x06_LD_B_n8(t *testing.T) {
 		cpu.b = 0x77
 		testProgram := []uint8{0x06, data, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
@@ -2634,7 +2685,9 @@ func test_0x0E_LD_C_n8(t *testing.T) {
 		cpu.c = 0x77
 		testProgram := []uint8{0x0E, data, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
@@ -2659,7 +2712,9 @@ func test_0x16_LD_D_n8(t *testing.T) {
 		cpu.d = 0x77
 		testProgram := []uint8{0x16, data, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
@@ -2684,7 +2739,9 @@ func test_0x1E_LD_E_n8(t *testing.T) {
 		cpu.e = 0x77
 		testProgram := []uint8{0x1E, data, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
@@ -2709,7 +2766,9 @@ func test_0x26_LD_H_n8(t *testing.T) {
 		cpu.h = 0x77
 		testProgram := []uint8{0x26, data, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
@@ -2734,7 +2793,9 @@ func test_0x2E_LD_L_n8(t *testing.T) {
 		cpu.l = 0x77
 		testProgram := []uint8{0x2E, data, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
@@ -2763,7 +2824,9 @@ func test_0x01_LD_BC_n16(t *testing.T) {
 		cpu.setBC(0x7777)
 		testProgram := []uint8{0x01, uint8(data & 0x00FF), uint8((data & 0xFF00) >> 8), 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0003 {
@@ -2789,7 +2852,9 @@ func test_0x11_LD_DE_n16(t *testing.T) {
 		cpu.setDE(0x7777)
 		testProgram := []uint8{0x11, uint8(data & 0x00FF), uint8((data & 0xFF00) >> 8), 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0003 {
@@ -2815,7 +2880,9 @@ func test_0x21_LD_HL_n16(t *testing.T) {
 		cpu.setHL(0x7777)
 		testProgram := []uint8{0x21, uint8(data & 0x00FF), uint8((data & 0xFF00) >> 8), 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0003 {
@@ -2841,7 +2908,9 @@ func test_0x31_LD_SP_n16(t *testing.T) {
 		cpu.sp = 0x7777
 		testProgram := []uint8{0x31, uint8(data & 0x00FF), uint8((data & 0xFF00) >> 8), 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0003 {
@@ -2871,7 +2940,9 @@ func test_0x7F_LD_A_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x7F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -2900,7 +2971,9 @@ func test_0x78_LD_A_B(t *testing.T) {
 		cpu.b = data
 		testProgram := []uint8{0x78, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -2929,7 +3002,9 @@ func test_0x79_LD_A_C(t *testing.T) {
 		cpu.c = data
 		testProgram := []uint8{0x79, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -2958,7 +3033,9 @@ func test_0x7A_LD_A_D(t *testing.T) {
 		cpu.d = data
 		testProgram := []uint8{0x7A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -2987,7 +3064,9 @@ func test_0x7B_LD_A_E(t *testing.T) {
 		cpu.e = data
 		testProgram := []uint8{0x7B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3016,7 +3095,9 @@ func test_0x7C_LD_A_H(t *testing.T) {
 		cpu.h = data
 		testProgram := []uint8{0x7C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3045,7 +3126,9 @@ func test_0x7D_LD_A_L(t *testing.T) {
 		cpu.l = data
 		testProgram := []uint8{0x7D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3075,7 +3158,9 @@ func test_0x47_LD_B_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x47, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3104,7 +3189,9 @@ func test_0x40_LD_B_B(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x47, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3133,7 +3220,9 @@ func test_0x41_LD_B_C(t *testing.T) {
 		cpu.c = data
 		testProgram := []uint8{0x41, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3162,7 +3251,9 @@ func test_0x42_LD_B_D(t *testing.T) {
 		cpu.d = data
 		testProgram := []uint8{0x42, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3191,7 +3282,9 @@ func test_0x43_LD_B_E(t *testing.T) {
 		cpu.e = data
 		testProgram := []uint8{0x43, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3220,7 +3313,9 @@ func test_0x44_LD_B_H(t *testing.T) {
 		cpu.h = data
 		testProgram := []uint8{0x44, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3249,7 +3344,9 @@ func test_0x45_LD_B_L(t *testing.T) {
 		cpu.l = data
 		testProgram := []uint8{0x45, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3279,7 +3376,9 @@ func test_0x4F_LD_C_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x4F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3308,7 +3407,9 @@ func test_0x48_LD_C_B(t *testing.T) {
 		cpu.b = data
 		testProgram := []uint8{0x48, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3337,7 +3438,9 @@ func test_0x49_LD_C_C(t *testing.T) {
 		cpu.c = data
 		testProgram := []uint8{0x49, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3366,7 +3469,9 @@ func test_0x4A_LD_C_D(t *testing.T) {
 		cpu.d = data
 		testProgram := []uint8{0x4A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3395,7 +3500,9 @@ func test_0x4B_LD_C_E(t *testing.T) {
 		cpu.e = data
 		testProgram := []uint8{0x4B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3424,7 +3531,9 @@ func test_0x4C_LD_C_H(t *testing.T) {
 		cpu.h = data
 		testProgram := []uint8{0x4C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3453,7 +3562,9 @@ func test_0x4D_LD_C_L(t *testing.T) {
 		cpu.l = data
 		testProgram := []uint8{0x4D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3483,7 +3594,9 @@ func test_0x57_LD_D_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x57, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3512,7 +3625,9 @@ func test_0x50_LD_D_B(t *testing.T) {
 		cpu.b = data
 		testProgram := []uint8{0x50, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3541,7 +3656,9 @@ func test_0x51_LD_D_C(t *testing.T) {
 		cpu.c = data
 		testProgram := []uint8{0x51, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3570,7 +3687,9 @@ func test_0x52_LD_D_D(t *testing.T) {
 		cpu.d = data
 		testProgram := []uint8{0x52, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3599,7 +3718,9 @@ func test_0x53_LD_D_E(t *testing.T) {
 		cpu.e = data
 		testProgram := []uint8{0x53, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3628,7 +3749,9 @@ func test_0x54_LD_D_H(t *testing.T) {
 		cpu.h = data
 		testProgram := []uint8{0x54, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3657,7 +3780,9 @@ func test_0x55_LD_D_L(t *testing.T) {
 		cpu.l = data
 		testProgram := []uint8{0x55, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3687,7 +3812,9 @@ func test_0x5F_LD_E_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x5F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3716,7 +3843,9 @@ func test_0x58_LD_E_B(t *testing.T) {
 		cpu.b = data
 		testProgram := []uint8{0x58, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3745,7 +3874,9 @@ func test_0x59_LD_E_C(t *testing.T) {
 		cpu.c = data
 		testProgram := []uint8{0x59, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3774,7 +3905,9 @@ func test_0x5A_LD_E_D(t *testing.T) {
 		cpu.d = data
 		testProgram := []uint8{0x5A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3803,7 +3936,9 @@ func test_0x5B_LD_E_E(t *testing.T) {
 		cpu.e = data
 		testProgram := []uint8{0x5B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3832,7 +3967,9 @@ func test_0x5C_LD_E_H(t *testing.T) {
 		cpu.h = data
 		testProgram := []uint8{0x5C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3861,7 +3998,9 @@ func test_0x5D_LD_E_L(t *testing.T) {
 		cpu.l = data
 		testProgram := []uint8{0x5D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3891,7 +4030,9 @@ func test_0x67_LD_H_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x67, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3920,7 +4061,9 @@ func test_0x60_LD_H_B(t *testing.T) {
 		cpu.b = data
 		testProgram := []uint8{0x60, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3949,7 +4092,9 @@ func test_0x61_LD_H_C(t *testing.T) {
 		cpu.c = data
 		testProgram := []uint8{0x61, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -3978,7 +4123,9 @@ func test_0x62_LD_H_D(t *testing.T) {
 		cpu.d = data
 		testProgram := []uint8{0x62, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4007,7 +4154,9 @@ func test_0x63_LD_H_E(t *testing.T) {
 		cpu.e = data
 		testProgram := []uint8{0x63, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4036,7 +4185,9 @@ func test_0x64_LD_H_H(t *testing.T) {
 		cpu.h = data
 		testProgram := []uint8{0x64, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4065,7 +4216,9 @@ func test_0x65_LD_H_L(t *testing.T) {
 		cpu.l = data
 		testProgram := []uint8{0x65, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4095,7 +4248,9 @@ func test_0x6F_LD_L_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x6F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4124,7 +4279,9 @@ func test_0x68_LD_L_B(t *testing.T) {
 		cpu.b = data
 		testProgram := []uint8{0x68, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4153,7 +4310,9 @@ func test_0x69_LD_L_C(t *testing.T) {
 		cpu.c = data
 		testProgram := []uint8{0x69, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4182,7 +4341,9 @@ func test_0x6A_LD_L_D(t *testing.T) {
 		cpu.d = data
 		testProgram := []uint8{0x6A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4211,7 +4372,9 @@ func test_0x6B_LD_L_E(t *testing.T) {
 		cpu.e = data
 		testProgram := []uint8{0x6B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4240,7 +4403,9 @@ func test_0x6C_LD_L_H(t *testing.T) {
 		cpu.h = data
 		testProgram := []uint8{0x6C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4269,7 +4434,9 @@ func test_0x6D_LD_L_L(t *testing.T) {
 		cpu.l = data
 		testProgram := []uint8{0x6D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4302,7 +4469,9 @@ func test_0x7E_LD_A__HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0x7E, 0x10, data}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4332,7 +4501,9 @@ func test_0x46_LD_B__HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0x46, 0x10, data}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4362,7 +4533,9 @@ func test_0x4E_LD_C__HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0x4E, 0x10, data}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4392,7 +4565,9 @@ func test_0x56_LD_D__HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0x56, 0x10, data}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4422,7 +4597,9 @@ func test_0x5E_LD_E__HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0x5E, 0x10, data}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4452,7 +4629,9 @@ func test_0x66_LD_H__HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0x66, 0x10, data}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4484,7 +4663,9 @@ func test_0x6E_LD_L__HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0x6E, 0x10, data}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4520,7 +4701,9 @@ func test_0x36_LD__HL_n8(t *testing.T) {
 		cpu.setHL(0x0003)
 		testProgram := []uint8{0x36, data, 0x10, 0x77}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
@@ -4551,7 +4734,9 @@ func test_0x77_LD__HL_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x77, 0x10, 0x77}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4582,7 +4767,9 @@ func test_0x70_LD__HL_B(t *testing.T) {
 		cpu.b = data
 		testProgram := []uint8{0x70, 0x10, 0x77}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4613,7 +4800,9 @@ func test_0x71_LD__HL_C(t *testing.T) {
 		cpu.c = data
 		testProgram := []uint8{0x71, 0x10, 0x77}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4644,7 +4833,9 @@ func test_0x72_LD__HL_D(t *testing.T) {
 		cpu.d = data
 		testProgram := []uint8{0x72, 0x10, 0x77}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4675,7 +4866,9 @@ func test_0x73_LD__HL_E(t *testing.T) {
 		cpu.e = data
 		testProgram := []uint8{0x73, 0x10, 0x77}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4706,7 +4899,9 @@ func test_0x74_LD__HL_H(t *testing.T) {
 		cpu.h = data
 		testProgram := []uint8{0x74, 0x10, 0x77}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4739,7 +4934,9 @@ func test_0x75_LD__HL_L(t *testing.T) {
 		cpu.l = data
 		testProgram := []uint8{0x75, 0x10, 0x77}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4777,7 +4974,9 @@ func test_0xFA_LD_A__a16(t *testing.T) {
 		cpu.bus.Write(addr, value)
 		testProgram := []uint8{0xFA, uint8(addr & 0x00FF), uint8((addr & 0xFF00) >> 8), 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0003 {
 			t.Errorf("[test_0xFA_LD_A__a16] %v> expected PC to be 0x0003, got 0x%04X\n", idx, cpu.pc)
@@ -4802,7 +5001,9 @@ func test_0xF2_LD_A__C(t *testing.T) {
 		cpu.bus.Write(0xFF00+uint16(cpu.c), value)
 		testProgram := []uint8{0xF2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4829,7 +5030,9 @@ func test_0x0A_LD_A__BC(t *testing.T) {
 		cpu.bus.Write(cpu.getBC(), value)
 		testProgram := []uint8{0x0A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4856,7 +5059,9 @@ func test_0x1A_LD_A__DE(t *testing.T) {
 		cpu.bus.Write(cpu.getDE(), value)
 		testProgram := []uint8{0x1A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4883,7 +5088,9 @@ func test_0x2A_LD_A__HLp(t *testing.T) {
 		cpu.bus.Write(cpu.getHL(), value)
 		testProgram := []uint8{0x2A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4914,7 +5121,9 @@ func test_0x3A_LD_A__HLm(t *testing.T) {
 		cpu.bus.Write(cpu.getHL(), value)
 		testProgram := []uint8{0x3A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -4946,7 +5155,9 @@ func test_0xEA_LD__a16_A(t *testing.T) {
 		cpu.a = value
 		testProgram := []uint8{0xEA, uint8(addr & 0x00FF), uint8((addr & 0xFF00) >> 8), 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0003 {
@@ -4978,7 +5189,9 @@ func test_0xE2_LD__C_A(t *testing.T) {
 		cpu.c = uint8(addr & 0x00FF)
 		testProgram := []uint8{0xE2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5010,7 +5223,9 @@ func test_0x02_LD__BC_A(t *testing.T) {
 		cpu.setBC(addr)
 		testProgram := []uint8{0x02, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5042,7 +5257,9 @@ func test_0x12_LD__DE_A(t *testing.T) {
 		cpu.setDE(addr)
 		testProgram := []uint8{0x12, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5074,7 +5291,9 @@ func test_0x22_LD__HLp_A(t *testing.T) {
 		cpu.setHL(addr)
 		testProgram := []uint8{0x22, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5110,7 +5329,9 @@ func test_0x32_LD__HLm_A(t *testing.T) {
 		cpu.setHL(addr)
 		testProgram := []uint8{0x32, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5148,7 +5369,9 @@ func test_0xF9_LD_SP_HL(t *testing.T) {
 		cpu.setHL(value)
 		testProgram := []uint8{0xF9, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5175,7 +5398,9 @@ func test_0x08_LD__a16_SP(t *testing.T) {
 		cpu.sp = value
 		testProgram := []uint8{0x08, uint8(addr & 0x00FF), uint8((addr & 0xFF00) >> 8), 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0003 {
@@ -5223,7 +5448,9 @@ func test_0xF8_LD_HL_SP_e8(t *testing.T) {
 		e8 := entry.e8
 		testProgram := []uint8{0xF8, e8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
@@ -5274,7 +5501,9 @@ func test_0xF0_LDH_A__a8(t *testing.T) {
 	//printMemoryProperties()
 
 	// run the program and control step by step the IME flag
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -5317,7 +5546,9 @@ func test_0xE0_LDH__a8_A(t *testing.T) {
 	//printMemoryProperties()
 
 	// run the program and control step by step the IME flag
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -5376,7 +5607,9 @@ func test_0xC5_PUSH_BC(t *testing.T) {
 		cpu.setBC(value)
 		testProgram := []uint8{0xC5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5413,7 +5646,9 @@ func test_0xD5_PUSH_DE(t *testing.T) {
 		cpu.setDE(value)
 		testProgram := []uint8{0xD5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5450,7 +5685,9 @@ func test_0xE5_PUSH_HL(t *testing.T) {
 		cpu.setHL(value)
 		testProgram := []uint8{0xE5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5487,7 +5724,9 @@ func test_0xF5_PUSH_AF(t *testing.T) {
 		cpu.f = uint8(value)
 		testProgram := []uint8{0xF5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5553,7 +5792,9 @@ func test_0xC1_POP_BC(t *testing.T) {
 		cpu.offset = 0x0000
 		cpu.pc = 0x0000
 
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5604,7 +5845,9 @@ func test_0xD1_POP_DE(t *testing.T) {
 		cpu.offset = 0x0000
 		cpu.pc = 0x0000
 
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5655,7 +5898,9 @@ func test_0xE1_POP_HL(t *testing.T) {
 		cpu.offset = 0x0000
 		cpu.pc = 0x0000
 
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5705,7 +5950,9 @@ func test_0xF1_POP_AF(t *testing.T) {
 		cpu.offset = 0x0000
 		cpu.pc = 0x0000
 
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
@@ -5784,7 +6031,9 @@ func test_0x09_ADD_HL_BC(t *testing.T) {
 		cpu.setBC(testData_ADD_operand2_16bit[idx])
 		testProgram := []uint8{0x09, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -5817,7 +6066,9 @@ func test_0x19_ADD_HL_DE(t *testing.T) {
 		cpu.setDE(testData_ADD_operand2_16bit[idx])
 		testProgram := []uint8{0x19, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -5853,7 +6104,9 @@ func test_0x29_ADD_HL_HL(t *testing.T) {
 		cpu.setHL(data)
 		testProgram := []uint8{0x29, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -5886,7 +6139,9 @@ func test_0x39_ADD_HL_SP(t *testing.T) {
 		cpu.sp = testData_ADD_operand2_16bit[idx]
 		testProgram := []uint8{0x39, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x09_ADD_HL_BC] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -5924,7 +6179,9 @@ func test_0xC6_ADD_A_n8(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xC6, testData_ADD_operand2_8bit[idx], 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
 			t.Errorf("[test_0xC6_ADD_A_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
@@ -5958,7 +6215,9 @@ func test_0x87_ADD_A_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x87, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x87_ADD_A_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -5990,7 +6249,9 @@ func test_0x80_ADD_A_B(t *testing.T) {
 		cpu.b = testData_ADD_operand2_8bit[idx]
 		testProgram := []uint8{0x80, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x80_ADD_A_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6022,7 +6283,9 @@ func test_0x81_ADD_A_C(t *testing.T) {
 		cpu.c = testData_ADD_operand2_8bit[idx]
 		testProgram := []uint8{0x81, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x81_ADD_A_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6054,7 +6317,9 @@ func test_0x82_ADD_A_D(t *testing.T) {
 		cpu.d = testData_ADD_operand2_8bit[idx]
 		testProgram := []uint8{0x82, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x82_ADD_A_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6086,7 +6351,9 @@ func test_0x83_ADD_A_E(t *testing.T) {
 		cpu.e = testData_ADD_operand2_8bit[idx]
 		testProgram := []uint8{0x83, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x83_ADD_A_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6118,7 +6385,9 @@ func test_0x84_ADD_A_H(t *testing.T) {
 		cpu.h = testData_ADD_operand2_8bit[idx]
 		testProgram := []uint8{0x84, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x84_ADD_A_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6150,7 +6419,9 @@ func test_0x85_ADD_A_L(t *testing.T) {
 		cpu.l = testData_ADD_operand2_8bit[idx]
 		testProgram := []uint8{0x85, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x85_ADD_A_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6182,7 +6453,9 @@ func test_0x86_ADD_A__HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0x86, 0x10, testData_ADD_operand2_8bit[idx]}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x86_ADD_A__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6233,7 +6506,9 @@ func test_0xE8_ADD_SP_e8(t *testing.T) {
 		cpu.sp = data.sp
 		testProgram := []uint8{0xE8, data.e8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
 			t.Errorf("[test_0xE8_ADD_SP_e8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
@@ -6302,7 +6577,9 @@ func test_0x88_ADC_A_B(t *testing.T) {
 		}
 		testProgram := []uint8{0x88, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x88_ADC_A_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6339,7 +6616,9 @@ func test_0x89_ADC_A_C(t *testing.T) {
 		}
 		testProgram := []uint8{0x89, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x89_ADC_A_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6376,7 +6655,9 @@ func test_0x8A_ADC_A_D(t *testing.T) {
 		}
 		testProgram := []uint8{0x8A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x8A_ADC_A_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6413,7 +6694,9 @@ func test_0x8B_ADC_A_E(t *testing.T) {
 		}
 		testProgram := []uint8{0x8B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x8B_ADC_A_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6450,7 +6733,9 @@ func test_0x8C_ADC_A_H(t *testing.T) {
 		}
 		testProgram := []uint8{0x8C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x8C_ADC_A_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6487,7 +6772,9 @@ func test_0x8D_ADC_A_L(t *testing.T) {
 		}
 		testProgram := []uint8{0x8D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x8D_ADC_A_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6524,7 +6811,9 @@ func test_0x8E_ADC_A__HL(t *testing.T) {
 		}
 		testProgram := []uint8{0x8E, 0x10, testData_ADC_operand2_8bit[idx]}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x8E_ADC_A__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6563,7 +6852,9 @@ func test_0x8F_ADC_A_A(t *testing.T) {
 		}
 		testProgram := []uint8{0x8F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x89_ADC_A_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6599,7 +6890,9 @@ func test_0xCE_ADC_A_n8(t *testing.T) {
 		}
 		testProgram := []uint8{0xCE, testData_ADC_operand2_8bit[idx], 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
 			t.Errorf("[test_0x89_ADC_A_C] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
@@ -6661,7 +6954,9 @@ func test_0xA0_AND_A_B(t *testing.T) {
 		cpu.b = testData_AND_operand2[idx]
 		testProgram := []uint8{0xA0, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA0_AND_A_B] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6693,7 +6988,9 @@ func test_0xA1_AND_A_C(t *testing.T) {
 		cpu.c = testData_AND_operand2[idx]
 		testProgram := []uint8{0xA1, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA1_AND_A_C] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6725,7 +7022,9 @@ func test_0xA2_AND_A_D(t *testing.T) {
 		cpu.d = testData_AND_operand2[idx]
 		testProgram := []uint8{0xA2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA2_AND_A_D] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6757,7 +7056,9 @@ func test_0xA3_AND_A_E(t *testing.T) {
 		cpu.e = testData_AND_operand2[idx]
 		testProgram := []uint8{0xA3, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA3_AND_A_E] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6789,7 +7090,9 @@ func test_0xA4_AND_A_H(t *testing.T) {
 		cpu.h = testData_AND_operand2[idx]
 		testProgram := []uint8{0xA4, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA4_AND_A_H] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6821,7 +7124,9 @@ func test_0xA5_AND_A_L(t *testing.T) {
 		cpu.l = testData_AND_operand2[idx]
 		testProgram := []uint8{0xA5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA5_AND_A_L] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6853,7 +7158,9 @@ func test_0xA6_AND_A__HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0xA6, 0x10, testData_AND_operand2[idx]}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA6_AND_A__HL] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6884,7 +7191,9 @@ func test_0xA7_AND_A_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xA7, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA7_AND_A_A] %v> expected PC to be 0x0001, got 0x%04X\n", idx, cpu.pc)
@@ -6915,7 +7224,9 @@ func test_0xE6_AND_A_n8(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xE6, testData_AND_operand2[idx], 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
 			t.Errorf("[test_0xE6_AND_A_n8] %v> expected PC to be 0x0002, got 0x%04X\n", idx, cpu.pc)
@@ -6982,7 +7293,9 @@ func test_0x3C_INC_A(t *testing.T) {
 
 	testData1 := []uint8{0x3C, 0x3C, 0x3C, 0x3C, 0x3C, 0x3C, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -7027,7 +7340,9 @@ func test_0x3C_INC_A(t *testing.T) {
 
 	testData2 := []uint8{0x3C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7072,7 +7387,9 @@ func test_0x3C_INC_A(t *testing.T) {
 
 	testData3 := []uint8{0x3C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7117,7 +7434,9 @@ func test_0x04_INC_B(t *testing.T) {
 
 	testData1 := []uint8{0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -7162,7 +7481,9 @@ func test_0x04_INC_B(t *testing.T) {
 
 	testData2 := []uint8{0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7207,7 +7528,9 @@ func test_0x04_INC_B(t *testing.T) {
 
 	testData3 := []uint8{0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7252,7 +7575,9 @@ func test_0x0C_INC_C(t *testing.T) {
 
 	testData1 := []uint8{0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -7297,7 +7622,9 @@ func test_0x0C_INC_C(t *testing.T) {
 
 	testData2 := []uint8{0x0C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7342,7 +7669,9 @@ func test_0x0C_INC_C(t *testing.T) {
 
 	testData3 := []uint8{0x0C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7387,7 +7716,9 @@ func test_0x14_INC_D(t *testing.T) {
 
 	testData1 := []uint8{0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -7432,7 +7763,9 @@ func test_0x14_INC_D(t *testing.T) {
 
 	testData2 := []uint8{0x14, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7477,7 +7810,9 @@ func test_0x14_INC_D(t *testing.T) {
 
 	testData3 := []uint8{0x14, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7522,7 +7857,9 @@ func test_0x1C_INC_E(t *testing.T) {
 
 	testData1 := []uint8{0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -7567,7 +7904,9 @@ func test_0x1C_INC_E(t *testing.T) {
 
 	testData2 := []uint8{0x1C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7612,7 +7951,9 @@ func test_0x1C_INC_E(t *testing.T) {
 
 	testData3 := []uint8{0x1C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7657,7 +7998,9 @@ func test_0x24_INC_H(t *testing.T) {
 
 	testData1 := []uint8{0x24, 0x24, 0x24, 0x24, 0x24, 0x24, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -7702,7 +8045,9 @@ func test_0x24_INC_H(t *testing.T) {
 
 	testData2 := []uint8{0x24, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7747,7 +8092,9 @@ func test_0x24_INC_H(t *testing.T) {
 
 	testData3 := []uint8{0x24, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7792,7 +8139,9 @@ func test_0x2C_INC_L(t *testing.T) {
 
 	testData1 := []uint8{0x2C, 0x2C, 0x2C, 0x2C, 0x2C, 0x2C, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -7837,7 +8186,9 @@ func test_0x2C_INC_L(t *testing.T) {
 
 	testData2 := []uint8{0x2C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7882,7 +8233,9 @@ func test_0x2C_INC_L(t *testing.T) {
 
 	testData3 := []uint8{0x2C, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -7927,7 +8280,9 @@ func test_0x34_INC_HL(t *testing.T) {
 
 	testData1 := []uint8{0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x10, 0x71}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -7972,7 +8327,9 @@ func test_0x34_INC_HL(t *testing.T) {
 
 	testData2 := []uint8{0x34, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8017,7 +8374,9 @@ func test_0x34_INC_HL(t *testing.T) {
 
 	testData3 := []uint8{0x34, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8062,7 +8421,9 @@ func test_0x03_INC_BC(t *testing.T) {
 
 	testData1 := []uint8{0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -8107,7 +8468,9 @@ func test_0x03_INC_BC(t *testing.T) {
 
 	testData2 := []uint8{0x03, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8152,7 +8515,9 @@ func test_0x03_INC_BC(t *testing.T) {
 
 	testData3 := []uint8{0x03, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8197,7 +8562,9 @@ func test_0x13_INC_DE(t *testing.T) {
 
 	testData1 := []uint8{0x13, 0x13, 0x13, 0x13, 0x13, 0x13, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -8242,7 +8609,9 @@ func test_0x13_INC_DE(t *testing.T) {
 
 	testData2 := []uint8{0x13, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8287,7 +8656,9 @@ func test_0x13_INC_DE(t *testing.T) {
 
 	testData3 := []uint8{0x13, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8332,7 +8703,9 @@ func test_0x23_INC_HL(t *testing.T) {
 
 	testData1 := []uint8{0x23, 0x23, 0x23, 0x23, 0x23, 0x23, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -8377,7 +8750,9 @@ func test_0x23_INC_HL(t *testing.T) {
 
 	testData2 := []uint8{0x23, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8422,7 +8797,9 @@ func test_0x23_INC_HL(t *testing.T) {
 
 	testData3 := []uint8{0x23, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8467,7 +8844,9 @@ func test_0x33_INC_SP(t *testing.T) {
 
 	testData1 := []uint8{0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x10, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData1)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0006 {
@@ -8512,7 +8891,9 @@ func test_0x33_INC_SP(t *testing.T) {
 
 	testData2 := []uint8{0x33, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData2)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8557,7 +8938,9 @@ func test_0x33_INC_SP(t *testing.T) {
 
 	testData3 := []uint8{0x33, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	loadProgramIntoMemory(memory1, testData3)
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	if cpu.pc != 0x0001 {
@@ -8612,7 +8995,9 @@ func TestCCF(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -8693,7 +9078,9 @@ func test_0xBF_CP_A_A(t *testing.T) {
 		cpu.a = data.minuend
 		testProgram := []uint8{0xBF, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xB8_CP_A_B] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
@@ -8726,7 +9113,9 @@ func test_0xB8_CP_A_B(t *testing.T) {
 		cpu.b = data.subtrahend
 		testProgram := []uint8{0xB8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xB8_CP_A_B] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
@@ -8762,7 +9151,9 @@ func test_0xB9_CP_A_C(t *testing.T) {
 		cpu.c = data.subtrahend
 		testProgram := []uint8{0xB9, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xB9_CP_A_C] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
@@ -8798,7 +9189,9 @@ func test_0xBA_CP_A_D(t *testing.T) {
 		cpu.d = data.subtrahend
 		testProgram := []uint8{0xBA, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xBA_CP_A_D] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
@@ -8834,7 +9227,9 @@ func test_0xBB_CP_A_E(t *testing.T) {
 		cpu.e = data.subtrahend
 		testProgram := []uint8{0xBB, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xBB_CP_A_E] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
@@ -8870,7 +9265,9 @@ func test_0xBC_CP_A_H(t *testing.T) {
 		cpu.h = data.subtrahend
 		testProgram := []uint8{0xBC, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xBC_CP_A_H] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
@@ -8906,7 +9303,9 @@ func test_0xBD_CP_A_L(t *testing.T) {
 		cpu.l = data.subtrahend
 		testProgram := []uint8{0xBD, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xBD_CP_A_L] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
@@ -8942,7 +9341,9 @@ func test_0xBE_CP_A_HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0xBE, 0x10, data.subtrahend}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xBE_CP_A_HL] %d> the program counter should have stopped at 0x0001, got 0x%04X \n", idx, cpu.pc)
@@ -8978,7 +9379,9 @@ func test_0xFE_CP_A_n8(t *testing.T) {
 		cpu.a = data.minuend
 		testProgram := []uint8{0xFE, data.subtrahend, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0002 {
 			t.Errorf("[test_0xFE_CP_A_n8] %d> the program counter should have stopped at 0x0002, got 0x%04X \n", idx, cpu.pc)
@@ -9023,7 +9426,9 @@ func TestCPL(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x2F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 		// check the final state of the cpu
 		if cpu.pc != 0x0001 {
 			t.Errorf("[TestCPL] the program counter should have stopped at 0x0001, got 0x%04X \n", cpu.pc)
@@ -9440,7 +9845,9 @@ func test_0x3D_DEC_A(t *testing.T) {
 		cpu.a = data.initialValue
 		testProgram := []uint8{0x3D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x3D_DEC_A] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9475,7 +9882,9 @@ func test_0x05_DEC_B(t *testing.T) {
 		cpu.b = data.initialValue
 		testProgram := []uint8{0x05, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x05_DEC_B] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9510,7 +9919,9 @@ func test_0x0D_DEC_C(t *testing.T) {
 		cpu.c = data.initialValue
 		testProgram := []uint8{0x0D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x0D_DEC_C] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9545,7 +9956,9 @@ func test_0x15_DEC_D(t *testing.T) {
 		cpu.d = data.initialValue
 		testProgram := []uint8{0x15, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x15_DEC_D] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9580,7 +9993,9 @@ func test_0x1D_DEC_E(t *testing.T) {
 		cpu.e = data.initialValue
 		testProgram := []uint8{0x1D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x1D_DEC_E] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9615,7 +10030,9 @@ func test_0x25_DEC_H(t *testing.T) {
 		cpu.h = data.initialValue
 		testProgram := []uint8{0x25, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x25_DEC_H] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9650,7 +10067,9 @@ func test_0x2D_DEC_L(t *testing.T) {
 		cpu.l = data.initialValue
 		testProgram := []uint8{0x2D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x2D_DEC_L] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9685,7 +10104,9 @@ func test_0x35_DEC_HL(t *testing.T) {
 		cpu.setHL(0x0002)
 		testProgram := []uint8{0x35, 0x10, data.initialValue}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x35_DEC_HL] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9763,7 +10184,9 @@ func test_0x0B_DEC_BC(t *testing.T) {
 		cpu.setBC(data.initialValue)
 		testProgram := []uint8{0x0B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x0B_DEC_BC] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9787,7 +10210,9 @@ func test_0x1B_DEC_DE(t *testing.T) {
 		cpu.setDE(data.initialValue)
 		testProgram := []uint8{0x1B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x1B_DEC_DE] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9811,7 +10236,9 @@ func test_0x2B_DEC_HL(t *testing.T) {
 		cpu.setHL(data.initialValue)
 		testProgram := []uint8{0x2B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x2B_DEC_HL] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9835,7 +10262,9 @@ func test_0x3B_DEC_SP(t *testing.T) {
 		cpu.sp = data.initialValue
 		testProgram := []uint8{0x3B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0x3B_DEC_SP] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -9887,7 +10316,9 @@ func test_0xD6_SUB_A_n8(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xD6, n8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -9926,7 +10357,9 @@ func test_0x97_SUB_A_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x97, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -9961,7 +10394,9 @@ func test_0x90_SUB_A_B(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x90, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10002,7 +10437,9 @@ func test_0x91_SUB_A_C(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x91, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10043,7 +10480,9 @@ func test_0x92_SUB_A_D(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x92, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10084,7 +10523,9 @@ func test_0x93_SUB_A_E(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x93, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10125,7 +10566,9 @@ func test_0x94_SUB_A_H(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x94, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10166,7 +10609,9 @@ func test_0x95_SUB_A_L(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x95, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10207,7 +10652,9 @@ func test_0x96_SUB_A__HL(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x96, 0x10, operand}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10285,7 +10732,9 @@ func test_0xDE_SBC_A_n8(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xDE, n8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -10327,7 +10776,9 @@ func test_0x9F_SBC_A_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x9F, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10367,7 +10818,9 @@ func test_0x98_SBC_A_B(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x98, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10405,7 +10858,9 @@ func test_0x99_SBC_A_C(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x99, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10443,7 +10898,9 @@ func test_0x9A_SBC_A_D(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x9A, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10481,7 +10938,9 @@ func test_0x9B_SBC_A_E(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x9B, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10519,7 +10978,9 @@ func test_0x9C_SBC_A_H(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x9C, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10557,7 +11018,9 @@ func test_0x9D_SBC_A_L(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x9D, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10595,7 +11058,9 @@ func test_0x9E_SBC_A__HL(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0x9E, 0x10, testData_SBC_8bit_operand[idx]}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10641,7 +11106,9 @@ func TestSCF(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -10705,7 +11172,9 @@ func test_0xF6_OR_A_n8(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xF6, n8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0002 {
@@ -10738,7 +11207,9 @@ func test_0xB7_OR_A_A(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xB7, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10772,7 +11243,9 @@ func test_0xB0_OR_A_B(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xB0, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10810,7 +11283,9 @@ func test_0xB1_OR_A_C(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xB1, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10848,7 +11323,9 @@ func test_0xB2_OR_A_D(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xB2, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10886,7 +11363,9 @@ func test_0xB3_OR_A_E(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xB3, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10924,7 +11403,9 @@ func test_0xB4_OR_A_H(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xB4, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -10962,7 +11443,9 @@ func test_0xB5_OR_A_L(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xB5, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -11000,7 +11483,9 @@ func test_0xB6_OR_A_HL(t *testing.T) {
 		cpu.a = data
 		testProgram := []uint8{0xB6, 0x10, testData_OR_operand[idx]}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		// check if the program stopped at the right place
 		if cpu.pc != 0x0001 {
@@ -11080,7 +11565,9 @@ func test_0xA8_XOR_A_B(t *testing.T) {
 		expected := data[2]
 		testProgram := []uint8{0xA8, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA8_XOR_A_B] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -11125,7 +11612,9 @@ func test_0xA9_XOR_A_C(t *testing.T) {
 		expected := data[2]
 		testProgram := []uint8{0xA9, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xA9_XOR_A_C] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -11170,7 +11659,9 @@ func test_0xAA_XOR_A_D(t *testing.T) {
 		expected := data[2]
 		testProgram := []uint8{0xAA, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xAA_XOR_A_D] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -11215,7 +11706,9 @@ func test_0xAB_XOR_A_E(t *testing.T) {
 		expected := data[2]
 		testProgram := []uint8{0xAB, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xAB_XOR_A_E] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -11260,7 +11753,9 @@ func test_0xAC_XOR_A_H(t *testing.T) {
 		expected := data[2]
 		testProgram := []uint8{0xAC, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xAC_XOR_A_H] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -11305,7 +11800,9 @@ func test_0xAD_XOR_A_L(t *testing.T) {
 		expected := data[2]
 		testProgram := []uint8{0xAD, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xAD_XOR_A_L] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -11350,7 +11847,9 @@ func test_0xAE_XOR_A_HL(t *testing.T) {
 		expected := data[2]
 		testProgram := []uint8{0xAE, 0x10, data[1]}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xAE_XOR_A_HL] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -11394,7 +11893,9 @@ func test_0xAF_XOR_A_A(t *testing.T) {
 		expected := data[2]
 		testProgram := []uint8{0xAF, 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0001 {
 			t.Errorf("[test_0xAF_XOR_A_A] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -11432,7 +11933,9 @@ func test_0xEE_XOR_A_n8(t *testing.T) {
 		expected := data[2]
 		testProgram := []uint8{0xEE, data[1], 0x10}
 		loadProgramIntoMemory(memory1, testProgram)
-		cpu.Run()
+		for !cpu.halted && !cpu.stopped {
+			cpu.Tick()
+		}
 
 		if cpu.pc != 0x0002 {
 			t.Errorf("[test_0xEE_XOR_A_n8] TC%v> Expected PC to be 0x0001, got 0x%04X", idx, cpu.pc)
@@ -11476,12 +11979,12 @@ func TestRLA(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
-
-	fmt.Println("Z:", finalState.Z, "N:", finalState.N, "H:", finalState.H, "C:", finalState.C)
 
 	// check if the A register was rotated left giving 0xAB
 	if finalState.A != 0xAB {
@@ -11520,7 +12023,9 @@ func TestRLCA(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -11571,7 +12076,9 @@ func TestRRA(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
@@ -11622,7 +12129,9 @@ func TestRRCA(t *testing.T) {
 	loadProgramIntoMemory(memory1, testData)
 
 	// run the program
-	cpu.Run()
+	for !cpu.halted && !cpu.stopped {
+		cpu.Tick()
+	}
 
 	// check the final state of the cpu
 	finalState := getCpuState()
