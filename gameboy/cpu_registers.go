@@ -126,9 +126,9 @@ func (c *CPU) setHL(value uint16) {
 }
 
 func (c *CPU) GetIEFlag() uint8 {
-	return c.bus.Read(IE_FLAG_START)
+	return c.bus.Read(IE_REGISTER)
 }
 
 func (c *CPU) setIEFlag(value uint16) {
-	c.bus.Write(IE_FLAG_START, byte(value))
+	c.bus.Write(IE_REGISTER, byte(value))
 }
