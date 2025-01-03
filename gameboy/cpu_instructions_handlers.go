@@ -293,7 +293,6 @@ func (c *CPU) JP(instruction *Instruction) {
 		// update the number of cycles executed by the CPU
 		c.cpuCycles += uint64(instruction.Cycles[0])
 		c.offset = c.operand
-		fmt.Println("JP HL operand:", c.operand)
 	default:
 		panic("JP: unknown operand")
 	}
@@ -385,6 +384,7 @@ flags: -
 func (c *CPU) RET(instruction *Instruction) {
 	if len(instruction.Operands) == 0 {
 		c.offset = c.pop()
+		c.cpuCycles += uint64(instruction.Cycles[0])
 	} else {
 		switch instruction.Operands[0].Name {
 		case "flag_Z":
