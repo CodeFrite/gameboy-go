@@ -2,26 +2,33 @@ package gameboy
 
 import (
 	"log"
-	"sync"
+	"time"
 )
 
 // CONSTANTS
 const (
-	CRYSTAL_FREQUENCY           = 50000
-	BOOT_ROM_MEMORY_NAME        = "Boot ROM"
-	BOOT_ROM_START       uint16 = 0x0000
-	BOOT_ROM_LEN         uint16 = 0x0100
-	ROMS_URI                    = "/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms"
+	CRYSTAL_FREQUENCY    time.Duration = 4194304 // 4.194304MHz
+	TICK_DURATION                      = time.Duration(1e9 / CRYSTAL_FREQUENCY)
+	BOOT_ROM_MEMORY_NAME               = "Boot ROM"
+	BOOT_ROM_START       uint16        = 0x0000
+	BOOT_ROM_LEN         uint16        = 0x0100
+	ROMS_URI                           = "/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms"
+	// Gameboy states
+	STATE_RUNNING GameBoyState = "running"
+	STATE_PAUSED  GameBoyState = "paused"
+	STATE_STOPPED GameBoyState = "stopped"
 )
+
+type GameBoyState string
 
 // the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
 type Gameboy struct {
 	// state
-	ticks       uint64    // number of ticks since the gameboy started
-	busyChannel chan bool // used to prevent multiple clock ticks being processed by cpu/ppu/apu at the same time
+	ticks uint64       // number of ticks since the gameboy started
+	state GameBoyState // current state of the gameboy
 
 	// components
-	crystal   *Timer // crystal oscillator running at 4.194304MHz
+	timer     *Timer // Gameboy Timer (DIV, TIMA, TMA, TAC)
 	cpuBus    *Bus
 	ppuBus    *Bus
 	cpu       *CPU
@@ -41,7 +48,7 @@ type Gameboy struct {
 	joypadStateChannel <-chan JoypadState
 }
 
-// creates a new gameboy struct
+// create a new gameboy struct
 func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState, apuStateChannel chan<- ApuState, memoryStateChannel chan<- []MemoryWrite, joypadStateChannel <-chan JoypadState) *Gameboy {
 	// components
 	cpuBus := NewBus()
@@ -56,7 +63,6 @@ func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState
 
 	// create the gameboy struct
 	gb := &Gameboy{
-		busyChannel:        make(chan bool, 1),
 		cpuBus:             cpuBus,
 		ppuBus:             ppuBus,
 		cpu:                cpu,
@@ -73,12 +79,12 @@ func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState
 
 	// initialize memories and timer
 	gb.initMemory()
-	gb.initTimer()
+	gb.initTimer(cpuBus)
 
 	return gb
 }
 
-// initializes the bootrom @ 0x0000 - 0x00FF
+// initialize the bootrom @ 0x0000 - 0x00FF
 func loadBootRom(uri string) *Memory {
 	bootromData, err := LoadRom(uri + "/dmg_boot.bin")
 	if err != nil {
@@ -87,7 +93,7 @@ func loadBootRom(uri string) *Memory {
 	return NewMemoryWithData(BOOT_ROM_LEN, bootromData)
 }
 
-// initializes the memories and attaches them to the bus
+// initialize the memories and attach them to the bus
 //   - HRAM: 127 bytes @ 0xFF80
 //   - VRAM: 8KB bytes @ 0x8000
 //   - WRAM: 8KB @ 0xC000
@@ -102,13 +108,12 @@ func (gb *Gameboy) initMemory() {
 	gb.cpuBus.AttachMemory("Working RAM (WRAM)", 0xC000, gb.wram)
 }
 
-// instantiates the timer and subscribes the gameboy to it
-func (gb *Gameboy) initTimer() {
-	gb.crystal = NewTimer(CRYSTAL_FREQUENCY)
-	gb.crystal.Subscribe(gb)
+// instantiate the timer and subscribe the gameboy to it
+func (gb *Gameboy) initTimer(bus *Bus) {
+	gb.timer = NewTimer(bus)
 }
 
-// initializes the gameboy by creating the bus, bootrom, cpu, cartridge and the different memories
+// initialize the gameboy by creating the bus, bootrom, cpu, cartridge and the different memories
 func (gb *Gameboy) LoadRom(romName string) {
 	// reset components cpu, ppu & apu
 	gb.cpu.reset() // all registers are randomized apart from PC which is set to 0x100
@@ -124,73 +129,76 @@ func (gb *Gameboy) LoadRom(romName string) {
 	gb.cpuBus.AttachMemory("Cartridge ROM", 0x0000, gb.cartridge.rom)
 }
 
-// runs the bootrom and then the game
-func (gb *Gameboy) Run() {
-	gb.crystal.Start()
+// send state
+func (gb *Gameboy) sendState() {
+	gb.cpuStateChannel <- gb.cpu.getState()
+	gb.ppuStateChannel <- gb.ppu.getState()
+	gb.apuStateChannel <- gb.apu.getState()
+	gb.memoryStateChannel <- *gb.cpuBus.mmu.getMemoryWrites()
 }
 
-// executes the next instruction
-func (gb *Gameboy) Step() {
-	// tick the crystal oscillator once
-	gb.crystal.Tick()
+// tick the gameboy once
+func (gb *Gameboy) tick() {
+	gb.timer.Tick()
+	gb.cpu.Tick()
+	gb.ppu.Tick()
+	gb.apu.Tick()
+	gb.ticks++
 }
 
-// the gameboy ticks in parallel the cpu, ppu and apu and wait for these calls all to end using a wait group
-func (gb *Gameboy) onTick() {
-	// busy channel to prevent multiple ticks at the same time
-	gb.busyChannel <- true
-
+func (gb *Gameboy) Tick() {
 	// clear memory writes
 	gb.cpu.bus.mmu.clearMemoryWrites()
+	// tick the gameboy
+	gb.tick()
+	// report state changes on their respective channels
+	gb.cpuStateChannel <- gb.cpu.getState()
+	gb.ppuStateChannel <- gb.ppu.getState()
+	gb.apuStateChannel <- gb.apu.getState()
+	gb.memoryStateChannel <- *gb.cpuBus.mmu.getMemoryWrites()
+}
 
-	// wait group to wait for all goroutines to finish
-	var wg sync.WaitGroup
-	// tick the cpu 1 out of 3 ticks
-	if gb.ticks%3 == 0 {
-		wg.Add(1)
-		go func() {
-			gb.cpu.onTick()
-			wg.Done()
-		}()
+// run the bootrom and then the game
+// When the ppu finishes to draw a frame, it sends the whole state to the frontend (cpu, ppu, apu, memory)
+func (gb *Gameboy) Run() {
+	// clear memory writes
+	gb.cpu.bus.mmu.clearMemoryWrites()
+	// run the gameboy until it is paused or stopped
+	for gb.state == STATE_RUNNING {
+		// timing the gameboy @4.194304MHz
+		tickStartTime := time.Now()
+		// tick the gameboy
+		gb.tick()
+		tickDuration := time.Since(tickStartTime)
+		// send the state to the frontend when the ppu finishes to draw a frame or when it reaches pixel (0, 144)
+		if gb.ppu.dotX == 0 && gb.ppu.dotY == LCD_Y_RESOLUTION {
+			gb.sendState()
+			gb.cpu.bus.mmu.clearMemoryWrites()
+		}
+		// wait for the next tick
+		time.Sleep(TICK_DURATION - tickDuration)
 	}
+	// report state changes on their respective channels
+	gb.sendState()
+}
 
-	// tick the ppu if FF40 bit 7 is set
-	lcdc := gb.cpu.bus.Read(0xFF40)
-	lcd_ppu_enabled := lcdc&0x80 == 0x80
-
-	if lcd_ppu_enabled {
-		wg.Add(1)
-		go func() {
-			gb.ppu.onTick()
-			wg.Done()
-		}()
+// pauses the gameboy
+func (gb *Gameboy) Pause() {
+	if gb.state == STATE_RUNNING {
+		gb.state = STATE_PAUSED
 	}
+}
 
-	// tick the apu
-	wg.Add(1)
-	go func() {
-		gb.apu.onTick()
-		wg.Done()
-	}()
+// resumes the gameboy
+func (gb *Gameboy) Resume() {
+	if gb.state == STATE_PAUSED {
+		gb.state = STATE_RUNNING
+	}
+}
 
-	// wait for all goroutines to finish
-	wg.Wait()
-
-	// now we can send the state to the respective channels
-
-	// get the cpu, ppu and apu states and send them to the respective channels
-	if gb.cpuStateChannel != nil {
-		gb.cpuStateChannel <- gb.cpu.getState()
+// stop the gameboy
+func (gb *Gameboy) Stop() {
+	if gb.state == STATE_RUNNING || gb.state == STATE_PAUSED {
+		gb.state = STATE_STOPPED
 	}
-	if gb.ppuStateChannel != nil {
-		gb.ppuStateChannel <- gb.ppu.getState()
-	}
-	if gb.apuStateChannel != nil {
-		gb.apuStateChannel <- gb.apu.getState()
-	}
-	if gb.memoryStateChannel != nil {
-		gb.memoryStateChannel <- *gb.cpuBus.mmu.getMemoryWrites()
-	}
-	gb.ticks++
-	<-gb.busyChannel
 }

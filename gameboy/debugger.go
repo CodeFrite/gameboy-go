@@ -101,10 +101,10 @@ func (d *Debugger) LoadRom(romName string) {
 	d.memoryStateQueue.push(initialMemoryWrites)
 }
 
-// run the next instruction and return the gameboy state
-func (d *Debugger) Step() {
+// tick the gameboy and return its state
+func (d *Debugger) Tick() {
 	// run the next instruction
-	d.gameboy.Step()
+	d.gameboy.Tick()
 
 	// add the new state to the queue and send it to the client if a channel is present
 	cpuState := <-d.internalCpuStateChannel
@@ -135,6 +135,21 @@ func (d *Debugger) Run() chan bool {
 	go d.listenToGameboyState()
 	d.gameboy.Run()
 	return d.doneChannel
+}
+
+// pause the gameboy
+func (d *Debugger) Pause() {
+	d.gameboy.Pause()
+}
+
+// resume the gameboy
+func (d *Debugger) Resume() {
+	d.gameboy.Resume()
+}
+
+// stop the gameboy
+func (d *Debugger) Stop() {
+	d.gameboy.Stop()
 }
 
 // adds a breakpoint at the given address if not already present
@@ -168,6 +183,8 @@ func (d *Debugger) GetAttachedMemories() []MemoryWrite {
 	return d.gameboy.cpuBus.mmu.GetMemoryMaps()
 }
 
+// HELPER FUNCS
+
 // helper function to check if a value is present in an uint16 array
 func contains(arr []uint16, addr uint16) bool {
 	for _, v := range arr {
@@ -177,8 +194,6 @@ func contains(arr []uint16, addr uint16) bool {
 	}
 	return false
 }
-
-// HELPER FUNCS
 
 // resets the debugger state (queues, breakpoints, etc)
 func (d *Debugger) reset() {
@@ -208,7 +223,7 @@ func (d *Debugger) listenToGameboyState() {
 				// manage breakpoints
 				if contains(d.breakpoints, cpuState.PC) || cpuState.HALTED || cpuState.STOPPED {
 					// stop the gameboy crystal from ticking
-					d.gameboy.crystal.Stop()
+					//d.gameboy.Stop()
 
 					// we must send the ppu, apu and memory states to the client
 					if d.clientPpuStateChannel != nil {
