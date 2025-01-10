@@ -153,7 +153,7 @@ func compareCpuState(mem1 *CpuState, mem2 *CpuState) []string {
 }
 
 func printMemoryProperties() {
-	memoryMaps := bus.mmu.GetMemoryMaps()
+	memoryMaps := bus.GetMemoryMaps()
 	fmt.Println("\n> Memory Mapping:")
 	fmt.Println("-----------------")
 	for _, memoryMap := range memoryMaps {
