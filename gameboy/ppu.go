@@ -119,8 +119,6 @@ const (
 type Image [256][32]uint8
 
 type PPU struct {
-	// reference to the cpu to trigger interrupts
-	cpu *CPU
 	bus *Bus
 
 	// Screen
@@ -137,8 +135,8 @@ type PPU struct {
 	oam *Memory // Object Attribute Memory (0xFE00-0xFE9F) - 40 4-byte entries
 }
 
-func NewPPU(cpu *CPU, bus *Bus) *PPU {
-	ppu := &PPU{cpu: cpu, bus: bus}
+func NewPPU(bus *Bus) *PPU {
+	ppu := &PPU{bus: bus}
 	// initialize memory
 	ppu.oam = NewMemory(uint16(OAM_MEMORY_BYTE_SIZE))
 	ppu.bus.AttachMemory("OAM", OAM_MEMORY_START_ADDRESS, ppu.oam)
@@ -158,7 +156,7 @@ func (p *PPU) reset() {
 func (p *PPU) Tick() {
 	// check if the PPU & LCD are enabled
 	// TODO! change this position to return blank background and window if the LCD is off since this is the normal behavior. Good enough for now
-	stat := p.cpu.bus.Read(REG_FF41_STAT)
+	stat := p.bus.Read(REG_FF41_STAT)
 	if (stat & 0b10000000) == 0 {
 		return
 	}
@@ -266,16 +264,16 @@ func (p *PPU) drawWindow() {}
 // update the STAT register FF41 to reflect the current PPU mode
 func (p *PPU) updateSTATRegister_PPUMode() {
 	// get the register value
-	stat := p.cpu.bus.Read(REG_FF41_STAT)
+	stat := p.bus.Read(REG_FF41_STAT)
 	// update the bits 1-0 with the current mode and leave the other bits unchanged
 	stat = (stat & 0b11111100) | p.mode
 	// write the new value back to the register
-	p.cpu.bus.Write(REG_FF41_STAT, stat)
+	p.bus.Write(REG_FF41_STAT, stat)
 }
 
 // update the LY register FF44 to reflect the current scanline and trigger the VBLANK interrupt
 func (p *PPU) updateLYRegister() {
-	p.cpu.bus.Write(REG_FF44_LY, p.dotY)
+	p.bus.Write(REG_FF44_LY, p.dotY)
 	if p.dotY == LCD_Y_RESOLUTION {
 		// set the LYC == LY bit
 	}
