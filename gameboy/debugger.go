@@ -13,14 +13,12 @@ type Debugger struct {
 	ppuStateQueue    *fifo[PpuState]
 	apuStateQueue    *fifo[ApuState]
 	memoryStateQueue *fifo[[]MemoryWrite]
-	joypadStateQueue *fifo[JoypadState]
 
 	// state channels received from the client meant to listen to the gameboy state
 	clientCpuStateChannel    chan<- CpuState
 	clientPpuStateChannel    chan<- PpuState
 	clientApuStateChannel    chan<- ApuState
 	clientMemoryStateChannel chan<- []MemoryWrite
-	clientJoypadStateChannel <-chan JoypadState
 	doneChannel              chan bool
 
 	// internal channels corresponding to the channels received from the client and used to intercept, store in a queue, and then relay the state changes
@@ -28,7 +26,6 @@ type Debugger struct {
 	internalPpuStateChannel    chan PpuState
 	internalApuStateChannel    chan ApuState
 	internalMemoryStateChannel chan []MemoryWrite
-	internalJoypadStateChannel chan JoypadState
 }
 
 // instantiate a new debugger:
@@ -42,14 +39,12 @@ func NewDebugger(
 	ppuStateChannel chan<- PpuState,
 	apuStateChannel chan<- ApuState,
 	memoryStateChannel chan<- []MemoryWrite,
-	joypadStateChannel <-chan JoypadState,
 ) *Debugger {
 	// create the internal channels to listen to the gameboy state
 	internalCpuStateChannel := make(chan CpuState)
 	internalPpuStateChannel := make(chan PpuState)
 	internalApuStateChannel := make(chan ApuState)
 	internalMemoryStateChannel := make(chan []MemoryWrite)
-	internalJoypadStateChannel := make(chan JoypadState)
 	doneChannel := make(chan bool)
 
 	gb := NewGameboy(
@@ -57,7 +52,6 @@ func NewDebugger(
 		internalPpuStateChannel,
 		internalApuStateChannel,
 		internalMemoryStateChannel,
-		internalJoypadStateChannel,
 	)
 
 	debugger := Debugger{
@@ -66,12 +60,10 @@ func NewDebugger(
 		clientPpuStateChannel:      ppuStateChannel,
 		clientApuStateChannel:      apuStateChannel,
 		clientMemoryStateChannel:   memoryStateChannel,
-		clientJoypadStateChannel:   joypadStateChannel,
 		internalCpuStateChannel:    internalCpuStateChannel,
 		internalPpuStateChannel:    internalPpuStateChannel,
 		internalApuStateChannel:    internalApuStateChannel,
 		internalMemoryStateChannel: internalMemoryStateChannel,
-		internalJoypadStateChannel: internalJoypadStateChannel,
 		doneChannel:                doneChannel, // used to notify client that crystal has stopped
 		breakpoints:                make([]uint16, 0),
 	}
@@ -91,7 +83,7 @@ func (d *Debugger) LoadRom(romName string) {
 	initialCpuState := d.gameboy.cpu.getState()
 	initialPpuState := d.gameboy.ppu.getState()
 	initialApuState := d.gameboy.apu.getState()
-	initialMemoryWrites := d.gameboy.cpuBus.mmu.memoryWrites
+	initialMemoryWrites := d.gameboy.bus.memoryWrites
 
 	// save the initial state
 	d.programFlow.push(initialCpuState.PC)
@@ -180,7 +172,7 @@ func (d *Debugger) GetBreakPoints() []uint16 {
 
 // return the list of memories attached to the mmu including their name, address and data
 func (d *Debugger) GetAttachedMemories() []MemoryWrite {
-	return d.gameboy.cpuBus.mmu.GetMemoryMaps()
+	return d.gameboy.bus.GetMemoryMaps()
 }
 
 // HELPER FUNCS
@@ -202,7 +194,6 @@ func (d *Debugger) reset() {
 	d.ppuStateQueue = newFifo[PpuState](STATE_QUEUE_MAX_LENGTH)
 	d.apuStateQueue = newFifo[ApuState](STATE_QUEUE_MAX_LENGTH)
 	d.memoryStateQueue = newFifo[[]MemoryWrite](STATE_QUEUE_MAX_LENGTH)
-	d.joypadStateQueue = newFifo[JoypadState](STATE_QUEUE_MAX_LENGTH)
 	d.breakpoints = make([]uint16, 0)
 }
 
@@ -277,11 +268,6 @@ func (d *Debugger) listenToGameboyState() {
 				if d.clientMemoryStateChannel != nil {
 					d.clientMemoryStateChannel <- memoryState
 				}
-				/*
-					case joypadState := <-d.clientJoypadStateChannel:
-						// TODO: use it for conditional breakpoints on joypad events
-						d.internalJoypadStateChannel <- joypadState
-				*/
 			}
 		}
 		d.doneChannel <- true

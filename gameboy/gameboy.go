@@ -29,8 +29,7 @@ type Gameboy struct {
 
 	// components
 	timer     *Timer // Gameboy Timer (DIV, TIMA, TMA, TAC)
-	cpuBus    *Bus
-	ppuBus    *Bus
+	bus       *Bus
 	cpu       *CPU
 	ppu       *PPU
 	apu       *APU
@@ -45,26 +44,23 @@ type Gameboy struct {
 	ppuStateChannel    chan<- PpuState
 	apuStateChannel    chan<- ApuState
 	memoryStateChannel chan<- []MemoryWrite
-	joypadStateChannel <-chan JoypadState
 }
 
 // create a new gameboy struct
-func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState, apuStateChannel chan<- ApuState, memoryStateChannel chan<- []MemoryWrite, joypadStateChannel <-chan JoypadState) *Gameboy {
+func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState, apuStateChannel chan<- ApuState, memoryStateChannel chan<- []MemoryWrite) *Gameboy {
 	// components
-	cpuBus := NewBus()
-	ppuBus := NewBus()
-	cpu := NewCPU(cpuBus)
-	ppu := NewPPU(cpu, ppuBus)
+	bus := NewBus()
+	cpu := NewCPU(bus)
+	ppu := NewPPU(bus)
 	apu := NewAPU()
 
 	// load the bootrom once for all
 	bootrom := loadBootRom(ROMS_URI)
-	cpuBus.AttachMemory(BOOT_ROM_MEMORY_NAME, BOOT_ROM_START, bootrom)
+	bus.AttachMemory(BOOT_ROM_MEMORY_NAME, BOOT_ROM_START, bootrom)
 
 	// create the gameboy struct
 	gb := &Gameboy{
-		cpuBus:             cpuBus,
-		ppuBus:             ppuBus,
+		bus:                bus,
 		cpu:                cpu,
 		ppu:                ppu,
 		apu:                apu,
@@ -73,13 +69,12 @@ func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState
 		ppuStateChannel:    ppuStateChannel,
 		apuStateChannel:    apuStateChannel,
 		memoryStateChannel: memoryStateChannel,
-		joypadStateChannel: joypadStateChannel,
-		joypad:             NewJoypad(joypadStateChannel),
+		joypad:             NewJoypad(),
 	}
 
 	// initialize memories and timer
 	gb.initMemory()
-	gb.initTimer(cpuBus)
+	gb.initTimer(bus)
 
 	return gb
 }
@@ -103,9 +98,9 @@ func (gb *Gameboy) initMemory() {
 	gb.vram = NewMemoryWithRandomData(0x2000) // VRAM (8KB)
 	gb.wram = NewMemoryWithRandomData(0x2000) // WRAM (8KB)
 
-	// attach memories to the bus
-	gb.cpuBus.AttachMemory("Video RAM (VRAM)", 0x8000, gb.vram)
-	gb.cpuBus.AttachMemory("Working RAM (WRAM)", 0xC000, gb.wram)
+	// attach memories to the CPU bus
+	gb.bus.AttachMemory("Video RAM (VRAM)", 0x8000, gb.vram)
+	gb.bus.AttachMemory("Working RAM (WRAM)", 0xC000, gb.wram)
 }
 
 // instantiate the timer and subscribe the gameboy to it
@@ -126,7 +121,7 @@ func (gb *Gameboy) LoadRom(romName string) {
 
 	// load the cartridge rom
 	gb.cartridge = NewCartridge(ROMS_URI, romName)
-	gb.cpuBus.AttachMemory("Cartridge ROM", 0x0000, gb.cartridge.rom)
+	gb.bus.AttachMemory("Cartridge ROM", 0x0000, gb.cartridge.rom)
 }
 
 // send state
@@ -134,7 +129,7 @@ func (gb *Gameboy) sendState() {
 	gb.cpuStateChannel <- gb.cpu.getState()
 	gb.ppuStateChannel <- gb.ppu.getState()
 	gb.apuStateChannel <- gb.apu.getState()
-	gb.memoryStateChannel <- *gb.cpuBus.mmu.getMemoryWrites()
+	gb.memoryStateChannel <- *gb.bus.getMemoryWrites()
 }
 
 // tick the gameboy once
@@ -148,21 +143,21 @@ func (gb *Gameboy) tick() {
 
 func (gb *Gameboy) Tick() {
 	// clear memory writes
-	gb.cpu.bus.mmu.clearMemoryWrites()
+	gb.cpu.bus.clearMemoryWrites()
 	// tick the gameboy
 	gb.tick()
 	// report state changes on their respective channels
 	gb.cpuStateChannel <- gb.cpu.getState()
 	gb.ppuStateChannel <- gb.ppu.getState()
 	gb.apuStateChannel <- gb.apu.getState()
-	gb.memoryStateChannel <- *gb.cpuBus.mmu.getMemoryWrites()
+	gb.memoryStateChannel <- *gb.bus.getMemoryWrites()
 }
 
 // run the bootrom and then the game
 // When the ppu finishes to draw a frame, it sends the whole state to the frontend (cpu, ppu, apu, memory)
 func (gb *Gameboy) Run() {
 	// clear memory writes
-	gb.cpu.bus.mmu.clearMemoryWrites()
+	gb.bus.clearMemoryWrites()
 	// run the gameboy until it is paused or stopped
 	for gb.state == STATE_RUNNING {
 		// timing the gameboy @4.194304MHz
@@ -173,7 +168,7 @@ func (gb *Gameboy) Run() {
 		// send the state to the frontend when the ppu finishes to draw a frame or when it reaches pixel (0, 144)
 		if gb.ppu.dotX == 0 && gb.ppu.dotY == LCD_Y_RESOLUTION {
 			gb.sendState()
-			gb.cpu.bus.mmu.clearMemoryWrites()
+			gb.bus.clearMemoryWrites()
 		}
 		// wait for the next tick
 		time.Sleep(TICK_DURATION - tickDuration)
