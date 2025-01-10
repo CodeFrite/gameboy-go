@@ -25,8 +25,8 @@ func TestDisableBootRom(t *testing.T) {
 		}
 	}
 	// mmu memory maps should contain 2 memory maps
-	if len(bus.mmu.memoryMaps) != 2 {
-		t.Errorf("Expected 2 memory maps, got %d", len(bus.mmu.memoryMaps))
+	if len(bus.memoryMaps) != 2 {
+		t.Errorf("Expected 2 memory maps, got %d", len(bus.memoryMaps))
 	}
 
 	// write to 0xFF50
@@ -38,7 +38,7 @@ func TestDisableBootRom(t *testing.T) {
 		}
 	}
 	// mmu memory maps should contain 1 memory map
-	if len(bus.mmu.memoryMaps) != 1 {
-		t.Errorf("Expected 1 memory map, got %d", len(bus.mmu.memoryMaps))
+	if len(bus.memoryMaps) != 1 {
+		t.Errorf("Expected 1 memory map, got %d", len(bus.memoryMaps))
 	}
 }
