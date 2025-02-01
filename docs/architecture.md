@@ -1,4 +1,4 @@
-# Class Diagrams
+# Gameboy Architecture
 
 In order to get a better grasp on the project's structure, let's walk through a few class diagrams.
 
