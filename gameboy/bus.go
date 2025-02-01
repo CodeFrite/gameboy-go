@@ -44,6 +44,13 @@ func NewBus() *Bus {
 	}
 }
 
+// reset the bus
+func (bus *Bus) reset() {
+	bus.memoryMaps = []MemoryMap{}
+	bus.memoryWrites = []MemoryWrite{}
+	// TODO: check if i need to reset the write handlers ???
+}
+
 func (bus *Bus) getMemoryWrites() *[]MemoryWrite {
 	return &bus.memoryWrites
 }

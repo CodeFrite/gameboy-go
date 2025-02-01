@@ -13,13 +13,25 @@ const (
 	BOOT_ROM_START       uint16        = 0x0000
 	BOOT_ROM_LEN         uint16        = 0x0100
 	ROMS_URI                           = "/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms"
+
 	// Gameboy states
-	STATE_RUNNING GameBoyState = "running"
-	STATE_PAUSED  GameBoyState = "paused"
-	STATE_STOPPED GameBoyState = "stopped"
+	GB_STATE_NO_GAME_LOADED GameBoyState = "no game loaded" // no game loaded
+	GB_STATE_PAUSED         GameBoyState = "paused"         // gameboy is paused
+	GB_STATE_RUNNING        GameBoyState = "running"        // gameboy is running
+
+	// Gameboy State's Actions
+	GB_ACTION_LOAD_GAME GameBoyAction = "load"  // load a game
+	GB_ACTION_RUN       GameBoyAction = "run"   // run the gameboy if it has a game loaded
+	GB_ACTION_PAUSE     GameBoyAction = "pause" // pause the gameboy
+	GB_ACTION_RESET     GameBoyAction = "reset" // reset the gameboy
 )
 
 type GameBoyState string
+type GameBoyAction string
+type GameboyActionMessage struct {
+	Action  GameBoyAction
+	payload interface{}
+}
 
 // the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
 type Gameboy struct {
@@ -40,14 +52,23 @@ type Gameboy struct {
 	joypad    *Joypad
 
 	// state channels (sharing concrete types to avoid pointer values being changed before being sent to the frontend by the server)
-	cpuStateChannel    chan<- CpuState
-	ppuStateChannel    chan<- PpuState
-	apuStateChannel    chan<- ApuState
-	memoryStateChannel chan<- []MemoryWrite
+	// TODO: now that i built my gameloop differently, i can pass pointers to the frontend instead of copying the state i guess
+	gameboyActionChannel <-chan GameboyActionMessage // responsible to load a game, run, pause and stop the gameboy
+	cpuStateChannel      chan<- CpuState
+	ppuStateChannel      chan<- PpuState
+	apuStateChannel      chan<- ApuState
+	memoryStateChannel   chan<- []MemoryWrite
 }
 
 // create a new gameboy struct
-func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState, apuStateChannel chan<- ApuState, memoryStateChannel chan<- []MemoryWrite) *Gameboy {
+func NewGameboy(
+	gameboyActionChannel <-chan GameboyActionMessage,
+	cpuStateChannel chan<- CpuState,
+	ppuStateChannel chan<- PpuState,
+	apuStateChannel chan<- ApuState,
+	memoryStateChannel chan<- []MemoryWrite,
+) *Gameboy {
+
 	// components
 	bus := NewBus()
 	cpu := NewCPU(bus)
@@ -60,32 +81,50 @@ func NewGameboy(cpuStateChannel chan<- CpuState, ppuStateChannel chan<- PpuState
 
 	// create the gameboy struct
 	gb := &Gameboy{
-		bus:                bus,
-		cpu:                cpu,
-		ppu:                ppu,
-		apu:                apu,
-		bootrom:            bootrom,
-		cpuStateChannel:    cpuStateChannel,
-		ppuStateChannel:    ppuStateChannel,
-		apuStateChannel:    apuStateChannel,
-		memoryStateChannel: memoryStateChannel,
-		joypad:             NewJoypad(),
+		bus:                  bus,
+		cpu:                  cpu,
+		ppu:                  ppu,
+		apu:                  apu,
+		bootrom:              bootrom,
+		gameboyActionChannel: gameboyActionChannel,
+		cpuStateChannel:      cpuStateChannel,
+		ppuStateChannel:      ppuStateChannel,
+		apuStateChannel:      apuStateChannel,
+		memoryStateChannel:   memoryStateChannel,
+		joypad:               NewJoypad(),
 	}
 
 	// initialize memories and timer
 	gb.initMemory()
 	gb.initTimer(bus)
 
+	// start the gameboy state machine listener
+	go gb.stateMachineListener()
+
 	return gb
 }
 
-// initialize the bootrom @ 0x0000 - 0x00FF
-func loadBootRom(uri string) *Memory {
-	bootromData, err := LoadRom(uri + "/dmg_boot.bin")
-	if err != nil {
-		log.Fatal(err)
-	}
-	return NewMemoryWithData(BOOT_ROM_LEN, bootromData)
+// reset the gameboy state:
+// - reset the gameboy state to "GB_STATE_NO_GAME_LOADED"
+// - reset the ticks count and the timer
+// - reset the bus and initialize the memories
+// - reset the cpu, ppu and apu states
+func (gb *Gameboy) reset() {
+	// reset the gameboy state
+	gb.state = GB_STATE_NO_GAME_LOADED
+
+	// reset the ticks count and the timer
+	gb.ticks = 0
+	gb.timer.reset()
+
+	// reset the bus and initialize the memories
+	gb.bus.reset()
+	gb.initMemory()
+
+	// reset the cpu, ppu and apu states
+	gb.cpu.reset()
+	gb.ppu.reset()
+	gb.apu.reset()
 }
 
 // initialize the memories and attach them to the bus
@@ -108,6 +147,15 @@ func (gb *Gameboy) initTimer(bus *Bus) {
 	gb.timer = NewTimer(bus)
 }
 
+// initialize the bootrom @ 0x0000 - 0x00FF
+func loadBootRom(uri string) *Memory {
+	bootromData, err := LoadRom(uri + "/dmg_boot.bin")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return NewMemoryWithData(BOOT_ROM_LEN, bootromData)
+}
+
 // initialize the gameboy by creating the bus, bootrom, cpu, cartridge and the different memories
 func (gb *Gameboy) LoadRom(romName string) {
 	// reset components cpu, ppu & apu
@@ -122,9 +170,12 @@ func (gb *Gameboy) LoadRom(romName string) {
 	// load the cartridge rom
 	gb.cartridge = NewCartridge(ROMS_URI, romName)
 	gb.bus.AttachMemory("Cartridge ROM", 0x0000, gb.cartridge.rom)
+
+	// set the gameboy state to paused
+	gb.state = GB_STATE_NO_GAME_LOADED
 }
 
-// send state
+// send updated state on the respective channels
 func (gb *Gameboy) sendState() {
 	gb.cpuStateChannel <- gb.cpu.getState()
 	gb.ppuStateChannel <- gb.ppu.getState()
@@ -155,11 +206,9 @@ func (gb *Gameboy) Tick() {
 
 // run the bootrom and then the game
 // When the ppu finishes to draw a frame, it sends the whole state to the frontend (cpu, ppu, apu, memory)
-func (gb *Gameboy) Run() {
-	// clear memory writes
-	gb.bus.clearMemoryWrites()
+func (gb *Gameboy) run() {
 	// run the gameboy until it is paused or stopped
-	for gb.state == STATE_RUNNING {
+	for gb.state == GB_STATE_RUNNING {
 		// timing the gameboy @4.194304MHz
 		tickStartTime := time.Now()
 		// tick the gameboy
@@ -167,33 +216,39 @@ func (gb *Gameboy) Run() {
 		tickDuration := time.Since(tickStartTime)
 		// send the state to the frontend when the ppu finishes to draw a frame or when it reaches pixel (0, 144)
 		if gb.ppu.dotX == 0 && gb.ppu.dotY == LCD_Y_RESOLUTION {
-			gb.sendState()
+			gb.ppuStateChannel <- gb.ppu.getState()
 			gb.bus.clearMemoryWrites()
 		}
 		// wait for the next tick
 		time.Sleep(TICK_DURATION - tickDuration)
 	}
-	// report state changes on their respective channels
-	gb.sendState()
 }
 
-// pauses the gameboy
-func (gb *Gameboy) Pause() {
-	if gb.state == STATE_RUNNING {
-		gb.state = STATE_PAUSED
-	}
-}
+// GAMEBOY STATE MACHINE
 
-// resumes the gameboy
-func (gb *Gameboy) Resume() {
-	if gb.state == STATE_PAUSED {
-		gb.state = STATE_RUNNING
-	}
-}
-
-// stop the gameboy
-func (gb *Gameboy) Stop() {
-	if gb.state == STATE_RUNNING || gb.state == STATE_PAUSED {
-		gb.state = STATE_STOPPED
+// listen to the gameboy state actions channel
+func (gb *Gameboy) stateMachineListener() {
+	gb.state = GB_STATE_NO_GAME_LOADED
+	for {
+		select {
+		case state := <-gb.gameboyActionChannel:
+			switch state.Action {
+			case GB_ACTION_LOAD_GAME:
+				gb.LoadRom(state.payload.(string))
+			case GB_ACTION_PAUSE:
+				if gb.state == GB_STATE_RUNNING {
+					gb.state = GB_STATE_PAUSED
+				}
+			case GB_ACTION_RUN:
+				if gb.state == GB_STATE_PAUSED {
+					gb.state = GB_STATE_RUNNING
+					go gb.run()
+				}
+			case GB_ACTION_RESET:
+				gb.reset()
+				gb.state = GB_STATE_NO_GAME_LOADED
+				return
+			}
+		}
 	}
 }

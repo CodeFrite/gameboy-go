@@ -31,6 +31,10 @@ func NewTimer(bus *Bus) *Timer {
 	}
 }
 
+func (t *Timer) reset() {
+	t.internalClock = 0
+}
+
 // on tick, increment DIV and TIMA registers if enabled
 func (t *Timer) Tick() {
 	// increment the internal M-cycle clock
@@ -40,7 +44,7 @@ func (t *Timer) Tick() {
 	if t.internalClock%256 == 0 {
 		div := t.bus.Read(REG_FF04_DIV)
 		div++
-		t.bus.mmu.timerWrite(REG_FF04_DIV, div)
+		t.bus.timerWrite(REG_FF04_DIV, div)
 	}
 
 	// increment TIMA register if enabled based on the TAC clock select
