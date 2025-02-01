@@ -7,7 +7,7 @@ import (
 
 // CONSTANTS
 const (
-	CRYSTAL_FREQUENCY    time.Duration = 4194304 // 4.194304MHz
+	CRYSTAL_FREQUENCY    time.Duration = 1 // 4194304 // 4.194304MHz
 	TICK_DURATION                      = time.Duration(1e9 / CRYSTAL_FREQUENCY)
 	BOOT_ROM_MEMORY_NAME               = "Boot ROM"
 	BOOT_ROM_START       uint16        = 0x0000
@@ -175,12 +175,20 @@ func (gb *Gameboy) LoadRom(romName string) {
 	gb.state = GB_STATE_NO_GAME_LOADED
 }
 
-// send updated state on the respective channels
+// send updated state on the respective channels if they are not nil
 func (gb *Gameboy) sendState() {
-	gb.cpuStateChannel <- gb.cpu.getState()
-	gb.ppuStateChannel <- gb.ppu.getState()
-	gb.apuStateChannel <- gb.apu.getState()
-	gb.memoryStateChannel <- *gb.bus.getMemoryWrites()
+	if gb.cpuStateChannel != nil {
+		gb.cpuStateChannel <- gb.cpu.getState()
+	}
+	if gb.ppuStateChannel != nil {
+		gb.ppuStateChannel <- gb.ppu.getState()
+	}
+	if gb.apuStateChannel != nil {
+		gb.apuStateChannel <- gb.apu.getState()
+	}
+	if gb.memoryStateChannel != nil {
+		gb.memoryStateChannel <- *gb.bus.getMemoryWrites()
+	}
 }
 
 // tick the gameboy once
@@ -190,18 +198,6 @@ func (gb *Gameboy) tick() {
 	gb.ppu.Tick()
 	gb.apu.Tick()
 	gb.ticks++
-}
-
-func (gb *Gameboy) Tick() {
-	// clear memory writes
-	gb.cpu.bus.clearMemoryWrites()
-	// tick the gameboy
-	gb.tick()
-	// report state changes on their respective channels
-	gb.cpuStateChannel <- gb.cpu.getState()
-	gb.ppuStateChannel <- gb.ppu.getState()
-	gb.apuStateChannel <- gb.apu.getState()
-	gb.memoryStateChannel <- *gb.bus.getMemoryWrites()
 }
 
 // run the bootrom and then the game
@@ -229,26 +225,23 @@ func (gb *Gameboy) run() {
 // listen to the gameboy state actions channel
 func (gb *Gameboy) stateMachineListener() {
 	gb.state = GB_STATE_NO_GAME_LOADED
-	for {
-		select {
-		case state := <-gb.gameboyActionChannel:
-			switch state.Action {
-			case GB_ACTION_LOAD_GAME:
-				gb.LoadRom(state.payload.(string))
-			case GB_ACTION_PAUSE:
-				if gb.state == GB_STATE_RUNNING {
-					gb.state = GB_STATE_PAUSED
-				}
-			case GB_ACTION_RUN:
-				if gb.state == GB_STATE_PAUSED {
-					gb.state = GB_STATE_RUNNING
-					go gb.run()
-				}
-			case GB_ACTION_RESET:
-				gb.reset()
-				gb.state = GB_STATE_NO_GAME_LOADED
-				return
+	for state := range gb.gameboyActionChannel {
+		switch state.Action {
+		case GB_ACTION_LOAD_GAME:
+			gb.LoadRom(state.payload.(string))
+		case GB_ACTION_PAUSE:
+			if gb.state == GB_STATE_RUNNING {
+				gb.state = GB_STATE_PAUSED
 			}
+		case GB_ACTION_RUN:
+			if gb.state == GB_STATE_PAUSED {
+				gb.state = GB_STATE_RUNNING
+				go gb.run()
+			}
+		case GB_ACTION_RESET:
+			gb.reset()
+			gb.state = GB_STATE_NO_GAME_LOADED
+			return
 		}
 	}
 }
