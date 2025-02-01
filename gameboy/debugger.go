@@ -15,6 +15,7 @@ type Debugger struct {
 	memoryStateQueue *fifo[[]MemoryWrite]
 
 	// state channels received from the client meant to listen to the gameboy state
+	gameboyActionChannel     <-chan GameboyActionMessage
 	clientCpuStateChannel    chan<- CpuState
 	clientPpuStateChannel    chan<- PpuState
 	clientApuStateChannel    chan<- ApuState
@@ -35,6 +36,7 @@ type Debugger struct {
 // - initializes the program flow queue
 // - initializes the state queues (cpu, ppu, apu, memory, joypad)
 func NewDebugger(
+	gameboyActionChannel <-chan GameboyActionMessage,
 	cpuStateChannel chan<- CpuState,
 	ppuStateChannel chan<- PpuState,
 	apuStateChannel chan<- ApuState,
@@ -48,6 +50,7 @@ func NewDebugger(
 	doneChannel := make(chan bool)
 
 	gb := NewGameboy(
+		gameboyActionChannel,
 		internalCpuStateChannel,
 		internalPpuStateChannel,
 		internalApuStateChannel,
@@ -56,6 +59,7 @@ func NewDebugger(
 
 	debugger := Debugger{
 		gameboy:                    gb,
+		gameboyActionChannel:       gameboyActionChannel,
 		clientCpuStateChannel:      cpuStateChannel,
 		clientPpuStateChannel:      ppuStateChannel,
 		clientApuStateChannel:      apuStateChannel,
@@ -70,6 +74,9 @@ func NewDebugger(
 
 	// initializes the debugger state with empty state queues and breakpoints list
 	debugger.reset()
+
+	// start listening to the gameboy state
+	debugger.listenToGameboyState()
 
 	return &debugger
 }
@@ -91,57 +98,6 @@ func (d *Debugger) LoadRom(romName string) {
 	d.ppuStateQueue.push(initialPpuState)
 	d.apuStateQueue.push(initialApuState)
 	d.memoryStateQueue.push(initialMemoryWrites)
-}
-
-// tick the gameboy and return its state
-func (d *Debugger) Tick() {
-	// run the next instruction
-	d.gameboy.Tick()
-
-	// add the new state to the queue and send it to the client if a channel is present
-	cpuState := <-d.internalCpuStateChannel
-	d.cpuStateQueue.push(cpuState)
-	d.programFlow.push(cpuState.PC)
-	if d.clientCpuStateChannel != nil {
-		d.clientCpuStateChannel <- cpuState
-	}
-	ppuState := <-d.internalPpuStateChannel
-	d.ppuStateQueue.push(ppuState)
-	if d.clientPpuStateChannel != nil {
-		d.clientPpuStateChannel <- ppuState
-	}
-	apuState := <-d.internalApuStateChannel
-	d.apuStateQueue.push(apuState)
-	if d.clientApuStateChannel != nil {
-		d.clientApuStateChannel <- apuState
-	}
-	memoryState := <-d.internalMemoryStateChannel
-	d.memoryStateQueue.push(memoryState)
-	if d.clientMemoryStateChannel != nil {
-		d.clientMemoryStateChannel <- memoryState
-	}
-}
-
-// run the gameboy until a breakpoint is reached or the gameboy is halted
-func (d *Debugger) Run() chan bool {
-	go d.listenToGameboyState()
-	d.gameboy.Run()
-	return d.doneChannel
-}
-
-// pause the gameboy
-func (d *Debugger) Pause() {
-	d.gameboy.Pause()
-}
-
-// resume the gameboy
-func (d *Debugger) Resume() {
-	d.gameboy.Resume()
-}
-
-// stop the gameboy
-func (d *Debugger) Stop() {
-	d.gameboy.Stop()
 }
 
 // adds a breakpoint at the given address if not already present
