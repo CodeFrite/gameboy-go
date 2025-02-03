@@ -57,8 +57,8 @@ const (
 	BLOCK_0_START_ADDRESS    uint16 = 0x8000
 	BLOCK_1_START_ADDRESS    uint16 = 0x8800
 	BLOCK_2_START_ADDRESS    uint16 = 0x9000
-	TILE_MAP_0_START_ADDRESS uint16 = 0x9800
-	TILE_MAP_1_START_ADDRESS uint16 = 0x9C00
+	TILE_MAP_0_START_ADDRESS uint16 = 0x9800 // up to 0x9BFF (32x32 tiles of 8x8 pixels with 2 bits color depth
+	TILE_MAP_1_START_ADDRESS uint16 = 0x9C00 // up to 0x9FFF (same as above)
 	OAM_MEMORY_START_ADDRESS uint16 = 0xFE00
 	OAM_MEMORY_BYTE_SIZE     uint8  = 0xA0
 
@@ -108,25 +108,25 @@ const (
 	PIXELS_PER_FRAME uint64 = uint64(LCD_X_RESOLUTION) * uint64(LCD_Y_RESOLUTION) // 23,040 pixels per frame
 )
 
-// 256x256 pixels, 4 colors
-// if I code every pixel as a uint8 when it only needs 2 bits, I get a state size of 256x256x8 > 524 kB which exceeds the 64kB limit for channel message communication
-// Using a bool instead of uint8 doesn't change the size of the state since a bool is represented as a byte in Go
-// The size of the whole image (including the part not visible in the viewport) is 256*256*2 bits ∼ 16kB which is acceptable
-// I will therefore regroup pixels color information by groups of 8 x 2bits = 1 byte
-// I need 256 * 2 bits = 512 bits, represented as 64 * 8 bits = 64 bytes
-// In summary, the 2D image (superposition of background, window & objects) will be arranged as 256 lines of 64 bytes
-// In this struct, coord (x,y) will correspond to pixels on line y from [y*8, y*9[
-type Image [256][32]uint8
+// RenderedImage is a 2D array of 144x160 pixels
+// Each pixel can have up to 4 colors which represents 2 bits of information
+// if I code every pixel as a uint8 when it only needs 2 bits, I get a state size of 144 * 160 * 2 = 46,080 bits = 5.76 kB
+// To optimize the size exchange, I will regroup pixels color information by groups of 4x2 bits = 1 byte
+// For a single line, I need 160 * 2 bits = 320 bits, represented as 40 * 8 bits = 40 bytes
+// In summary, the rendered 2D image (superposition of background, window & objects) will be arranged as 144 lines of 40 bytes
+// In this struct, coord (y, x) will correspond to pixels on line y from [x * 4, (x+1) * 4[
+type RenderedImage [LCD_Y_RESOLUTION][LCD_X_RESOLUTION]uint8
 
 type PPU struct {
 	bus *Bus
 
 	// Screen
-	image Image  // current image
-	mode  uint8  // current mode
-	ticks uint64 // should be able to count up 160 x 144 = 23,040,000
-	dotX  uint8  // current scanline dot x position (0-455)
-	dotY  uint8  // current scanline dot y position (0-153)
+	image      RenderedImage  // rendered image
+	background [256][64]uint8 // background layer: 256x256 pixels each coding a color in a byte with optimization to easily extract the rendered image
+	mode       uint8          // current mode
+	ticks      uint64         // should be able to count up 160 x 144 = 23,040,000
+	dotX       uint8          // current scanline dot x position (0-455)
+	dotY       uint8          // current scanline dot y position (0-153)
 
 	// simulation parameters: random values for now TODO: remove this after implementing mode3
 	mode3Length uint // length of mode 3 (sending pixels to the LCD)
@@ -136,9 +136,13 @@ type PPU struct {
 }
 
 func NewPPU(bus *Bus) *PPU {
-	ppu := &PPU{bus: bus}
-	// initialize memory
-	ppu.oam = NewMemory(uint16(OAM_MEMORY_BYTE_SIZE))
+	ppu := &PPU{
+		bus:        bus,
+		image:      RenderedImage{},
+		background: [256][64]uint8{},
+		oam:        NewMemory(uint16(OAM_MEMORY_BYTE_SIZE)),
+	}
+	// attach the OAM memory to the bus
 	ppu.bus.AttachMemory("OAM", OAM_MEMORY_START_ADDRESS, ppu.oam)
 	return ppu
 }
@@ -149,15 +153,16 @@ func (p *PPU) reset() {
 	p.dotY = 0
 	p.mode = PPU_MODE_2_SEARCH_OVERLAP_OBJ_OAM
 	p.mode3Length = uint(rand.IntN(289-172) + 172) // random value for now TODO: remove this after processing mode3
+	p.image = RenderedImage{}
+	p.background = [256][64]uint8{}
 }
 
 // onTick is called at each crystal cycle
 // there are 4,194,304 ticks per
 func (p *PPU) Tick() {
-	// check if the PPU & LCD are enabled
-	// TODO! change this position to return blank background and window if the LCD is off since this is the normal behavior. Good enough for now
-	stat := p.bus.Read(REG_FF41_STAT)
-	if (stat & 0b10000000) == 0 {
+	// check if the PPU & LCD are enabled. If not, set image to blank color and return
+	if !p.isEnabled() {
+		p.image = RenderedImage{}
 		return
 	}
 
@@ -196,51 +201,71 @@ func (p *PPU) Tick() {
 	// processing data
 	switch p.mode {
 	case PPU_MODE_2_SEARCH_OVERLAP_OBJ_OAM:
-		// searching for OBJs which overlap this line
+		// MODE 2: searching for OBJs which overlap this line
 	case PPU_MODE_3_SEND_PIXEL_LCD:
-		// sending pixels to the LCD
+		// MODE 3: sending pixels to the LCD
 
-		// first, determine from which block the background tiles are coming from
+		// During the first 160 dots of mode 3 which can be 172-289 dots long, we will compute the pixel color for the screen pixel SCX + dotX - 80
+		// After the 160 dots, we will wait until the end of mode 3
+		if p.dotX >= MODE2_LENGTH+LCD_X_RESOLUTION {
+			return
+		}
+
+		// DRAW BACKGROUND
 		lcdc := p.bus.Read(REG_FF40_LCDC)
-		tileMapArea := (lcdc >> FF40_3_BG_TILE_MAP_AREA) & 0x01
-		tileDataArea := (lcdc >> FF40_4_BG_WINDOW_TILE_DATA_AREA) & 0x01
-		tileX := p.dotX / 8 // x position of the tile among the 32 tiles of the line
-		tileY := p.dotY / 8 // y position of the tile among the 32 tiles of the column
-		tileId := uint8(0)
+		scx := p.bus.Read(REG_FF43_SCX)
+		scy := p.bus.Read(REG_FF42_SCY)
 
-		// get the tile index from the tile map (0x9800-0x9BFF or 0x9C00-0x9FFF depending on the tile map area LCDC.3)
-		if tileMapArea == 0 {
-			tileId = p.bus.Read(TILE_MAP_0_START_ADDRESS + uint16(tileY*32+tileX))
+		// 1. determine in which block the background tile maps are located by cheking LCDC.3: 0 -> $9800-$9BFF & 1 -> $9C00-$9FFF
+		bgTileMapArea := (lcdc >> FF40_3_BG_TILE_MAP_AREA) & 0x01
+
+		// 2. determine in which block the background tile data are located by cheking LCDC.4: 0 -> $8800-$97FF & 1 -> $8000-$8FFF
+		bgTileDataArea := (lcdc >> FF40_4_BG_WINDOW_TILE_DATA_AREA) & 0x01
+
+		// 3. compute the position of the pixel to draw relative to the background
+		// will overflow at 256 (thanks to go) and that is what we want since the background is 256x256 and we want to loop over it with our viewport of 160x144
+		pixelToDrawX := scx + p.dotX - MODE2_LENGTH
+		pixelToDrawY := scy + p.dotY
+
+		// 4. compute the tile x, y position in the tile map
+		tileX := pixelToDrawX / 8
+		tileY := pixelToDrawY / 8
+
+		// 5. get the tile index from the tile map (if LCDC.3 = 0 -> 0x9800-0x9BFF & if LCDC.3 = 1 -> 0x9C00-0x9FFF)
+		tileId := uint8(0) // tile id in the tile map (0-1023)
+		if bgTileMapArea == 0 {
+			tileId = p.bus.Read(TILE_MAP_0_START_ADDRESS + uint16(tileY*32+tileX)) // background has 32x32 tiles
 		} else {
 			tileId = p.bus.Read(TILE_MAP_1_START_ADDRESS + uint16(tileY*32+tileX))
 		}
 
-		// get the tile data from the tile data area (0x8000-0x8FFF or 0x8800-0x97FF depending on the tile data area LCDC.4)
-		pixelX := p.dotX % 8
-		pixelY := p.dotY % 8
+		// 6. get the tile data from the tile data area (0x8000-0x8FFF or 0x8800-0x97FF depending on the tile data area LCDC.4) given that each tile is 16 bytes long (2 bytes per line)
+		tileSubPixelX := pixelToDrawX % 8
+		tileSubPixelY := pixelToDrawY % 8
 
 		tileData := [2]uint8{}
-		if tileDataArea == 0 {
-			tileData[0] = p.bus.Read(BLOCK_0_START_ADDRESS + uint16(tileId*16+pixelY*2+pixelX))
-			tileData[1] = p.bus.Read(BLOCK_0_START_ADDRESS + uint16(tileId*16+pixelY*2+pixelX+1))
+		if bgTileDataArea == 0 {
+			tileData[0] = p.bus.Read(BLOCK_1_START_ADDRESS + uint16(tileId*16+tileSubPixelY*2))
+			tileData[1] = p.bus.Read(BLOCK_1_START_ADDRESS + uint16(tileId*16+tileSubPixelY*2+1))
 		} else {
-			tileData[0] = p.bus.Read(BLOCK_1_START_ADDRESS + uint16(tileId*16+pixelY*2+pixelX))
-			tileData[1] = p.bus.Read(BLOCK_1_START_ADDRESS + uint16(tileId*16+pixelY*2+pixelX+1))
+			tileData[0] = p.bus.Read(BLOCK_0_START_ADDRESS + uint16(tileId*16+tileSubPixelY*2))
+			tileData[1] = p.bus.Read(BLOCK_0_START_ADDRESS + uint16(tileId*16+tileSubPixelY*2+1))
 		}
 
-		// reconstruct the current pixel color and save it to the image
-		pixel_low_bit := (tileData[0] >> (7 - pixelX)) & 0x01
-		pixel_high_bit := (tileData[1] >> (7 - pixelX)) & 0x01
+		// 7. reconstruct the current pixel color
+		pixel_low_bit := (tileData[0] >> (7 - tileSubPixelX)) & 0x01
+		pixel_high_bit := (tileData[1] >> (7 - tileSubPixelX)) & 0x01
 
-		// since pixel color information are regrouped by 4 in a single byte, we need to shift the bits to the left before adding the new pixel color information
-
+		// 8. Save the pixel color information to the image
 		// compute the x, y position of the pixel in the image
-		imageX := uint8(p.dotX / 4)
+		imageX := uint8((p.dotX - MODE2_LENGTH) / 4)
 		imageY := uint8(p.dotY)
 
-		// write the pixel color to the image
+		// due to the fact that we save 4 pixel colors inside the same byte, when writing the current pixel color to the image, we need to:
+		// - shift the current pixel color to the left by 2
+		// - append the new pixel color information
 		currentPixelSlotValue := p.image[imageY][imageX]
-		p.image[imageX][imageY] = (currentPixelSlotValue << 2) & (pixel_high_bit << 1) & pixel_low_bit
+		p.image[imageY][imageX] = (currentPixelSlotValue << 2) | (pixel_high_bit << 1) | pixel_low_bit
 
 	case PPU_MODE_0_HBLANK:
 		// waiting until the end of the scanline
@@ -248,6 +273,8 @@ func (p *PPU) Tick() {
 	case PPU_MODE_1_VBLANK:
 		// waiting until the next frame
 	}
+
+	// TODO: DRAW WINDOW
 
 	// increment the ticks at the end of the cycle otherwise tick 0 will be skipped
 	p.ticks++
@@ -260,6 +287,11 @@ func (p *PPU) drawBackground() {}
 func (p *PPU) drawWindow() {}
 
 // Registers management
+
+// check whether the PPU is enabled
+func (p *PPU) isEnabled() bool {
+	return (p.bus.Read(REG_FF40_LCDC) & (1 << FF40_7_LCD_PPU_ENABLE)) == (1 << FF40_7_LCD_PPU_ENABLE)
+}
 
 // update the STAT register FF41 to reflect the current PPU mode
 func (p *PPU) updateSTATRegister_PPUMode() {
