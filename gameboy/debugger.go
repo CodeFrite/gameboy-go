@@ -88,14 +88,14 @@ func (d *Debugger) LoadRom(romName string) {
 	d.reset()
 
 	initialCpuState := d.gameboy.cpu.getState()
-	initialPpuState := d.gameboy.ppu.getState()
+	//initialPpuState := d.gameboy.ppu.getState()
 	initialApuState := d.gameboy.apu.getState()
 	initialMemoryWrites := d.gameboy.bus.memoryWrites
 
 	// save the initial state
 	d.programFlow.push(initialCpuState.PC)
 	d.cpuStateQueue.push(initialCpuState)
-	d.ppuStateQueue.push(initialPpuState)
+	//d.ppuStateQueue.push(initialPpuState)
 	d.apuStateQueue.push(initialApuState)
 	d.memoryStateQueue.push(initialMemoryWrites)
 }
