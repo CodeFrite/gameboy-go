@@ -7,7 +7,7 @@ import (
 
 // CONSTANTS
 const (
-	CRYSTAL_FREQUENCY    time.Duration = 1 // 4194304 // 4.194304MHz
+	CRYSTAL_FREQUENCY    time.Duration = 4194304 // 4.194304MHz
 	TICK_DURATION                      = time.Duration(1e9 / CRYSTAL_FREQUENCY)
 	BOOT_ROM_MEMORY_NAME               = "Boot ROM"
 	BOOT_ROM_START       uint16        = 0x0000
@@ -29,8 +29,8 @@ const (
 type GameBoyState string
 type GameBoyAction string
 type GameboyActionMessage struct {
-	Action  GameBoyAction
-	payload interface{}
+	Action  GameBoyAction `json:"action"`
+	Payload interface{}   `json:"payload"`
 }
 
 // the gameboy is composed out of a CPU, memories (ram & registers), a cartridge and a bus
@@ -91,7 +91,6 @@ func NewGameboy(
 		ppuStateChannel:      ppuStateChannel,
 		apuStateChannel:      apuStateChannel,
 		memoryStateChannel:   memoryStateChannel,
-		joypad:               NewJoypad(),
 	}
 
 	// initialize memories and timer
@@ -181,7 +180,10 @@ func (gb *Gameboy) sendState() {
 		gb.cpuStateChannel <- gb.cpu.getState()
 	}
 	if gb.ppuStateChannel != nil {
-		gb.ppuStateChannel <- gb.ppu.getState()
+		ppuState, err := gb.ppu.getState()
+		if err == nil && ppuState.DOT_Y == 144 && ppuState.DOT_X == 0 {
+			gb.ppuStateChannel <- *ppuState
+		}
 	}
 	if gb.apuStateChannel != nil {
 		gb.apuStateChannel <- gb.apu.getState()
@@ -209,13 +211,10 @@ func (gb *Gameboy) run() {
 		tickStartTime := time.Now()
 		// tick the gameboy
 		gb.tick()
-		tickDuration := time.Since(tickStartTime)
 		// send the state to the frontend when the ppu finishes to draw a frame or when it reaches pixel (0, 144)
-		if gb.ppu.dotX == 0 && gb.ppu.dotY == LCD_Y_RESOLUTION {
-			gb.ppuStateChannel <- gb.ppu.getState()
-			gb.bus.clearMemoryWrites()
-		}
+		gb.sendState()
 		// wait for the next tick
+		tickDuration := time.Since(tickStartTime)
 		time.Sleep(TICK_DURATION - tickDuration)
 	}
 }
@@ -228,7 +227,8 @@ func (gb *Gameboy) stateMachineListener() {
 	for state := range gb.gameboyActionChannel {
 		switch state.Action {
 		case GB_ACTION_LOAD_GAME:
-			gb.LoadRom(state.payload.(string))
+			gb.LoadRom(state.Payload.(string))
+			gb.state = GB_STATE_PAUSED
 		case GB_ACTION_PAUSE:
 			if gb.state == GB_STATE_RUNNING {
 				gb.state = GB_STATE_PAUSED
