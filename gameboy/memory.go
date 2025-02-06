@@ -86,10 +86,10 @@ func (m *Memory) Write(addr uint16, value uint8) {
 	m.data[addr] = value
 }
 
-// reset with randomize the memory content
-func (m *Memory) ResetWithRandomData() {
+// reset with all zeros
+func (m *Memory) ResetWithZeros() {
 	for i := 0; i < len(m.data); i++ {
-		m.data[i] = uint8(rand.Intn(256))
+		m.data[i] = 0x00
 	}
 }
 
@@ -97,5 +97,12 @@ func (m *Memory) ResetWithRandomData() {
 func (m *Memory) ResetWithOnes() {
 	for i := 0; i < len(m.data); i++ {
 		m.data[i] = 0xFF
+	}
+}
+
+// reset with randomize the memory content
+func (m *Memory) ResetWithRandomData() {
+	for i := 0; i < len(m.data); i++ {
+		m.data[i] = uint8(rand.Intn(256))
 	}
 }
