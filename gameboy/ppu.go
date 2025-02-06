@@ -12,8 +12,8 @@
 //
 // Mode		Action																				Duration										Accessible video memory
 // ----   ------																				--------										-----------------------
-// 2			Searching for OBJs which overlap this line		1 - 80 dots									VRAM, CGB palettes
-// 3			Sending pixels to the LCD											172 - 289 dots							None
+// 2			Searching for OBJs which overlap this line		1-80 dots			  						VRAM, CGB palettes
+// 3			Sending pixels to the LCD											172-289 dots  							None
 // 0			Waiting until the end of the scanline					376 - mode 3’s duration			VRAM, OAM, CGB palettes
 // 1			Waiting until the next frame									4560 dots (10 scanlines)		VRAM, OAM, CGB palettes
 //
@@ -28,12 +28,12 @@
 // Gameboy images are composed of tiles which are referenced by the tile map (BG Map) which is stored in VRAM $9800-$9BFF
 // In order to recompose the image, we need a way to reference the tiles in the tile map:
 //
-//   - Tile IDs for...				+	Block 0				+		Block 1				+		Block 2			+
-//     |   -------------------		|	----------		|		----------		|		----------	|
-//     |													|	$8000–87FF		|		$8800–8FFF		|		$9000–97FF	|
-//     |		Objects								|	0–127					|		128–255				|		—						|
-//     |		BG/Win, if LCDC.4=1		|	0–127					|		128–255				|		—						|	   using unsigned id (0-255)
-//     |		BG/Win, if LCDC.4=0		|	—							|		128–255				|		0–127				|		 using signed id (-128 to 127)
+//	|   Tile IDs for...				|	Block 0				|		Block 1				|		Block 2			|
+//	|   -------------------		|	----------		|		----------		|		----------	|
+//	|													|	$8000–87FF		|		$8800–8FFF		|		$9000–97FF	|
+//	|		Objects								|	0–127					|		128–255				|		—						|
+//	|		BG/Win, if LCDC.4=1		|	0–127					|		128–255				|		—						|	   using unsigned id (0-255)
+//	|		BG/Win, if LCDC.4=0		|	—							|		128–255				|		0–127				|		 using signed id (-128 to 127)
 //
 // There are two 32x32 (1024 bytes) tile maps in VRAM @$9800-$9BFF and @$9C00-$9FFF used to display the background or window layers.
 // Each tile map reference 1 byte indexes of the tiles in VRAM @$8000-$97FF using an unsigned id (0-255) or a signed id (-128 to 127).
@@ -93,14 +93,14 @@ const (
 	FF41_4_MODE_1_VBLANK_SELECT uint8 = 4 // if set, trigger VBlank interrupt for STAT interrupt
 	FF41_5_MODE_2_OAM_SELECT    uint8 = 5 // if set, trigger OAM interrupt for STAT interrupt
 	FF41_6_MODE_3_LYC_SELECT    uint8 = 6 // if set, trigger LCD interrupt for STAT interrupt
-	// FF41_7_UNUSED               uint8 = 7 // unused
+	FF41_7_UNUSED               uint8 = 7 // unused
 
 	// a dot is a PPU cycle and not a pixel
 
 	// LCD properties
-	DOTS_PER_LINE   uint16 = 456
-	LINES_PER_FRAME uint16 = 154
-	DOTS_PER_FRAME  uint64 = uint64(LINES_PER_FRAME) * uint64(DOTS_PER_LINE) // 70,224 dots per frame
+	DOTS_PER_LINE   uint64 = 456
+	LINES_PER_FRAME uint64 = 154
+	DOTS_PER_FRAME  uint64 = LINES_PER_FRAME * DOTS_PER_LINE // 70,224 dots per frame
 
 	// interrupt parameters
 	LCD_X_RESOLUTION uint8  = 160
@@ -115,7 +115,7 @@ const (
 // For a single line, I need 160 * 2 bits = 320 bits, represented as 40 * 8 bits = 40 bytes
 // In summary, the rendered 2D image (superposition of background, window & objects) will be arranged as 144 lines of 40 bytes
 // In this struct, coord (y, x) will correspond to pixels on line y from [x * 4, (x+1) * 4[
-type RenderedImage [LCD_Y_RESOLUTION][LCD_X_RESOLUTION]uint8
+type RenderedImage [LCD_Y_RESOLUTION][LCD_X_RESOLUTION / 4]uint8
 
 type PPU struct {
 	bus *Bus
@@ -125,11 +125,11 @@ type PPU struct {
 	background [256][64]uint8 // background layer: 256x256 pixels each coding a color in a byte with optimization to easily extract the rendered image
 	mode       uint8          // current mode
 	ticks      uint64         // should be able to count up 160 x 144 = 23,040,000
-	dotX       uint8          // current scanline dot x position (0-455)
-	dotY       uint8          // current scanline dot y position (0-153)
+	dotX       uint16         // current scanline dot x position (0-455)
+	dotY       uint16         // current scanline dot y position (0-153)
 
 	// simulation parameters: random values for now TODO: remove this after implementing mode3
-	mode3Length uint // length of mode 3 (sending pixels to the LCD)
+	mode3Length uint16 // length of mode 3 (sending pixels to the LCD)
 
 	// Memory
 	oam *Memory // Object Attribute Memory (0xFE00-0xFE9F) - 40 4-byte entries
@@ -152,27 +152,26 @@ func (p *PPU) reset() {
 	p.dotX = 0
 	p.dotY = 0
 	p.mode = PPU_MODE_2_SEARCH_OVERLAP_OBJ_OAM
-	p.mode3Length = uint(rand.IntN(289-172) + 172) // random value for now TODO: remove this after processing mode3
+	p.mode3Length = uint16(rand.IntN(289-172) + 172) // random value to simulate the real hardware processing
 	p.image = RenderedImage{}
 	p.background = [256][64]uint8{}
 }
 
 // onTick is called at each crystal cycle
-// there are 4,194,304 ticks per
+// there are 4,194,304 ticks per frame
 func (p *PPU) Tick() {
 	// check if the PPU & LCD are enabled. If not, set image to blank color and return
 	if !p.isEnabled() {
-		p.image = RenderedImage{}
+		//fmt.Printf("PPU is disabled (ticks=%d / dotX=%d)\n", p.ticks, p.dotX)
 		return
 	}
 
 	// new frame: reset ticks, dot x & y, LY register, image
-	if p.ticks%uint64(DOTS_PER_FRAME) == 0 {
-		p.ticks = 0
+	if p.ticks%DOTS_PER_FRAME == 0 {
 		p.dotX = 0
 		p.dotY = 0
-		p.mode3Length = uint(rand.IntN(289-172) + 172) // random value for now TODO: remove this after processing mode3
-	} else if p.ticks%uint64(DOTS_PER_LINE) == 0 {
+		p.mode3Length = uint16(172 + rand.IntN(289-172)) // random value to simulate the real hardware processing
+	} else if p.ticks%DOTS_PER_LINE == 0 {
 		// new scanline
 		p.dotX = 0
 		p.dotY++
@@ -183,17 +182,20 @@ func (p *PPU) Tick() {
 		p.dotX++
 	}
 
+	//fmt.Printf("PPU is processing (ticks:%d / dotX=%d)\n", p.ticks, p.dotX)
+
 	// managing mode switching
-	if p.ticks == 0 {
+	if p.dotY < uint16(LCD_Y_RESOLUTION) && p.dotX == 0 {
 		p.mode = PPU_MODE_2_SEARCH_OVERLAP_OBJ_OAM
 		p.updateSTATRegister_PPUMode()
-	} else if p.dotY < LCD_Y_RESOLUTION && p.dotX == MODE2_LENGTH {
+	} else if p.dotY < uint16(LCD_Y_RESOLUTION) && p.dotX == uint16(MODE2_LENGTH) {
 		p.mode = PPU_MODE_3_SEND_PIXEL_LCD
 		p.updateSTATRegister_PPUMode()
-	} else if p.dotY < LCD_Y_RESOLUTION && p.dotX == MODE2_LENGTH+uint8(p.mode3Length) {
+	} else if p.dotY < uint16(LCD_Y_RESOLUTION) && p.dotX == uint16(MODE2_LENGTH)+p.mode3Length {
 		p.mode = PPU_MODE_0_HBLANK
+		//fmt.Printf("... SETTING PPU MODE TO 0 (mode3 length=%d, pivot=%d)\n", p.mode3Length, MODE2_LENGTH+uint8(p.mode3Length))
 		p.updateSTATRegister_PPUMode()
-	} else if p.dotY >= LCD_Y_RESOLUTION {
+	} else if p.dotY >= uint16(LCD_Y_RESOLUTION) {
 		p.mode = PPU_MODE_1_VBLANK
 		p.updateSTATRegister_PPUMode()
 	}
@@ -202,14 +204,16 @@ func (p *PPU) Tick() {
 	switch p.mode {
 	case PPU_MODE_2_SEARCH_OVERLAP_OBJ_OAM:
 		// MODE 2: searching for OBJs which overlap this line
+		//fmt.Println("... PPU MODE 2 (SEARCH OVERLAP OBJ OAM)")
 	case PPU_MODE_3_SEND_PIXEL_LCD:
 		// MODE 3: sending pixels to the LCD
 
 		// During the first 160 dots of mode 3 which can be 172-289 dots long, we will compute the pixel color for the screen pixel SCX + dotX - 80
 		// After the 160 dots, we will wait until the end of mode 3
-		if p.dotX >= MODE2_LENGTH+LCD_X_RESOLUTION {
-			return
+		if p.dotX >= uint16(MODE2_LENGTH)+uint16(LCD_X_RESOLUTION) {
+			break // and not return because we want to increment the ticks
 		}
+		//fmt.Printf("... PPU MODE 3 (pixel:%d)\n", p.dotX-uint16(MODE2_LENGTH))
 
 		// DRAW BACKGROUND
 		lcdc := p.bus.Read(REG_FF40_LCDC)
@@ -224,8 +228,8 @@ func (p *PPU) Tick() {
 
 		// 3. compute the position of the pixel to draw relative to the background
 		// will overflow at 256 (thanks to go) and that is what we want since the background is 256x256 and we want to loop over it with our viewport of 160x144
-		pixelToDrawX := scx + p.dotX - MODE2_LENGTH
-		pixelToDrawY := scy + p.dotY
+		pixelToDrawX := uint16(scx) + p.dotX - uint16(MODE2_LENGTH)
+		pixelToDrawY := uint16(scy) + p.dotY
 
 		// 4. compute the tile x, y position in the tile map
 		tileX := pixelToDrawX / 8
@@ -245,11 +249,11 @@ func (p *PPU) Tick() {
 
 		tileData := [2]uint8{}
 		if bgTileDataArea == 0 {
-			tileData[0] = p.bus.Read(BLOCK_1_START_ADDRESS + uint16(tileId*16+tileSubPixelY*2))
-			tileData[1] = p.bus.Read(BLOCK_1_START_ADDRESS + uint16(tileId*16+tileSubPixelY*2+1))
+			tileData[0] = p.bus.Read(BLOCK_1_START_ADDRESS + uint16(tileId)*16 + tileSubPixelY*2)
+			tileData[1] = p.bus.Read(BLOCK_1_START_ADDRESS + uint16(tileId)*16 + tileSubPixelY*2 + 1)
 		} else {
-			tileData[0] = p.bus.Read(BLOCK_0_START_ADDRESS + uint16(tileId*16+tileSubPixelY*2))
-			tileData[1] = p.bus.Read(BLOCK_0_START_ADDRESS + uint16(tileId*16+tileSubPixelY*2+1))
+			tileData[0] = p.bus.Read(BLOCK_0_START_ADDRESS + uint16(tileId)*16 + tileSubPixelY*2)
+			tileData[1] = p.bus.Read(BLOCK_0_START_ADDRESS + uint16(tileId)*16 + tileSubPixelY*2 + 1)
 		}
 
 		// 7. reconstruct the current pixel color
@@ -258,8 +262,8 @@ func (p *PPU) Tick() {
 
 		// 8. Save the pixel color information to the image
 		// compute the x, y position of the pixel in the image
-		imageX := uint8((p.dotX - MODE2_LENGTH) / 4)
-		imageY := uint8(p.dotY)
+		imageX := (p.dotX - uint16(MODE2_LENGTH)) / 4
+		imageY := p.dotY
 
 		// due to the fact that we save 4 pixel colors inside the same byte, when writing the current pixel color to the image, we need to:
 		// - shift the current pixel color to the left by 2
@@ -268,9 +272,11 @@ func (p *PPU) Tick() {
 		p.image[imageY][imageX] = (currentPixelSlotValue << 2) | (pixel_high_bit << 1) | pixel_low_bit
 
 	case PPU_MODE_0_HBLANK:
+		//fmt.Println("... PPU MODE 0 (HBLANK)")
 		// waiting until the end of the scanline
 		// p.cpu.TriggerInterrupt(Interrupt{_type: interrupt_types["HBLANK"]}) ??? TODO: check if this is an interrupt that i should trigger or if the CPU pools the PPU mode for this
 	case PPU_MODE_1_VBLANK:
+		//fmt.Println("... PPU MODE 1 (VBLANK)")
 		// waiting until the next frame
 	}
 
@@ -290,7 +296,8 @@ func (p *PPU) drawWindow() {}
 
 // check whether the PPU is enabled
 func (p *PPU) isEnabled() bool {
-	return (p.bus.Read(REG_FF40_LCDC) & (1 << FF40_7_LCD_PPU_ENABLE)) == (1 << FF40_7_LCD_PPU_ENABLE)
+	lcdc := p.bus.Read(REG_FF40_LCDC)
+	return (lcdc>>FF40_7_LCD_PPU_ENABLE)&0x01 == 0x01
 }
 
 // update the STAT register FF41 to reflect the current PPU mode
@@ -305,8 +312,8 @@ func (p *PPU) updateSTATRegister_PPUMode() {
 
 // update the LY register FF44 to reflect the current scanline and trigger the VBLANK interrupt
 func (p *PPU) updateLYRegister() {
-	p.bus.Write(REG_FF44_LY, p.dotY)
-	if p.dotY == LCD_Y_RESOLUTION {
+	p.bus.Write(REG_FF44_LY, uint8(p.dotY))
+	if p.dotY == uint16(LCD_Y_RESOLUTION) {
 		// set the LYC == LY bit
 	}
 }
