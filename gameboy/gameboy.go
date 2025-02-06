@@ -214,8 +214,7 @@ func (gb *Gameboy) run() {
 		// send the state to the frontend when the ppu finishes to draw a frame or when it reaches pixel (0, 144)
 		gb.sendState()
 		// wait for the next tick
-		tickDuration := time.Since(tickStartTime)
-		time.Sleep(TICK_DURATION - tickDuration)
+		time.Sleep(TICK_DURATION - time.Since(tickStartTime))
 	}
 }
 
