@@ -127,9 +127,9 @@ func (c *CPU) reset() {
 	c.halted = false
 	c.stopped = false
 	// reset the memories
-	c.io_registers.ResetWithRandomData()
-	c.hram.ResetWithRandomData()
-	c.ie.ResetWithRandomData()
+	c.io_registers.ResetWithZeros()
+	c.hram.ResetWithZeros()
+	c.ie.ResetWithZeros()
 }
 
 // randomize the value of a register
