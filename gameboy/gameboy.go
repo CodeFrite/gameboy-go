@@ -204,11 +204,16 @@ func (gb *Gameboy) tick() {
 
 // run the bootrom and then the game
 // When the ppu finishes to draw a frame, it sends the whole state to the frontend (cpu, ppu, apu, memory)
+
 func (gb *Gameboy) run() {
 	// run the gameboy until it is paused or stopped
 	for gb.state == GB_STATE_RUNNING {
 		// timing the gameboy @4.194304MHz
 		tickStartTime := time.Now()
+		// check interrupts after letting the cpu finish the current instruction
+		if gb.cpu.state == CPU_EXECUTION_STATE_FETCH {
+			gb.cpu.handleInterrupts()
+		}
 		// tick the gameboy
 		gb.tick()
 		// send the state to the frontend when the ppu finishes to draw a frame or when it reaches pixel (0, 144)
