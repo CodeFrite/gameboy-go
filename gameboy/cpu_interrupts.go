@@ -1,5 +1,7 @@
 package gameboy
 
+import "fmt"
+
 // * 4.1. Vector 0040h – Vertical Blanking Interrupt
 // - This interrupt is triggered when the LCD controller enters V-Blank at scanline 144
 // - This doesn't happen if the LCD is off (LCDC.7=0: in this implementation, PPU just returns when ticked if this LCD is off)
@@ -83,6 +85,9 @@ func (cpu *CPU) handleInterrupts() {
 		cpu.ime = false
 		cpu.onJoypadInterrupt()
 	}
+
+	// re-enable the IME flag at next cycle
+	cpu.ime_enable_next_cycle = true
 }
 
 // * The following interrupt service routine is executed when control is being transferred to an interrupt handler (source: https://gbdev.io/pandocs/Interrupts.html)
@@ -94,22 +99,25 @@ func (cpu *CPU) handleInterrupts() {
 // ==> The entire process lasts 5 M-cycles.
 
 func (cpu *CPU) onVBlankInterrupt() {
+	fmt.Printf("... V-Blank interrupt triggered\n")
 	// clear the interrupt request flag before jumping to the interrupt handler @0x0040
 	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_0_VBLANK) ^ 0xFF)
-	cpu.setIEFlag(uint16(if_register))
+	cpu.setIEFlag(if_register)
+
 	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack
-	cpu.updatepc()
-	cpu.push(cpu.pc)
+	cpu.push(cpu.offset)
 	// trigger the interrupt handler
-	cpu.pc = INTERRUPT_VBLANK_JUMP_VECTOR
+	cpu.offset = INTERRUPT_VBLANK_JUMP_VECTOR
+	cpu.pc = cpu.offset
 	// wait for 5 M-cycles = 20 T-cycles
-	cpu.cpuCycles += 5 * 4
+	//cpu.cpuCycles += 5 * 4
 }
 
 func (cpu *CPU) onLCDStatInterrupt() {
+	fmt.Println("... LCD STAT interrupt triggered")
 	// clear the interrupt request flag before jumping to the interrupt handler @0x0048
 	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_1_LCD_STAT) ^ 0xFF)
-	cpu.setIEFlag(uint16(if_register))
+	cpu.setIEFlag(if_register)
 	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack}
 	cpu.updatepc()
 	cpu.push(cpu.pc)
@@ -120,9 +128,10 @@ func (cpu *CPU) onLCDStatInterrupt() {
 }
 
 func (cpu *CPU) onTimerInterrupt() {
+	fmt.Println("... Timer interrupt triggered")
 	// clear the interrupt request flag before jumping to the interrupt handler @0x0050
 	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_2_TIMER) ^ 0xFF)
-	cpu.setIEFlag(uint16(if_register))
+	cpu.setIEFlag(if_register)
 	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack}
 	cpu.updatepc()
 	cpu.push(cpu.pc)
@@ -133,9 +142,10 @@ func (cpu *CPU) onTimerInterrupt() {
 }
 
 func (cpu *CPU) onSerialInterrupt() {
+	fmt.Println("... Serial interrupt triggered")
 	// clear the interrupt request flag before jumping to the interrupt handler @0x0050
 	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_3_SERIAL) ^ 0xFF)
-	cpu.setIEFlag(uint16(if_register))
+	cpu.setIEFlag(if_register)
 	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack}
 	cpu.updatepc()
 	cpu.push(cpu.pc)
@@ -146,9 +156,10 @@ func (cpu *CPU) onSerialInterrupt() {
 }
 
 func (cpu *CPU) onJoypadInterrupt() {
+	fmt.Println("... Joypad interrupt triggered")
 	// clear the interrupt request flag before jumping to the interrupt handler @0x0050
 	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_4_JOYPAD) ^ 0xFF)
-	cpu.setIEFlag(uint16(if_register))
+	cpu.setIEFlag(if_register)
 	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack}
 	cpu.updatepc()
 	cpu.push(cpu.pc)

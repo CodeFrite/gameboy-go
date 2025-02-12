@@ -129,6 +129,6 @@ func (c *CPU) GetIEFlag() uint8 {
 	return c.bus.Read(IE_REGISTER)
 }
 
-func (c *CPU) setIEFlag(value uint16) {
+func (c *CPU) setIEFlag(value uint8) {
 	c.bus.Write(IE_REGISTER, byte(value))
 }
