@@ -124,6 +124,12 @@ func (bus *Bus) findMemory(address uint16) (*MemoryMap, error) {
 // return uint8 value at the given address
 // panic if the address is not found
 func (bus *Bus) Read(addr uint16) uint8 {
+
+	// DEBUG: JOYPAD should return 0xFF until implemented
+	if addr == REG_FF00_JOYP || (addr >= 0xFEA0 && addr <= 0xFEFF) {
+		return 0xFF
+	}
+
 	memoryMap, err := bus.findMemory(addr)
 	if err == nil {
 		return memoryMap.Memory.Read(addr - memoryMap.Address)
@@ -152,6 +158,12 @@ func (bus *Bus) Read16(addr uint16) uint16 {
 }
 
 func (bus *Bus) write(addr uint16, value uint8) error {
+
+	// DEBUG: Trying to write to 0x2000 and 0xFEA0-0xFEFF should be ignored
+	if addr == 0x2000 || (addr >= 0xFEA0 && addr <= 0xFEFF) {
+		return nil
+	}
+
 	// find the memory map containing the address
 	memoryMap, err := bus.findMemory(addr)
 
