@@ -174,12 +174,14 @@ func (bus *Bus) write(addr uint16, value uint8) error {
 
 	// write the value to the memory
 	memoryMap.Memory.Write(addr-memoryMap.Address, value)
-	memoryWrite := MemoryWrite{
-		Name:    memoryMap.Name,
-		Address: addr - memoryMap.Address,
-		Data:    []uint8{value},
-	}
-	bus.addMemoryWrite(memoryWrite)
+	/*
+		memoryWrite := MemoryWrite{
+			Name:    memoryMap.Name,
+			Address: addr - memoryMap.Address,
+			Data:    []uint8{value},
+		}
+		bus.addMemoryWrite(memoryWrite)
+	*/
 	return nil
 }
 
@@ -225,12 +227,14 @@ func (bus *Bus) WriteBlob(addr uint16, blob []uint8) {
 			memoryMap.Memory.Write(addr-memoryMap.Address+uint16(i), value)
 		}
 		// log the memory write
-		memoryWrite := MemoryWrite{
-			Name:    memoryMap.Name,
-			Address: addr - memoryMap.Address,
-			Data:    blob,
-		}
-		bus.addMemoryWrite(memoryWrite)
+		/*
+			memoryWrite := MemoryWrite{
+				Name:    memoryMap.Name,
+				Address: addr - memoryMap.Address,
+				Data:    blob,
+			}
+			bus.addMemoryWrite(memoryWrite)
+		*/
 	} else {
 		panic(err)
 	}
