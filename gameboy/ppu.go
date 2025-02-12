@@ -195,9 +195,10 @@ func (p *PPU) Tick() {
 		p.mode = PPU_MODE_0_HBLANK
 		//fmt.Printf("... SETTING PPU MODE TO 0 (mode3 length=%d, pivot=%d)\n", p.mode3Length, MODE2_LENGTH+uint8(p.mode3Length))
 		p.updateSTATRegister_PPUMode()
-	} else if p.dotY >= uint16(LCD_Y_RESOLUTION) {
+	} else if p.dotY == uint16(LCD_Y_RESOLUTION) && p.dotX == 0 {
 		p.mode = PPU_MODE_1_VBLANK
 		p.updateSTATRegister_PPUMode()
+		p.requestVBLANKInterrupt()
 	}
 
 	// processing data
@@ -316,4 +317,10 @@ func (p *PPU) updateLYRegister() {
 	if p.dotY == uint16(LCD_Y_RESOLUTION) {
 		// set the LYC == LY bit
 	}
+}
+
+// request VBLANK interrupt
+func (p *PPU) requestVBLANKInterrupt() {
+	if_register := p.bus.Read(IF_REGISTER)
+	p.bus.Write(IF_REGISTER, if_register|0x01)
 }
