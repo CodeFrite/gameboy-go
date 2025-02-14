@@ -1,32 +1,37 @@
-package gameboy
+package debugger
+
+import (
+	ds "github.com/codefrite/gameboy-go/datastructure"
+	"github.com/codefrite/gameboy-go/gameboy"
+)
 
 const STATE_QUEUE_MAX_LENGTH = 100
 
 // debugger struct: combination of a gameboy, its internal state and a list of breakpoints set by the user
 type Debugger struct {
 	// state
-	gameboy     *Gameboy
-	programFlow *fifo[uint16] // queue of program counter positions to render a diagram of the program flow
-	breakpoints []uint16      // list of breakpoints addresses set by the user to pause the execution with a maximum of 100 breakpoints
+	gameboy     *gameboy.Gameboy
+	programFlow *ds.Fifo[uint16] // queue of program counter positions to render a diagram of the program flow
+	breakpoints []uint16         // list of breakpoints addresses set by the user to pause the execution with a maximum of 100 breakpoints
 
-	cpuStateQueue    *fifo[CpuState]
-	ppuStateQueue    *fifo[PpuState]
-	apuStateQueue    *fifo[ApuState]
-	memoryStateQueue *fifo[[]MemoryWrite]
+	cpuStateQueue    *ds.Fifo[gameboy.CpuState]
+	ppuStateQueue    *ds.Fifo[gameboy.PpuState]
+	apuStateQueue    *ds.Fifo[gameboy.ApuState]
+	memoryStateQueue *ds.Fifo[[]gameboy.MemoryWrite]
 
 	// state channels received from the client meant to listen to the gameboy state
-	gameboyActionChannel     <-chan GameboyActionMessage
-	clientCpuStateChannel    chan<- CpuState
-	clientPpuStateChannel    chan<- PpuState
-	clientApuStateChannel    chan<- ApuState
-	clientMemoryStateChannel chan<- []MemoryWrite
+	gameboyActionChannel     <-chan gameboy.GameboyActionMessage
+	clientCpuStateChannel    chan<- gameboy.CpuState
+	clientPpuStateChannel    chan<- gameboy.PpuState
+	clientApuStateChannel    chan<- gameboy.ApuState
+	clientMemoryStateChannel chan<- []gameboy.MemoryWrite
 	doneChannel              chan bool
 
 	// internal channels corresponding to the channels received from the client and used to intercept, store in a queue, and then relay the state changes
-	internalCpuStateChannel    chan CpuState
-	internalPpuStateChannel    chan PpuState
-	internalApuStateChannel    chan ApuState
-	internalMemoryStateChannel chan []MemoryWrite
+	internalCpuStateChannel    chan gameboy.CpuState
+	internalPpuStateChannel    chan gameboy.PpuState
+	internalApuStateChannel    chan gameboy.ApuState
+	internalMemoryStateChannel chan []gameboy.MemoryWrite
 }
 
 // instantiate a new debugger:
@@ -36,20 +41,20 @@ type Debugger struct {
 // - initializes the program flow queue
 // - initializes the state queues (cpu, ppu, apu, memory, joypad)
 func NewDebugger(
-	gameboyActionChannel <-chan GameboyActionMessage,
-	cpuStateChannel chan<- CpuState,
-	ppuStateChannel chan<- PpuState,
-	apuStateChannel chan<- ApuState,
-	memoryStateChannel chan<- []MemoryWrite,
+	gameboyActionChannel <-chan gameboy.GameboyActionMessage,
+	cpuStateChannel chan<- gameboy.CpuState,
+	ppuStateChannel chan<- gameboy.PpuState,
+	apuStateChannel chan<- gameboy.ApuState,
+	memoryStateChannel chan<- []gameboy.MemoryWrite,
 ) *Debugger {
 	// create the internal channels to listen to the gameboy state
-	internalCpuStateChannel := make(chan CpuState)
-	internalPpuStateChannel := make(chan PpuState)
-	internalApuStateChannel := make(chan ApuState)
-	internalMemoryStateChannel := make(chan []MemoryWrite)
+	internalCpuStateChannel := make(chan gameboy.CpuState)
+	internalPpuStateChannel := make(chan gameboy.PpuState)
+	internalApuStateChannel := make(chan gameboy.ApuState)
+	internalMemoryStateChannel := make(chan []gameboy.MemoryWrite)
 	doneChannel := make(chan bool)
 
-	gb := NewGameboy(
+	gb := gameboy.NewGameboy(
 		gameboyActionChannel,
 		internalCpuStateChannel,
 		internalPpuStateChannel,
