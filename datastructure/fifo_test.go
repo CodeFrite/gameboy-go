@@ -68,8 +68,7 @@ func TestIterator(t *testing.T) {
 	}
 
 	// loop over the fifo values
-	var testInterfaceImplementation Iterator[int] = fifo
-	for v := range testInterfaceImplementation.Iterator() {
+	for v := range Iterate[int](fifo) {
 		fmt.Println("... v", *v)
 	}
 }
@@ -99,10 +98,11 @@ func TestIteratorMap(t *testing.T) {
 
 	// expected results
 	expectedResults := []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
-	iteratorMapper := FifoMapper[int, int](fifo, fn)
+	iteratorMapper := Map[int, int](fifo, fn)
 
 	i := 0
 	for v := range iteratorMapper {
+		fmt.Println("... v", *v)
 		if *v != expectedResults[i] {
 			t.Errorf("Expected fn(<-fifoChan) to be %v, got %v", expectedResults[i], *v)
 		}

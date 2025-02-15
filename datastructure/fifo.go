@@ -21,6 +21,10 @@ func NewFifo[T any](capacity uint64) *Fifo[T] {
 	return &Fifo[T]{capacity: capacity}
 }
 
+func (f *Fifo[T]) GetHead() *Node[T] {
+	return f.head
+}
+
 // Push a new node at the end of the fifo (far from the head)
 func (f *Fifo[T]) Push(value *T) uint64 {
 	// instantiate a new node
@@ -76,32 +80,4 @@ func (f *Fifo[T]) Peek() *T {
 
 func (f *Fifo[T]) Length() uint64 {
 	return f.count
-}
-
-// Iterator interface implementation
-func (f *Fifo[T]) Iterator() <-chan *T {
-	ch := make(chan *T)
-	go func() {
-		for node := f.head; node != nil; node = node.GetNext() {
-			ch <- node.GetValue()
-		}
-		close(ch)
-	}()
-	return ch
-}
-
-// FifoMapper:
-// - iterates through the elements of the fifo
-// - applies a func fn to all *T elements of the fifo
-// - and returns the new array of type []U over a channel of *U
-// Note: Impossible to achieve via a receiver func since they do not accept types parameter
-func FifoMapper[T, U any](f *Fifo[T], fn func(*T) *U) <-chan *U {
-	ch := make(chan *U)
-	go func() {
-		for item := range f.Iterator() {
-			ch <- fn(item)
-		}
-		close(ch)
-	}()
-	return ch
 }
