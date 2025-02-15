@@ -89,3 +89,19 @@ func (f *Fifo[T]) Iterator() <-chan *T {
 	}()
 	return ch
 }
+
+// FifoMapper:
+// - iterates through the elements of the fifo
+// - applies a func fn to all *T elements of the fifo
+// - and returns the new array of type []U over a channel of *U
+// Note: Impossible to achieve via a receiver func since they do not accept types parameter
+func FifoMapper[T, U any](f *Fifo[T], fn func(*T) *U) <-chan *U {
+	ch := make(chan *U)
+	go func() {
+		for item := range f.Iterator() {
+			ch <- fn(item)
+		}
+		close(ch)
+	}()
+	return ch
+}

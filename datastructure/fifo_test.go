@@ -73,3 +73,40 @@ func TestIterator(t *testing.T) {
 		fmt.Println("... v", *v)
 	}
 }
+
+// Test the iterator map func which apply a func to every single values
+// stored in the fifo and returns sends them on a channel
+func TestIteratorMap(t *testing.T) {
+	t.Log("TestIteratorMapper")
+
+	// define the func to use when mapping fifo content
+	fn := func(v *int) *int {
+		var val int = *v * 2
+		return &val
+	}
+
+	// define test data
+	testData := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	capacity := uint64(100)
+
+	// instantiate a new fifo
+	fifo := NewFifo[int](capacity)
+
+	// fill in the test data into the fifo
+	for v := range testData {
+		fifo.Push(&v)
+	}
+
+	// expected results
+	expectedResults := []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
+	iteratorMapper := FifoMapper[int, int](fifo, fn)
+
+	i := 0
+	for v := range iteratorMapper {
+		if *v != expectedResults[i] {
+			t.Errorf("Expected fn(<-fifoChan) to be %v, got %v", expectedResults[i], *v)
+		}
+		i++
+	}
+
+}
