@@ -112,6 +112,7 @@ Now that I have moved the `debugger` package to its own directory, my project st
 
 ```plaintext
 + gameboy-go          (module)
+  + datastructure　   (package)
   + debugger          (package)
     - debugger.go
   + gameboy           (package)
@@ -123,7 +124,7 @@ Now that I have moved the `debugger` package to its own directory, my project st
   - go.sum
 ```
 
-It has only one go module named `gameboy-go` which contains two packages: `debugger` and `gameboy`. The whole module is versioned in the same git repository.
+It has only one go module named `gameboy-go` which contains three packages: `gameboy`, `debugger` & `datastructure`. The whole module is versioned in the same git repository.
 
 To have access to the gameboy package from the debugger package, I have to import it in the `debugger.go` file:
 
@@ -140,3 +141,200 @@ type Debugger struct {
 	gameboy     *gameboy.Gameboy
   ...
 ```
+
+### Data Structures
+
+Now that I have split my code correctly, I can define a few data structures that will help me record any type of execution flow state that I want to monitor. These structures should allow me to:
+
+- `Record any kind of state data`: visited pc address, changed memory addresses & values, whole cpu state, etc... or any combination of these
+- Once the data has been recorded, I should be able to `iterate` over it
+- During the iteration, I should be able to `apply some transformation functions` to the data, for example to aggregate memory changes, filter out some data, or even generate the flow chart as a `mermaid` diagram
+
+#### Node
+
+To achieve these objectives, I first defined a data container flexible enough to store any kind of data: a `Node` struct:
+
+```go
+type Node[T any] struct {
+	value *T
+	next  *Node[T]
+}
+```
+
+Nothing incredible here, just a node with a type parameter `T` that can store any kind of data. Along with this structure, I defined a `constructor` and a few `getter` and `setter` functions:
+
+```go
+func NewNode[T any](value *T, next *Node[T]) *Node[T] {
+	return &Node[T]{value: value, next: next}
+}
+
+func (n *Node[T]) GetValue() *T {
+	return n.value
+}
+
+func (n *Node[T]) SetValue(value *T) {
+	n.value = value
+}
+
+func (n *Node[T]) GetNext() *Node[T] {
+	return n.next
+}
+
+func (n *Node[T]) SetNext(next *Node[T]) {
+	n.next = next
+}
+```
+
+#### FIFO
+
+Next, I defined a simple linked list data structure, or more exactly a `FIFO` (First In First Out) data structure. This data structure will allow me to record the states in a chronological order and iterate over them:
+
+```go
+type Fifo[T any] struct {
+	capacity uint64
+	count    uint64
+	head     *Node[T]
+}
+```
+
+As we can see, it has a `capacity` field to limit the number of elements that can be stored in the list, a `count` field to keep track of the number of elements stored in the list, and a `head` field to point to the first element of the list. Along with this structure, I defined a `constructor` and the traditional `Push`, `Pop` & `Peek` functions:
+
+```go
+func NewFifo[T any](capacity uint64) *Fifo[T] {
+	return &Fifo[T]{capacity: capacity}
+}
+
+// Push a new node at the end of the fifo (far from the head)
+func (f *Fifo[T]) Push(value *T) uint64 {
+	// instantiate a new node
+	newNode := NewNode(value, nil)
+
+	// locate the last node and the previous one
+	if f.count == 0 {
+		f.head = newNode
+	} else {
+		lastNode := f.head
+		for lastNode.GetNext() != nil {
+			lastNode = lastNode.GetNext()
+		}
+		// add a new node at the end of the fifo
+		lastNode.SetNext(newNode)
+	}
+
+	// increment the count
+	f.count++
+
+	// check if the fifo is full and pop the head if it is
+	if f.count > f.capacity {
+		f.head.SetNext(f.head.GetNext())
+		f.count--
+	}
+
+	// return the number of elements present in the fifo
+	return f.count
+}
+
+// Pops the oldest node pointed by the head
+func (f *Fifo[T]) Pop() *T {
+	if f.head == nil {
+		return nil
+	}
+	poppedNode := f.head.GetNext()
+	f.head.SetNext(poppedNode.GetNext())
+	f.count--
+	return poppedNode.GetValue()
+}
+
+func (f *Fifo[T]) Peek() *T {
+	if f.count == 0 {
+		return nil
+	} else {
+		curr := f.head
+		for curr.GetNext() != nil {
+			curr = curr.GetNext()
+		}
+		return curr.GetValue()
+	}
+}
+```
+
+It is important to note here that the oldest element is always pointed by the `head` field, while the newest one is `pushed` at the end of the list and has no `next` node, i.e. `next` is `nil`. To illustrate this, let's consider the example where the fifo has a capacity of 3 and we push 5 elements into it (0, 1, 2, 3, 4) and then pop 3 elements from it:
+
+```mermaid
+---
+title: FIFO with capacity 3 - adding 5 elements and popping 3
+---
+flowchart LR
+  H1[head] --> N1[nil]
+  H2[head] --> E0[0] --> N2[nil]
+  H3[head] --> E1[0] --> E2[1] --> N3[nil]
+  H4[head] --> E3[0] --> E4[1] --> E5[2] --> N4[nil]
+  H5[head] --> E6[1] --> E7[2] --> E8[3] --> N5[nil]
+  H6[head] --> E9[2] --> E10[3] --> E11[4] --> N6[nil]
+  H7[head] --> E12[3] --> E13[4] --> E14[5] --> N7[nil]
+  H8[head] --> E15[4] --> E16[5] --> N8[nil]
+  H9[head] --> E17[5] --> N9[nil]
+  H10[head] --> N10[nil]
+```
+
+When an element is pushed to the fifo or popped from it, the `count` field is updated accordingly. A getter allows to see how many elements are present in the fifo at any time:
+
+```go
+func (f *Fifo[T]) Length() uint64 {
+	return f.count
+}
+```
+
+Finally, we reach the interesting part: how can we iterate over the fifo leveraging go language specificities, and how can we apply some transformation functions to the data stored in the fifo in a clever way?
+
+This is done with a combination of interfaces, channels & types parameters. Before going any further, let's define a getter to the head of the fifo. This will come in handy when we want to iterate over the fifo:
+
+```go
+func (f *Fifo[T]) GetHead() *Node[T] {
+  return f.head
+}
+```
+
+### Iterable Interface
+
+The first interface that we need to define is the `Iterable` interface. This interface will allow us to iterate over any data structure that exposes an accessor to its first element, here named `head`:
+
+```go
+type Iterable[T any] interface {
+	GetHead() *Node[T]
+}
+```
+
+It doesn't see much but combined with the following function, we can iterate over any data structure that uses a `Node[T]` as its data container and has a `GetHead` function:
+
+```go
+func Iterate[T any](it Iterable[T]) <-chan *T {
+	ch := make(chan *T)
+	go func() {
+		for node := it.GetHead(); node != nil; node = node.GetNext() {
+			ch <- node.GetValue()
+		}
+		close(ch)
+	}()
+	return ch
+}
+```
+
+We can now reuse this function to iterate over the fifo and apply some transformation functions to the data stored in it. This is done by defining a `Map` interface:
+
+```go
+func Map[T, U any](it Iterable[T], fn func(*T) *U) <-chan *U {
+	ch := make(chan *U)
+	go func() {
+		for item := range Iterate(it) {
+			ch <- fn(item)
+		}
+		close(ch)
+	}()
+	return ch
+}
+```
+
+In the future, if we decide to define other data structures, we will be able to reuse these functions and extend them to support filtering, reducing, etc ... as long as the data structure implements the `Iterable` interface, which is easy and powerful.
+
+Now we are finally set to record the execution flow of the cpu and generate the flow chart using `mermaid` syntax!
