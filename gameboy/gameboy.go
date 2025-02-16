@@ -124,6 +124,9 @@ func (gb *Gameboy) reset() {
 	gb.cpu.reset()
 	gb.ppu.reset()
 	gb.apu.reset()
+
+	// send the initial state over the channels
+	gb.sendState()
 }
 
 // initialize the memories and attach them to the bus
@@ -172,6 +175,9 @@ func (gb *Gameboy) LoadRom(romName string) {
 
 	// set the gameboy state to paused
 	gb.state = GB_STATE_NO_GAME_LOADED
+
+	// send the initial state over the channels
+	gb.sendState()
 }
 
 // send updated state on the respective channels if they are not nil
@@ -204,20 +210,26 @@ func (gb *Gameboy) tick() {
 
 // run the bootrom and then the game
 // When the ppu finishes to draw a frame, it sends the whole state to the frontend (cpu, ppu, apu, memory)
-
 func (gb *Gameboy) run() {
 	// run the gameboy until it is paused or stopped
 	for gb.state == GB_STATE_RUNNING {
 		// timing the gameboy @4.194304MHz
 		tickStartTime := time.Now()
+
+		// clear memory writes
+		gb.bus.clearMemoryWrites()
+
 		// check interrupts after letting the cpu finish the current instruction
 		if gb.cpu.state == CPU_EXECUTION_STATE_FETCH {
 			gb.cpu.handleInterrupts()
 		}
+
 		// tick the gameboy
-		gb.tick()
+		gb.Tick()
+
 		// send the state to the frontend when the ppu finishes to draw a frame or when it reaches pixel (0, 144)
 		gb.sendState()
+
 		// wait for the next tick
 		time.Sleep(TICK_DURATION - time.Since(tickStartTime))
 	}
@@ -248,4 +260,12 @@ func (gb *Gameboy) stateMachineListener() {
 			return
 		}
 	}
+}
+
+// Public API
+
+func (gb *Gameboy) Tick() {
+	gb.bus.clearMemoryWrites()
+	gb.tick()
+	gb.sendState()
 }

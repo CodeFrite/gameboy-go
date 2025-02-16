@@ -51,6 +51,8 @@ func (bus *Bus) reset() {
 	// TODO: check if i need to reset the write handlers ???
 }
 
+// Memory Writes Operations
+
 func (bus *Bus) getMemoryWrites() *[]MemoryWrite {
 	return &bus.memoryWrites
 }
@@ -64,6 +66,8 @@ func (bus *Bus) addMemoryWrite(memoryWrite MemoryWrite) {
 func (bus *Bus) clearMemoryWrites() {
 	bus.memoryWrites = []MemoryWrite{}
 }
+
+// Memory Maps Operations
 
 // Attach a memory to the BUS at the given address.
 // At the moment, there is not check for overlapping memories: when reading from or writing to an address contained in
@@ -118,6 +122,8 @@ func (bus *Bus) findMemory(address uint16) (*MemoryMap, error) {
 	errMessage := fmt.Sprintf("Memory location 0x%04X not found", address)
 	return nil, errors.New(errMessage)
 }
+
+// Accessible Interface Implementation
 
 // Read the value at the given address.
 // addr: uint16 address where the value will be read
@@ -174,14 +180,12 @@ func (bus *Bus) write(addr uint16, value uint8) error {
 
 	// write the value to the memory
 	memoryMap.Memory.Write(addr-memoryMap.Address, value)
-	/*
-		memoryWrite := MemoryWrite{
-			Name:    memoryMap.Name,
-			Address: addr - memoryMap.Address,
-			Data:    []uint8{value},
-		}
-		bus.addMemoryWrite(memoryWrite)
-	*/
+	memoryWrite := MemoryWrite{
+		Name:    memoryMap.Name,
+		Address: addr - memoryMap.Address,
+		Data:    []uint8{value},
+	}
+	bus.addMemoryWrite(memoryWrite)
 	return nil
 }
 
@@ -227,14 +231,12 @@ func (bus *Bus) WriteBlob(addr uint16, blob []uint8) {
 			memoryMap.Memory.Write(addr-memoryMap.Address+uint16(i), value)
 		}
 		// log the memory write
-		/*
-			memoryWrite := MemoryWrite{
-				Name:    memoryMap.Name,
-				Address: addr - memoryMap.Address,
-				Data:    blob,
-			}
-			bus.addMemoryWrite(memoryWrite)
-		*/
+		memoryWrite := MemoryWrite{
+			Name:    memoryMap.Name,
+			Address: addr - memoryMap.Address,
+			Data:    blob,
+		}
+		bus.addMemoryWrite(memoryWrite)
 	} else {
 		panic(err)
 	}
