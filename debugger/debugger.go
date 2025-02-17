@@ -1,6 +1,8 @@
 package debugger
 
 import (
+	"time"
+
 	ds "github.com/codefrite/gameboy-go/datastructure"
 	"github.com/codefrite/gameboy-go/gameboy"
 )
@@ -15,21 +17,15 @@ type Debugger struct {
 	breakpoints []uint16         // list of breakpoints addresses set by the user to pause the execution with a maximum of 100 breakpoints
 
 	cpuStateQueue    *ds.Fifo[gameboy.CpuState]
-	ppuStateQueue    *ds.Fifo[gameboy.PpuState]
-	apuStateQueue    *ds.Fifo[gameboy.ApuState]
 	memoryStateQueue *ds.Fifo[[]gameboy.MemoryWrite]
 
 	// state channels received from the client meant to listen to the gameboy state
 	clientCpuStateChannel    chan<- gameboy.CpuState
-	clientPpuStateChannel    chan<- gameboy.PpuState
-	clientApuStateChannel    chan<- gameboy.ApuState
 	clientMemoryStateChannel chan<- []gameboy.MemoryWrite
 	doneChannel              chan bool
 
 	// internal channels corresponding to the channels received from the client and used to intercept, store in a queue, and then relay the state changes
 	internalCpuStateChannel    chan gameboy.CpuState
-	internalPpuStateChannel    chan gameboy.PpuState
-	internalApuStateChannel    chan gameboy.ApuState
 	internalMemoryStateChannel chan []gameboy.MemoryWrite
 }
 
@@ -41,8 +37,6 @@ type Debugger struct {
 // - initializes the state queues (cpu, ppu, apu, memory, joypad)
 func NewDebugger(
 	cpuStateChannel chan<- gameboy.CpuState,
-	ppuStateChannel chan<- gameboy.PpuState,
-	apuStateChannel chan<- gameboy.ApuState,
 	memoryStateChannel chan<- []gameboy.MemoryWrite,
 ) *Debugger {
 
@@ -50,21 +44,13 @@ func NewDebugger(
 	debugger := &Debugger{
 		internalCpuStateChannel:  make(chan gameboy.CpuState), // we always need to listen to the cpu state to handle breakpoints
 		clientCpuStateChannel:    cpuStateChannel,
-		clientPpuStateChannel:    ppuStateChannel,
-		clientApuStateChannel:    apuStateChannel,
 		clientMemoryStateChannel: memoryStateChannel,
 		doneChannel:              make(chan bool), // used to notify client that crystal has stopped
 		breakpoints:              make([]uint16, 0),
 	}
 
 	// create the internal channels to listen to the gameboy state if they are used by the client
-	if ppuStateChannel == nil {
-		debugger.internalPpuStateChannel = make(chan gameboy.PpuState)
-	}
-	if apuStateChannel == nil {
-		debugger.internalApuStateChannel = make(chan gameboy.ApuState)
-	}
-	if memoryStateChannel == nil {
+	if memoryStateChannel != nil {
 		debugger.internalMemoryStateChannel = make(chan []gameboy.MemoryWrite)
 	}
 
@@ -72,8 +58,8 @@ func NewDebugger(
 	gb := gameboy.NewGameboy(
 		nil, // gameboyActionChannel is not used as the debugger ticks the gameboy manually
 		debugger.internalCpuStateChannel,
-		debugger.internalPpuStateChannel,
-		debugger.internalApuStateChannel,
+		nil,
+		nil,
 		debugger.internalMemoryStateChannel,
 	)
 
@@ -83,6 +69,9 @@ func NewDebugger(
 	// initializes the debugger state with empty state queues and breakpoints list
 	debugger.reset()
 
+	// launch the debugger state channels listener
+	go debugger.stateChannelsListener()
+
 	return debugger
 }
 
@@ -90,8 +79,6 @@ func NewDebugger(
 func (d *Debugger) reset() {
 	d.programFlow = ds.NewFifo[uint16](STATE_QUEUE_MAX_LENGTH)
 	d.cpuStateQueue = ds.NewFifo[gameboy.CpuState](STATE_QUEUE_MAX_LENGTH)
-	d.ppuStateQueue = ds.NewFifo[gameboy.PpuState](STATE_QUEUE_MAX_LENGTH)
-	d.apuStateQueue = ds.NewFifo[gameboy.ApuState](STATE_QUEUE_MAX_LENGTH)
 	d.memoryStateQueue = ds.NewFifo[[]gameboy.MemoryWrite](STATE_QUEUE_MAX_LENGTH)
 	d.breakpoints = make([]uint16, 0)
 }
@@ -99,7 +86,20 @@ func (d *Debugger) reset() {
 // initializes the gameboy with the given ROM and returns a pointer to the gameboy state
 func (d *Debugger) LoadRom(romName string) {
 	d.reset()
-	d.gameboy.LoadRom(romName)
+	go d.gameboy.LoadRom(romName)
+}
+
+func (d *Debugger) GetMemoryMaps() []gameboy.MemoryWrite {
+	return d.gameboy.GetMemoryMaps()
+}
+
+// returns the gameboy state
+func (d *Debugger) GetCpuState() gameboy.CpuState {
+	return d.gameboy.GetCpuState()
+}
+
+func (d *Debugger) GetMemoryWrites() []gameboy.MemoryWrite {
+	return d.gameboy.GetMemoryWrites()
 }
 
 // adds a breakpoint at the given address if not already present
@@ -132,44 +132,37 @@ func (d *Debugger) GetBreakPoints() []uint16 {
 
 // Tick the gameboy once and send the state to the client
 func (d *Debugger) Tick() {
-	go d.gameboy.Tick() // must run in a goroutine to avoid deadlock (gameboy.sendState() is blocking until we read from the internal channels)
-	// listen to the internal channels and store the state in the queues
-	cpuState := <-d.internalCpuStateChannel
-	d.clientCpuStateChannel <- cpuState
-
-	if d.clientPpuStateChannel != nil {
-		d.clientPpuStateChannel <- <-d.internalPpuStateChannel
-	}
-	if d.clientApuStateChannel != nil {
-		d.clientApuStateChannel <- <-d.internalApuStateChannel
-	}
-	if d.clientMemoryStateChannel != nil {
-		d.clientMemoryStateChannel <- <-d.internalMemoryStateChannel
-	}
+	d.gameboy.Tick() // must run in a goroutine to avoid deadlock (gameboy.sendState() is blocking until we read from the internal channels)
 }
 
 // Run the gameboy until we reach a breakpoint
 func (d *Debugger) Run() {
 	for {
-		// tick the gameboy
-		go d.gameboy.Tick()
-		// listen to the internal channels and store the state in the queues
-		cpuState := <-d.internalCpuStateChannel
-		d.clientCpuStateChannel <- cpuState
+		// tick the gameboy @ 1 Hz
+		startTime := time.Now()
+		d.gameboy.Tick()
+		tickDuration := time.Since(startTime)
+		time.Sleep(time.Second - tickDuration)
 
-		if d.clientPpuStateChannel != nil {
-			d.clientPpuStateChannel <- <-d.internalPpuStateChannel
-		}
-		if d.clientApuStateChannel != nil {
-			d.clientApuStateChannel <- <-d.internalApuStateChannel
-		}
-		if d.clientMemoryStateChannel != nil {
-			d.clientMemoryStateChannel <- <-d.internalMemoryStateChannel
-		}
+		/*
+			// check if we reached a breakpoint
+			if contains(d.breakpoints, cpuState.PC) {
+				break
+			}
+		*/
+	}
+}
 
-		// check if we reached a breakpoint
-		if contains(d.breakpoints, cpuState.PC) {
-			break
+// listen to the internal channels and relay the state to the client
+func (d *Debugger) stateChannelsListener() {
+	for {
+		select {
+		case cpuState := <-d.internalCpuStateChannel:
+			d.clientCpuStateChannel <- cpuState
+		case memoryState := <-d.internalMemoryStateChannel:
+			d.clientMemoryStateChannel <- memoryState
+		case <-d.doneChannel:
+			return
 		}
 	}
 }

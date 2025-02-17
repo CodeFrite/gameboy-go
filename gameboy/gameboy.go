@@ -176,8 +176,8 @@ func (gb *Gameboy) LoadRom(romName string) {
 	// set the gameboy state to paused
 	gb.state = GB_STATE_NO_GAME_LOADED
 
-	// send the initial state over the channels
-	gb.sendState()
+	gb.cpu.fetch()
+	gb.cpu.decode()
 }
 
 // send updated state on the respective channels if they are not nil
@@ -264,8 +264,24 @@ func (gb *Gameboy) stateMachineListener() {
 
 // Public API
 
+// Tick the gameboy once
 func (gb *Gameboy) Tick() {
 	gb.bus.clearMemoryWrites()
 	gb.tick()
 	gb.sendState()
+}
+
+// Retrieve the initial memory maps
+func (gb *Gameboy) GetMemoryMaps() []MemoryWrite {
+	return gb.bus.GetMemoryMaps()
+}
+
+// Retrieve the CPU state
+func (gb *Gameboy) GetCpuState() CpuState {
+	return gb.cpu.getState()
+}
+
+// Retrieve the PPU state
+func (gb *Gameboy) GetMemoryWrites() []MemoryWrite {
+	return *gb.bus.getMemoryWrites()
 }
