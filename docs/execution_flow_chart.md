@@ -338,3 +338,89 @@ func Map[T, U any](it Iterable[T], fn func(*T) *U) <-chan *U {
 In the future, if we decide to define other data structures, we will be able to reuse these functions and extend them to support filtering, reducing, etc ... as long as the data structure implements the `Iterable` interface, which is easy and powerful.
 
 Now we are finally set to record the execution flow of the cpu and generate the flow chart using `mermaid` syntax!
+
+#### NextDataProvider: Going a Step Further ?
+
+We could be tempted to go a step further and define a `NextDataProvider` interface that would allow the `Node` struct to be even more flexible. In that case, the `Iterable` interface would be defined as follows:
+
+```go
+type NextDataProvider[T any] interface {
+  GetNext() *T
+}
+
+type Iterable[T any] interface {
+  GetHead() *NextDataProvider[T]
+}
+```
+
+This would mean that any node that implements the `NextDataProvider` interface would be able to provide the next node in the list. This comes with a cost: the `Node` & `Fifo` structures would have to be modified to implement the `NextDataProvider` interface as well. This would have impact a bit everywhere in these structs code (struct itself, the return types of the getter functions, the parameter type of setter functions, ...).
+
+Furthermore, the `Node` struct would have a new dependency on the `NextDataProvider` interface, which would make it more coupled in a way. This is due to the fact that:
+
+- Go has an `Implicit Interface Implementation`: In Go, a struct does not need to declare that it implements an interface. If a struct has all the methods required by an interface, Go implicitly considers it as implementing that interface.
+
+- Go has an `Explicit Matching of Return Types`: Even though Go allows implicit method implementation, it requires exact return type matching when implementing an interface.
+
+Considering the above and the fact that our `Node` struct is already flexible enough to store any kind of data and link to the next node of the same type, we will stick to the current implementation.
+
+## The Debugger
+
+Now that we have defined the data structures that will allow us to record the execution flow of the cpu, we adapt the debugger. Up to now, the debugger allows us to:
+
+- add, remove & list the breakpoints
+- control the gameboy execution by pausing, running, stepping & resetting it
+- send to the client the different states over dedicated state channels: cpu, memory, ppu, etc...
+
+We will add the following functionalities to the debugger:
+
+- add a state recorder to record the execution flow of any subset/combination of the component states (cpu, memory, ppu, ...)
+- add a state reducer/mapper to generate some output from the recorded states like a flow chart
+
+Before going any further, we will first need to:
+
+- expose some of the gameboy internals since the debugger is now in a separate package. We will do this by defining a few `getter` functions in the `gameboy.go` file
+- reenable the memory writes recording in the `bus` and `gameboy` structs: they were disabled in a previous commit since they were not used and where slowing down the emulator
+- expose the `debugger` on the `server` side so that we can interact with it from the client side and make sure it works as expected
+- then, we will be able to work on the new state recorder and reducer functionalities
+
+### Exposing the Gameboy Internals
+
+When the debugger loads a game rom or is reset, I need to access the gameboy component initial states. Currently I do it using the following code:
+
+```go
+func (d *Debugger) SomeFunc() {
+  d.gameboy.cpu.getState()
+  d.gameboy.ppu.getState()
+  d.gameboy.apu.getState()
+  d.gameboy.bus.getMemoryMaps()
+  d.gameboy.bus.memoryWrites
+}
+```
+
+I could add getter functions on the `gameboy` struct to access these states. But this would feel awkward since I won't be using them anywhere else in the code. Indeed, once started, the gameboy already sends back its states to the caller over the defined state channels:
+
+```go
+func (gb *Gameboy) sendState() {
+	if gb.cpuStateChannel != nil {
+		gb.cpuStateChannel <- gb.cpu.getState()
+	}
+	if gb.ppuStateChannel != nil {
+		ppuState, err := gb.ppu.getState()
+		if err == nil && ppuState.DOT_Y == 144 && ppuState.DOT_X == 0 {
+			gb.ppuStateChannel <- *ppuState
+		}
+	}
+	if gb.apuStateChannel != nil {
+		gb.apuStateChannel <- gb.apu.getState()
+	}
+	if gb.memoryStateChannel != nil {
+		gb.memoryStateChannel <- *gb.bus.getMemoryWrites()
+	}
+}
+```
+
+Instead, I will modify the gameboy `LoadRom` and `Reset` functions to send the initial states of the different components to their respective state channels, if defined.
+
+```go
+
+```

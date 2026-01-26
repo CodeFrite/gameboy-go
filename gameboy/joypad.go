@@ -43,7 +43,7 @@ func NewJoypad() *Joypad {
 // MMU redirects the write to the joypad register FF00 to the joypad
 func (j *Joypad) Write(value uint8) {
 	// if FF00.4 is reset, the state of the direction pad is written to FF00.0-3
-	if value&(1<<FF00_4_SELECT_DPAD) == 0 && value&(1<<FF00_5_SELECT_BUTTONS) == 1 {
+	if value&(1<<FF00_4_SELECT_DPAD) == 0 && value&(1<<FF00_3_START_DOWN_BUTTON) == 1 {
 
 	}
 }

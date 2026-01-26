@@ -12,7 +12,7 @@ const (
 	BOOT_ROM_MEMORY_NAME               = "Boot ROM"
 	BOOT_ROM_START       uint16        = 0x0000
 	BOOT_ROM_LEN         uint16        = 0x0100
-	ROMS_URI                           = "/Users/codefrite/Desktop/CODE/codefrite-emulator/gameboy/gameboy-go/roms"
+	ROMS_URI                           = "/Users/codefrite/Desktop/codefrite-emulator/gameboy/gameboy-go/roms"
 
 	// Gameboy states
 	GB_STATE_NO_GAME_LOADED GameBoyState = "no game loaded" // no game loaded
@@ -174,7 +174,7 @@ func (gb *Gameboy) LoadRom(romName string) {
 	gb.bus.AttachMemory("Cartridge ROM", 0x0000, gb.cartridge.rom)
 
 	// set the gameboy state to paused
-	gb.state = GB_STATE_NO_GAME_LOADED
+	gb.state = GB_STATE_PAUSED
 
 	gb.cpu.fetch()
 	gb.cpu.decode()
@@ -185,6 +185,7 @@ func (gb *Gameboy) sendState() {
 	if gb.cpuStateChannel != nil {
 		gb.cpuStateChannel <- gb.cpu.getState()
 	}
+	// send PPU state only at the beginning of VBlank (DOT_Y=144, DOT_X=0)
 	if gb.ppuStateChannel != nil {
 		ppuState, err := gb.ppu.getState()
 		if err == nil && ppuState.DOT_Y == 144 && ppuState.DOT_X == 0 {
@@ -230,8 +231,10 @@ func (gb *Gameboy) run() {
 		// send the state to the frontend when the ppu finishes to draw a frame or when it reaches pixel (0, 144)
 		gb.sendState()
 
-		// wait for the next tick
-		time.Sleep(TICK_DURATION - time.Since(tickStartTime))
+		// sleep only on every frame (at 60Hz) to avoid drifting
+		if gb.ppu.dotY == 144 && gb.ppu.dotX == 0 {
+			time.Sleep(time.Duration(16667)*time.Microsecond - time.Since(tickStartTime))
+		}
 	}
 }
 
@@ -268,7 +271,10 @@ func (gb *Gameboy) stateMachineListener() {
 func (gb *Gameboy) Tick() {
 	gb.bus.clearMemoryWrites()
 	gb.tick()
-	gb.sendState()
+	// send the state every frame
+	if gb.ppu.dotY == 144 && gb.ppu.dotX == 0 {
+		gb.sendState()
+	}
 }
 
 // Retrieve the initial memory maps

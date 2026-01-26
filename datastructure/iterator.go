@@ -1,6 +1,6 @@
 package datastructure
 
-// interface to iterate over a list of elements implementing the Iterator method
+// interface to iterate over a list of elements
 type Iterable[T any] interface {
 	GetHead() *Node[T]
 }
