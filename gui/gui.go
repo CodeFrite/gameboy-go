@@ -8,6 +8,14 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// DMG (original Game Boy) color palette - 4 shades of gray
+var palette = [4]sdl.Color{
+	{R: 224, G: 248, B: 208, A: 255}, // 0: lightest (white)
+	{R: 136, G: 192, B: 112, A: 255}, // 1: light gray
+	{R: 52, G: 104, B: 86, A: 255},   // 2: dark gray
+	{R: 8, G: 24, B: 32, A: 255},     // 3: darkest (black)
+}
+
 type GUI struct {
 	window   *sdl.Window
 	renderer *sdl.Renderer
@@ -93,13 +101,6 @@ func (g *GUI) LCDDrawRect(x int, y int, w int, h int, color sdl.Color) {
 }
 
 func (g *GUI) LCDDrawImage(image gameboy.RenderedImage) {
-	// DMG (original Game Boy) color palette - 4 shades of gray
-	palette := [4]sdl.Color{
-		{R: 224, G: 248, B: 208, A: 255}, // 0: lightest (white)
-		{R: 136, G: 192, B: 112, A: 255}, // 1: light gray
-		{R: 52, G: 104, B: 86, A: 255},   // 2: dark gray
-		{R: 8, G: 24, B: 32, A: 255},     // 3: darkest (black)
-	}
 
 	// Iterate through each row (y)
 	for y := 0; y < int(gameboy.LCD_Y_RESOLUTION); y++ {
@@ -110,17 +111,10 @@ func (g *GUI) LCDDrawImage(image gameboy.RenderedImage) {
 			// Extract 4 pixels from this byte (each pixel is 2 bits)
 			// Pixels are packed from most significant bits to least significant bits
 			for pixelInByte := 0; pixelInByte < 4; pixelInByte++ {
-				// Calculate the actual x position on screen
-				x := packedX*4 + pixelInByte
-
-				// Extract 2-bit color value for this pixel
-				// Shift right to get the correct 2 bits, then mask with 0x03
-				shift := 6 - (pixelInByte * 2) // 6, 4, 2, 0
+				shift := 6 - (pixelInByte * 2)
 				colorIndex := (packedByte >> shift) & 0x03
-
-				// Get the color from palette and draw the pixel
 				color := palette[colorIndex]
-				g.LCDDrawPixel(x, y, color)
+				g.LCDDrawPixel(packedX*4+pixelInByte, y, color)
 			}
 		}
 	}
