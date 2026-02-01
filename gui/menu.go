@@ -107,7 +107,7 @@ func (m *Menu) OnKeyPress(k ebiten.Key) {
 
 		// any alpha or numerical key: append to sub-menu data
 		if k >= ebiten.KeyA && k <= ebiten.KeyZ || k >= ebiten.Key0 && k <= ebiten.Key9 {
-			m.subMenuData += string(k)
+			m.subMenuData += k.String()
 		}
 
 		// backspace: erase the last character if any

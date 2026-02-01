@@ -95,7 +95,7 @@ func main() {
 			renderedFrameCount++
 			fmt.Println("PPU State received @", time.Since(now))
 			// FPS
-			fmt.Println("FPS:", renderedFrameCount*1000/int(time.Since(now).Milliseconds()), " - Ticks:", gb.GetTicks())
+			fmt.Println("FPS:", renderedFrameCount*1000/int(time.Since(now).Milliseconds()))
 
 			// Clear screen and draw every frame
 			gui.LCDClear()
