@@ -66,17 +66,12 @@ func main() {
 		Action:  gameboy.GB_ACTION_RUN,
 		Payload: nil,
 	}
-
 	running := true
-
+	now := time.Now()
 	loopCount := 0
-	seconds := 0
-
+	renderedFrameCount := 0
 	for running {
 		loopCount++
-		if loopCount%(1398101) == 0 {
-			seconds++
-		}
 		// Handle events (keyboard, quit, etc.)
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch e := event.(type) {
@@ -93,23 +88,23 @@ func main() {
 		}
 
 		// Wait for a signal from the gameboy (non-blocking)
-		var cycle int64 = 0
 		select {
-		case cpuState := <-gbCpuStateChannel:
-			if cycle++; cycle%100000 == 0 {
-				fmt.Println("CPU TIC (", seconds, "):", cpuState.PC)
-			}
+		case <-gbCpuStateChannel:
+			//fmt.Println("CPU State received @", time.Since(now))
 		case ppuState := <-gbPpuStateChannel:
+			renderedFrameCount++
+			fmt.Println("PPU State received @", time.Since(now))
+			// FPS
+			fmt.Println("FPS:", renderedFrameCount*1000/int(time.Since(now).Milliseconds()), " - Ticks:", gb.GetTicks())
+
 			// Clear screen and draw every frame
 			gui.LCDClear()
-
 			//fmt.Println("Received PPU state:", ppuState.IMAGE)
 			// Drawing the current PPU image to the screen
 			gui.LCDDrawImage(ppuState.IMAGE)
 			// nothing new to draw
 			gui.LCDPresent()
-		default:
-			time.Sleep(time.Microsecond) // Prevent busy-wait
+
 		}
 	}
 }
