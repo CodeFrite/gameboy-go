@@ -93,10 +93,11 @@ func main() {
 			//fmt.Println("CPU State received @", time.Since(now))
 		case ppuState := <-gbPpuStateChannel:
 			renderedFrameCount++
-			fmt.Println("PPU State received @", time.Since(now))
-			// FPS
-			fmt.Println("FPS:", renderedFrameCount*1000/int(time.Since(now).Milliseconds()))
-
+			if renderedFrameCount%60 == 0 {
+				fmt.Println("PPU State received @", time.Since(now))
+				// FPS
+				fmt.Println("FPS:", renderedFrameCount*1000/int(time.Since(now).Milliseconds()))
+			}
 			// Clear screen and draw every frame
 			gui.LCDClear()
 			//fmt.Println("Received PPU state:", ppuState.IMAGE)
