@@ -49,6 +49,40 @@ const (
 	INTERRUPT_JOYPAD_JUMP_VECTOR   uint16 = 0x0060
 )
 
+type Interrupt struct {
+	flagIE uint8
+	flagIF uint8
+	jumpPC uint16
+}
+
+var INTERRUPTS_CONFIG = map[string]Interrupt{
+	"VBLANK": {
+		flagIE: FFFF_0_VBLANK,
+		flagIF: FF0F_0_VBLANK,
+		jumpPC: INTERRUPT_VBLANK_JUMP_VECTOR,
+	},
+	"LCD_STAT": {
+		flagIE: FFFF_1_LCD_STAT,
+		flagIF: FF0F_1_LCD_STAT,
+		jumpPC: INTERRUPT_LCD_STAT_JUMP_VECTOR,
+	},
+	"TIMER": {
+		flagIE: FFFF_2_TIMER,
+		flagIF: FF0F_2_TIMER,
+		jumpPC: INTERRUPT_TIMER_JUMP_VECTOR,
+	},
+	"SERIAL": {
+		flagIE: FFFF_3_SERIAL,
+		flagIF: FF0F_3_SERIAL,
+		jumpPC: INTERRUPT_SERIAL_JUMP_VECTOR,
+	},
+	"JOYPAD": {
+		flagIE: FFFF_4_JOYPAD,
+		flagIF: FF0F_4_JOYPAD,
+		jumpPC: INTERRUPT_JOYPAD_JUMP_VECTOR,
+	},
+}
+
 // Interrupts are used to signal the CPU that an event has occurred and that it should handle it with the appropriate interrupt handler
 
 func (cpu *CPU) handleInterrupts() {
@@ -63,31 +97,31 @@ func (cpu *CPU) handleInterrupts() {
 
 	// check if an interrupt is requested and enabled by priority
 	// if it is the case, disable the IME flag and jump to the interrupt handler
+	isInterruptRequested := func(interrupt Interrupt) bool {
+		return ((ie_register & (1 << interrupt.flagIE)) != 0) && ((if_register & (1 << interrupt.flagIF)) != 0)
+	}
 
-	// V-Blank interrupt
-	if (ie_register&(1<<FFFF_0_VBLANK))&(if_register&(1<<FF0F_0_VBLANK)) == 1 {
+	// V-Blank interrupt (highest priority)
+	if isInterruptRequested(INTERRUPTS_CONFIG["VBLANK"]) {
 		cpu.ime = false
 		cpu.onVBlankInterrupt()
-	} else if (ie_register&(1<<FFFF_1_LCD_STAT))&(if_register&(1<<FF0F_1_LCD_STAT)) == 1 {
+	} else if isInterruptRequested(INTERRUPTS_CONFIG["LCD_STAT"]) {
 		// LCD STAT interrupt
 		cpu.ime = false
 		cpu.onLCDStatInterrupt()
-	} else if (ie_register&(1<<FFFF_2_TIMER))&(if_register&(1<<FF0F_2_TIMER)) == 1 {
+	} else if isInterruptRequested(INTERRUPTS_CONFIG["TIMER"]) {
 		// TIMER interrupt
 		cpu.ime = false
 		cpu.onTimerInterrupt()
-	} else if (ie_register&(1<<FFFF_3_SERIAL))&(if_register&(1<<FF0F_3_SERIAL)) == 1 {
+	} else if isInterruptRequested(INTERRUPTS_CONFIG["SERIAL"]) {
 		// SERIAL interrupt
 		cpu.ime = false
 		cpu.onSerialInterrupt()
-	} else if (ie_register&(1<<FFFF_4_JOYPAD))&(if_register&(1<<FF0F_4_JOYPAD)) == 1 {
+	} else if isInterruptRequested(INTERRUPTS_CONFIG["JOYPAD"]) {
 		// JOYPAD interrupt
 		cpu.ime = false
 		cpu.onJoypadInterrupt()
 	}
-
-	// re-enable the IME flag at next cycle
-	cpu.ime_enable_next_cycle = true
 }
 
 // * The following interrupt service routine is executed when control is being transferred to an interrupt handler (source: https://gbdev.io/pandocs/Interrupts.html)
@@ -100,71 +134,41 @@ func (cpu *CPU) handleInterrupts() {
 
 func (cpu *CPU) onVBlankInterrupt() {
 	fmt.Printf("... V-Blank interrupt triggered\n")
-	// clear the interrupt request flag before jumping to the interrupt handler @0x0040
-	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_0_VBLANK) ^ 0xFF)
-	cpu.setIEFlag(if_register)
-
-	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack
-	cpu.push(cpu.offset)
-	// trigger the interrupt handler
-	cpu.offset = INTERRUPT_VBLANK_JUMP_VECTOR
-	cpu.pc = cpu.offset
-	// wait for 5 M-cycles = 20 T-cycles
-	//cpu.cpuCycles += 5 * 4
+	cpu.interruptHandlerWrapper(INTERRUPTS_CONFIG["VBLANK"])
 }
 
 func (cpu *CPU) onLCDStatInterrupt() {
 	fmt.Println("... LCD STAT interrupt triggered")
-	// clear the interrupt request flag before jumping to the interrupt handler @0x0048
-	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_1_LCD_STAT) ^ 0xFF)
-	cpu.setIEFlag(if_register)
-	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack}
-	cpu.updatepc()
-	cpu.push(cpu.pc)
-	// trigger the interrupt handler
-	cpu.pc = INTERRUPT_LCD_STAT_JUMP_VECTOR
-	// wait for 5 M-cycles = 20 T-cycles
-	cpu.cpuCycles += 5 * 4
+	cpu.interruptHandlerWrapper(INTERRUPTS_CONFIG["LCD_STAT"])
 }
 
 func (cpu *CPU) onTimerInterrupt() {
 	fmt.Println("... Timer interrupt triggered")
-	// clear the interrupt request flag before jumping to the interrupt handler @0x0050
-	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_2_TIMER) ^ 0xFF)
-	cpu.setIEFlag(if_register)
-	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack}
-	cpu.updatepc()
-	cpu.push(cpu.pc)
-	// trigger the interrupt handler
-	cpu.pc = INTERRUPT_TIMER_JUMP_VECTOR
-	// wait for 5 M-cycles = 20 T-cycles
-	cpu.cpuCycles += 5 * 4
+	cpu.interruptHandlerWrapper(INTERRUPTS_CONFIG["TIMER"])
 }
 
 func (cpu *CPU) onSerialInterrupt() {
 	fmt.Println("... Serial interrupt triggered")
-	// clear the interrupt request flag before jumping to the interrupt handler @0x0050
-	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_3_SERIAL) ^ 0xFF)
-	cpu.setIEFlag(if_register)
-	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack}
-	cpu.updatepc()
-	cpu.push(cpu.pc)
-	// trigger the interrupt handler
-	cpu.pc = INTERRUPT_SERIAL_JUMP_VECTOR
-	// wait for 5 M-cycles = 20 T-cycles
-	cpu.cpuCycles += 5 * 4
+	cpu.interruptHandlerWrapper(INTERRUPTS_CONFIG["SERIAL"])
 }
 
 func (cpu *CPU) onJoypadInterrupt() {
 	fmt.Println("... Joypad interrupt triggered")
-	// clear the interrupt request flag before jumping to the interrupt handler @0x0050
-	if_register := cpu.bus.Read(IF_REGISTER) & ((1 << FF0F_4_JOYPAD) ^ 0xFF)
-	cpu.setIEFlag(if_register)
-	// update the program counter to have the address of the next instruction that cpu would have execute if no interrupt was triggered and push it to the stack}
+	cpu.interruptHandlerWrapper(INTERRUPTS_CONFIG["JOYPAD"])
+}
+
+// helper function to handle the common operations when an interrupt is triggered
+
+func (cpu *CPU) interruptHandlerWrapper(flag Interrupt) { // clear the interrupt request flag in IF register before jumping to the interrupt handler @0x0048
+	// reset the interrupt request flag in IF register to reenable future interrupts of the same type
+	reset_if_register := cpu.bus.Read(IF_REGISTER) & ^uint8(1<<flag.flagIF)
+	cpu.bus.Write(IF_REGISTER, reset_if_register)
+	// update the program counter to have the address of the next instruction and push it to the stack
 	cpu.updatepc()
 	cpu.push(cpu.pc)
-	// trigger the interrupt handler
-	cpu.pc = INTERRUPT_JOYPAD_JUMP_VECTOR
+	cpu.pc = flag.jumpPC
 	// wait for 5 M-cycles = 20 T-cycles
 	cpu.cpuCycles += 5 * 4
+	// re-enable the IME flag at next cycle
+	cpu.ime_enable_next_cycle = true
 }

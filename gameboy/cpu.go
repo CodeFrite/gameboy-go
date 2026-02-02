@@ -378,34 +378,24 @@ func (c *CPU) decode() {
 
 func (c *CPU) execute() {
 	// Handle the IME
+	if !c.prefixed {
+		c.executeInstruction(c.instruction)
+	} else {
+		c.executeCBInstruction(c.instruction)
+	}
+
+	// check if we need to enable or disable the IME
 	if c.ime_enable_next_cycle {
 		// Execute the instruction
-		if !c.prefixed {
-			c.executeInstruction(c.instruction)
-		} else {
-			c.executeCBInstruction(c.instruction)
-		}
 		// enable the IME
 		c.ime = true
 		c.ime_enable_next_cycle = false
 	} else if c.ime_disable_next_cycle {
-		// Execute the instruction
-		if !c.prefixed {
-			c.executeInstruction(c.instruction)
-		} else {
-			c.executeCBInstruction(c.instruction)
-		}
 		// disable the IME
 		c.ime = false
 		c.ime_disable_next_cycle = false
-	} else {
-		// Execute the instruction
-		if !c.prefixed {
-			c.executeInstruction(c.instruction)
-		} else {
-			c.executeCBInstruction(c.instruction)
-		}
 	}
+
 	// advance execution state
 	c.state = CPU_EXECUTION_STATE_STALL
 }
