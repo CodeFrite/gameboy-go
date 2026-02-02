@@ -176,7 +176,7 @@ func (p *PPU) Tick() {
 		p.dotX = 0
 		p.dotY++
 		p.updateLYRegister()
-
+		p.evaluateSTATInterrupt()
 	} else {
 		// processing scan line
 		p.dotX++
@@ -273,25 +273,14 @@ func (p *PPU) Tick() {
 		p.image[imageY][imageX] = (currentPixelSlotValue << 2) | (pixel_high_bit << 1) | pixel_low_bit
 
 	case PPU_MODE_0_HBLANK:
-		//fmt.Println("... PPU MODE 0 (HBLANK)")
-		// waiting until the end of the scanline
-		// p.cpu.TriggerInterrupt(Interrupt{_type: interrupt_types["HBLANK"]}) ??? TODO: check if this is an interrupt that i should trigger or if the CPU pools the PPU mode for this
+		// we do nothing
 	case PPU_MODE_1_VBLANK:
-		//fmt.Println("... PPU MODE 1 (VBLANK)")
-		// waiting until the next frame
+		// we do nothing
 	}
-
-	// TODO: DRAW WINDOW
 
 	// increment the ticks at the end of the cycle otherwise tick 0 will be skipped
 	p.ticks++
 }
-
-// draw the background
-func (p *PPU) drawBackground() {}
-
-// draw the window
-func (p *PPU) drawWindow() {}
 
 // Registers management
 
@@ -299,28 +288,4 @@ func (p *PPU) drawWindow() {}
 func (p *PPU) isEnabled() bool {
 	lcdc := p.bus.Read(REG_FF40_LCDC)
 	return (lcdc>>FF40_7_LCD_PPU_ENABLE)&0x01 == 0x01
-}
-
-// update the STAT register FF41 to reflect the current PPU mode
-func (p *PPU) updateSTATRegister_PPUMode() {
-	// get the register value
-	stat := p.bus.Read(REG_FF41_STAT)
-	// update the bits 1-0 with the current mode and leave the other bits unchanged
-	stat = (stat & 0b11111100) | p.mode
-	// write the new value back to the register
-	p.bus.Write(REG_FF41_STAT, stat)
-}
-
-// update the LY register FF44 to reflect the current scanline and trigger the VBLANK interrupt
-func (p *PPU) updateLYRegister() {
-	p.bus.Write(REG_FF44_LY, uint8(p.dotY))
-	if p.dotY == uint16(LCD_Y_RESOLUTION) {
-		// set the LYC == LY bit
-	}
-}
-
-// request VBLANK interrupt
-func (p *PPU) requestVBLANKInterrupt() {
-	if_register := p.bus.Read(IF_REGISTER)
-	p.bus.Write(IF_REGISTER, if_register|0x01)
 }
