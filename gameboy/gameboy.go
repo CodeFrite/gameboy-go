@@ -182,9 +182,12 @@ func (gb *Gameboy) LoadRom(romName string) {
 
 // send updated state on the respective channels if they are not nil
 func (gb *Gameboy) sendState() {
-	if gb.cpuStateChannel != nil {
-		gb.cpuStateChannel <- gb.cpu.getState()
-	}
+	// FPS: for the moment, until we reach 60 FPS, no need to send the cpu state at all
+	/*
+		if gb.cpuStateChannel != nil {
+			gb.cpuStateChannel <- gb.cpu.getState()
+		}
+	*/
 	// send PPU state only at the beginning of VBlank (DOT_Y=144, DOT_X=0)
 	if gb.ppuStateChannel != nil {
 		ppuState, err := gb.ppu.getState()
@@ -195,9 +198,12 @@ func (gb *Gameboy) sendState() {
 	if gb.apuStateChannel != nil {
 		gb.apuStateChannel <- gb.apu.getState()
 	}
-	if gb.memoryStateChannel != nil {
-		gb.memoryStateChannel <- *gb.bus.getMemoryWrites()
-	}
+	// FPS: no need to send memory writes at all
+	/*
+		if gb.memoryStateChannel != nil {
+			gb.memoryStateChannel <- *gb.bus.getMemoryWrites()
+		}
+	*/
 }
 
 // tick the gameboy once
